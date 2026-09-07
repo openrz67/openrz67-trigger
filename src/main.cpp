@@ -292,12 +292,21 @@ void configurePowerManagement() {
         .max_freq_mhz = 80,
         .min_freq_mhz = 10,
         // USB Serial/JTAG drops off the bus when the C3 enters light sleep, so the
-        // debug build (CDC on) keeps the chip awake; production sleeps.
+        // debug build (CDC on) keeps the chip awake; production may sleep.
         .light_sleep_enable = !ARDUINO_USB_CDC_ON_BOOT
     };
-    esp_pm_configure(&pm_config);
-
-    Serial.println("Power management configured for frequency scaling");
+    // The Arduino 2.0.17 framework ships its ESP-IDF libraries with CONFIG_PM_ENABLE
+    // unset, so this returns ESP_ERR_NOT_SUPPORTED and neither DFS nor automatic light
+    // sleep is active: the chip runs at the 80 MHz set by the framework and idles in
+    // the BLE stack's own sleep. Kept so a framework with PM enabled picks it up.
+    esp_err_t err = esp_pm_configure(&pm_config);
+    if (err == ESP_OK) {
+        Serial.println("Power management: DFS 10-80 MHz, light sleep "
+                       + String(pm_config.light_sleep_enable ? "on" : "off"));
+    } else {
+        Serial.println("Power management not available in this framework build ("
+                       + String(esp_err_to_name(err)) + ")");
+    }
 }
 
 void setup() {

@@ -98,7 +98,7 @@ pio run -t upload
 
 If uploading does not start, hold `BOOT`, press and release `EN`, then release `BOOT` and retry.
 
-Serial logging is disabled because UART0 RX is GPIO 20, which drives the status LED. Rev 1 also used GPIO 21 (UART0 TX) for a shutter output; rev 2 moved that output to GPIO 4, so TX-only logging is possible again.
+The production build has no serial output. For logging, flash the `debug` env (`pio run -e debug -t upload`): it enables USB CDC on the USB-C connector and `VERBOSE=1`. UART0 is not used for logging because its RX pin (GPIO 20) drives the status LED; GPIO 21 (UART0 TX) is free since rev 2 and is on the `J1` header for a TX-only dongle if ever needed.
 
 ## License
 
