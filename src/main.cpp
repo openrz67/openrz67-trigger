@@ -10,9 +10,9 @@
 #define BLINK_SPEED 500
 #define COUNTDOWN_DURATION 10000  // 10 seconds in milliseconds
 
-// Suppress serial output for normal builds to save resources
-// Set VERBOSE to 1 to enable serial output
-#define VERBOSE 0
+// Serial goes over USB CDC (see platformio.ini), so logging costs no pins.
+// Set VERBOSE to 0 to compile every Serial call away.
+#define VERBOSE 1
 #if !VERBOSE
   struct NullStream {
       template<typename T> NullStream& operator<<(T const&) { return *this; }
