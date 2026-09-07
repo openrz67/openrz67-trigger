@@ -7,7 +7,7 @@ ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetoot
 * Instant shutter release
 * Bulb mode for remote long exposures
 * Self-timer countdown with app-configurable duration
-* Power-optimized: 80 MHz CPU with light sleep and 0 dBm BLE TX power, running off a small LiPo
+* Power-optimized: 80 MHz CPU clock and 0 dBm BLE TX power, running off a small LiPo (automatic light sleep is not available in the Arduino framework build, see `platformio.ini`)
 
 ## Hardware
 
@@ -17,17 +17,17 @@ The current prototype is a custom PCB (design and fabrication files in [`pcb/`](
 
 The PCB source is the KiCad project in [`pcb/kicad/`](pcb/kicad/) (ported from EasyEDA Pro in September 2026). Generated Gerber/BOM/position files are in `pcb/kicad/out/`. The fabricated 2025-09-23 revision and the EasyEDA Pro exports are kept under [`pcb/archive/`](pcb/archive/).
 
-The current source is **rev 2, not yet fabricated**: it swaps the G6K relays for PhotoMOS parts and changes `U4` to a side-entry connector; the battery connector stays on top. The board pictured above is rev 2, and the enclosure in [`case/`](case/) is drawn for it (not yet print-tested). Connector part numbers and geometry are documented in [`pcb/kicad/README.md`](pcb/kicad/README.md), which is the authoritative source for them.
+The current source is **rev 2, not yet fabricated**: it swaps the G6K relays for PhotoMOS parts, changes `U4` to a side-entry connector and replaces the 1 A LGS5500 charger/boost and LDO with a BQ25185 charger (111 mA) and a TPS63031 buck-boost; the battery connector stays on top. The board pictured above is rev 2, and the enclosure in [`case/`](case/) is drawn for it (not yet print-tested). Connector part numbers and geometry are documented in [`pcb/kicad/README.md`](pcb/kicad/README.md), which is the authoritative source for them.
 
 * 1× ESP32-C3FH4
 * 2× Toshiba TLP172AM PhotoMOS relays (solid-state, isolated) to close the shutter contacts
 * Supporting components per the [BOM](pcb/kicad/out/openrz67-bom.csv)
 * 2.4 GHz antenna with U.FL connector
-* 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`)
+* 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`); charged at 111 mA by a TI BQ25185 (the cell is rated for 120 mA), with a TPS63031 buck-boost holding 3.3 V from USB or battery
 * SS12F15 slide switch
 * Unpopulated 1×4 header `J1` (3V3, GND, GPIO21/TX, GPIO6) along the bottom edge for bench logging and experiments
 
-The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO ESP32C3 and two isolated switch channels work too. Assign two output-capable GPIOs in `src/main.cpp`. On the PCB each channel is a TLP172AM PhotoMOS relay whose LED is driven from the GPIO through 220 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep ESP32 ground and camera ground separate.
+The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO ESP32C3 and two isolated switch channels work too. Assign two output-capable GPIOs in `src/main.cpp`. On the PCB each channel is a TLP172AM PhotoMOS relay whose LED is driven from the GPIO through 150 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep ESP32 ground and camera ground separate.
 
 ![Wiring diagram for the ESP32-C3, two TLP172AM PhotoMOS channels and the Mamiya RZ67 camera port](assets/wiring-diagram.svg)
 
@@ -98,7 +98,7 @@ pio run -t upload
 
 If uploading does not start, hold `BOOT`, press and release `EN`, then release `BOOT` and retry.
 
-Serial logging is disabled because UART0 RX is GPIO 20, which drives the status LED. Rev 1 also used GPIO 21 (UART0 TX) for a shutter output; rev 2 moved that output to GPIO 4, so TX-only logging is possible again.
+The production build has no serial output. For logging, flash the `debug` env (`pio run -e debug -t upload`): it enables USB CDC on the USB-C connector and `VERBOSE=1`. UART0 is not used for logging because its RX pin (GPIO 20) drives the status LED; GPIO 21 (UART0 TX) is free since rev 2 and is on the `J1` header for a TX-only dongle if ever needed.
 
 ## License
 

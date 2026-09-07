@@ -52,7 +52,7 @@ xh_w, xh_h, xh_back, xh_clr = 12.4, 6.1, 2.3, 0.4   # body width, height, pins -
 xh_recess = 0.3                      # mouth face this far inside the outer wall face
 # TH solder tails below the PCB: [board_x, board_y, relief_dia] (BAT1 pins)
 th_keepouts = [(3.275, 16.189, 3.2), (3.275, 18.189, 3.2)]
-th_keepout_depth = 3.0
+th_keepout_depth = 3.5                # PH tails are 3.5 mm (CONN-TH_PH2.00-LI-2P.wrl); pocket reaches the floor
 # Component bodies above the PCB the lid bosses must clear: (x0, y0, x1, y1)
 comp_keepouts = [(0.0, 4.0, 8.0, 14.5),   # USB-C connector body
                  (xh_x - xh_back - xh_clr, xh_y - xh_w / 2 - xh_clr, 49.0, xh_y + xh_w / 2 + xh_clr)]
@@ -79,12 +79,12 @@ batt_clr, batt_dx, divider_t, rib_h = 0.5, 0, 1.6, 2.5
 usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # outer lip (stops the cable body)
 usb_recess_w, usb_recess_h, usb_recess_r = 13.0, 9.0, 3.0
 usb_recess_d = wall - 0.5            # keep a 0.5 lip so the plug still seats fully
-led_pos = [(22.514, 20.186), (24.224, 20.186)]           # D3, D4
-led_win_l, led_win_w, led_win_r = 6.0, 3.0, 1.2
+led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
+led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 1.0, 1.0, 0.2, 1.5
 
 # --- Slide switch SS12F15 (front wall, wired to S3) --------------------------
-sw_x, sw_z = 22, 4.5
+sw_x, sw_z = 22, 4.8                 # body underside 1.3 mm over the PCB: clears U1 (0.9) by 0.4
 sw_slot_l, sw_slot_h = 10.65, 6.3
 sw_body_l, sw_body_h, sw_body_w, sw_body_clr = 11.0, 7.0, 8.0, 0.4
 sw_screw_pitch, sw_screw_d = 15.0, 2.4
@@ -193,10 +193,12 @@ cut_usb += xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_recess_w, usb_reces
 
 # U4 opening (right wall): the side-entry XH body sits in a rectangular through-cut
 # in the lid wall, mouth xh_recess inside the outer face; the XHP plug goes in from
-# outside. Everything is above the split, so the lid just drops over the connector.
+# outside. The body is above the split, but the lid's tongue (and its snap bead)
+# hang `lap` below the split and would have to pass through the body while the lid
+# is lowered, so the cut runs the full lap depth too: no tongue in the U4 band.
 xh_cy = by(xh_y)
-cut_xh = box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - eps,
-             wall + 2, xh_w + 2 * xh_clr, xh_h + xh_clr + eps)
+cut_xh = box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - lap - eps,
+             wall + 2, xh_w + 2 * xh_clr, xh_h + xh_clr + lap + eps)
 
 # Frame-fin tongue notches (cut from the lid tongue where the base fins stand)
 fin_ycap = off - frame_clr
@@ -258,6 +260,10 @@ base -= chamfer(groove.edges().group_by(Axis.Z)[-1], 0.55)
 for kx, ky, kd in th_keepouts:
     base -= cyl(bx(kx), by(ky), pcb_z - th_keepout_depth, kd, th_keepout_depth + eps)
 base -= cut_usb
+# U4's body underside sits exactly at the split; take 0.25 mm off the base's outer
+# wall half in that band so a proud print does not lift the PCB off its posts.
+base -= box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - 0.25,
+            wall + 2, xh_w + 2 * xh_clr, 1)
 
 # --- LID ----------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)                        # top + walls
@@ -365,6 +371,10 @@ for s in (-1, 1):
 _open(lid, box(sx - sw_body_l / 2, wall + eps, swz - sw_body_h / 2,
                sw_body_l, sw_body_w - 2 * eps, sw_body_h), "switch body envelope")
 _open(lid, box(bx(0.5), by(4.5), pcb_top_z + eps, 7, 9.5, 2), "USB-C body keepout")
+# J1 (1x4 2.54 mm header, DNP): pads at board x 34.4-42.0, y 1.4; a fitted vertical
+# header (10.16 x 2.54 insulator, 8.5 mm tall) must clear the lid and the front fin.
+_open(base + lid, box(bx(38.23 - 5.08), by(1.4 - 1.27), pcb_top_z + eps, 10.16, 2.54, 8.5),
+      "J1 header envelope")
 
 # --- Export -------------------------------------------------------------------------------
 if __name__ == "__main__":

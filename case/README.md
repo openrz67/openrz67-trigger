@@ -29,7 +29,7 @@ negative numbers — drop the sign).
 | USB-C connector | body 8.95 × 3.2 mm on the PCB, left edge 4.8 mm in from the PCB's left edge; the shell protrudes ~2 mm past the board edge | measured physically |
 | Total HW length | ~50 mm (PCB 48 + USB-C shell 2) | `pcb_overhang_left` |
 | Slide switch (SS12F15) | actuator opening 10.65×6.3; flat bracket 19.45×5.75×0.4; screw holes Ø2.2 at 15.0 mm spacing; body ~19.5×20×12.9 | `SS12F15.stp` + measured |
-| LEDs | D3 red (22.5, 20.2), D4 blue (24.2, 20.2) – 0603 SMD, top-emitting, 1.7 mm apart | `out/openrz67-pos.csv` |
+| LEDs | D3 red (20.5, 18.0), D4 blue (24.2, 20.2) – 0603 SMD, top-emitting; D3 moved next to the BQ25185 charger 2026-09-07, so the 6 × 4.4 light-pipe window is centred between them | `out/openrz67-pos.csv` |
 
 Component **heights** are editable constants (`h_usbc`, `h_ph_plug`, `xh_h`) from the
 datasheets / 3D models. `h_ph_plug` (8 mm: a PHR-2 plug in the 6 mm PH header plus the
@@ -39,7 +39,7 @@ height. Check them against your own parts.
 The script carries **module-level assertions**: outer dimensions, plus probe checks that
 every opening actually breaks through (USB, LED window, locating-pin recesses, switch
 screws) and that the fit-critical keepouts (switch body envelope, USB-C body, the U4
-connector body through the right wall) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
+connector body through the right wall, a fitted 8.5 mm vertical header on J1) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
 a known collision fails loudly instead of surfacing in the print.
 
 ## Construction
@@ -51,7 +51,8 @@ a known collision fails loudly instead of surfacing in the print.
   - **Through-hole solder relief** (`th_keepouts`): a small pocket in the top of a
     pillar where a through-hole component's pin tails/solder stick down (the pillar at
     (2,20) sits next to BAT1). The list is `[board_x, board_y, relief_diameter]`;
-    `th_keepout_depth` sets how far down (default 3 mm).
+    `th_keepout_depth` sets how far down (3.5 mm, the PH tail length from the 3D model; with
+    `standoff_h` 3.5 the pocket reaches the floor).
   - **PCB frame / guide fins** (`frame_*`): the lap joint removes the inner wall at board
     height, so **guide fins** in the ~1.2 mm tongue channel hold the PCB sideways: a thick
     fin beside the board edge with `frame_clr` (0.2 mm) clearance, plus a thin lead-in
@@ -65,13 +66,17 @@ a known collision fails loudly instead of surfacing in the print.
   camera connector (right), the LED light-pipe window (top), and the slot + screw
   pillars for the SS12F15 slide switch.
   - **U4 opening** (`cut_xh`): the side-entry S4B-XH-A body sits in a rectangular
-    through-cut in the lid's right wall (body + `xh_clr` all round), open at the bottom
-    so the lid simply drops over the connector; the XHP plug goes in from **outside**,
+    through-cut in the lid's right wall (body + `xh_clr` all round). The cut runs the full
+    `lap` below the split too, so there is no tongue or snap bead in the U4 band: the tongue
+    would otherwise have to pass through the connector body while the lid is lowered (a
+    closed-state probe cannot see that; a lift sweep does). The XHP plug goes in from **outside**,
     like the USB-C. The mouth face ends `xh_recess` (0.3 mm) inside the outer wall face —
     `pcb_overhang_right` is derived from that, so a different connector reach
     (`xh_mouth`) moves the wall, not the connector. The old drop-in cable slit is gone:
     the cable no longer lives inside the box. The lid's (46,20) hold-down boss is cut
-    back (`comp_keepouts`) where it would touch the connector body 0.3 mm away.
+    back (`comp_keepouts`) where it would touch the connector body 0.3 mm away. The base's
+    outer wall half is lowered 0.25 mm in the same band: the body underside sits exactly at
+    the split, and a proud print would otherwise lift the PCB off its posts.
   - **LED light pipe** (`led_*`, separate part): D3 (red) and D4 (blue) are top-emitting
     SMD LEDs ~8 mm below the lid. A separate **clear light pipe** is inserted from above
     as a top hat: a wide head in a top counterbore (flush with the top face) + a rod that
@@ -235,7 +240,8 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   (`"front"`, low Y) is chosen deliberately: the back wall carries the S3 connector
   (board-X 28.7), the LEDs and the battery-bay divider, so there's no room there for a
   centred switch with 15 mm boss spacing. `sw_x = 22` is practically centred (case centre
-  is 23; the bosses at board-X 14.5 and 29.5 sit over low 0402/0603 parts only).
+  is 23; the bosses at board-X 14.5 and 29.5 sit over low 0402/0603 parts only). `sw_z = 4.8`
+  puts the body underside 1.3 mm above the PCB, 0.4 mm over U1 (the body sits partly over it).
   The wire from S3 runs across the board to the switch. Verify against your own components.
 - **Switch screw mount**: the switch's flat bracket mounts on the **outside** of the case;
   screws go from outside → through the bracket and wall → thread into two **rectangular
@@ -292,7 +298,7 @@ short end first.
 
 ## Camera plug — `camera_plug.py`
 
-Separate part, not in the .3mf: a two-half shell around four female jumper-wire ends
+A two-half shell (plate 2 of `openrz67-case.3mf`) around four female jumper-wire ends
 (2.54 mm Dupont sleeves) so they go onto the RZ67 RC-outlet as one plug. Port measured
 2026-09-06: pocket 13.91 × 3.57 mm, ~6.3 deep (uncertain), Ø0.8 round pins, 2.54 pitch,
 row centred. The nose fills the pocket with two side cheeks; a front plate with pin holes
@@ -300,8 +306,8 @@ stops the sleeves on pull-off and a rear wall with wire notches stops them on pu
 the sleeves are not glued. The body is as tall as the nose (0.4 mm skins over/under the
 sleeves), which is what lets each half print flat on its outer face with no bridges or
 supports. Debossed triangle on top = 6 V pin (leave unconnected), like the camera's own
-mark. `uv run camera_plug.py` → `stl/openrz67-camera-plug-{bottom,top}.stl`, both already
-print-side down. Assemble: sleeves into the bottom half, wires out the back, CA glue along
+mark. `uv run camera_plug.py` (also run by `export.sh`) → `stl/openrz67-camera-plug-{bottom,top}.stl`,
+both already print-side down; `make_3mf.py` appends them to the project as plate 2 (`EXTRA_PLATES`). Assemble: sleeves into the bottom half, wires out the back, CA glue along
 the walls, top half on. PETG. Tune `nose_fit` (per-side clearance, go negative for press)
 after the first print; if your sleeves measure 2.50 rather than 2.54, set `sleeve` — the
 skin assert tells you if the stack no longer fits the pocket height. Not print-tested.

@@ -591,6 +591,30 @@
       {
         "netclass": "3v",
         "pattern": "VDDA"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "VBUS"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "BAT+"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "VSYS"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "SW_SYS"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "SW1"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "SW2"
       }
     ]
   },

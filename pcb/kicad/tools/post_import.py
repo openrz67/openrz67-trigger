@@ -66,7 +66,7 @@ def apply_rules(b):
     netclass("Default", 0.127, 0.16, 0.45, 0.20)
     netclass("gnd", 0.127, 0.13, 0.45, 0.20, ["GND"])
     netclass("3v", 0.127, 0.20, 0.45, 0.20, ["VCC", "VDDA"])
-    netclass("5v", 0.127, 0.254, 0.50, 0.30, ["+5V"])
+    netclass("5v", 0.127, 0.254, 0.50, 0.30, ["VBUS", "BAT+", "VSYS", "SW_SYS", "SW1", "SW2"])
 
     # the importer kept EasyEDA's layer names; restore KiCad's
     for lid, name in {

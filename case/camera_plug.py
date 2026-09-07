@@ -26,6 +26,7 @@ Run (exports stl/openrz67-camera-plug-{bottom,top}.stl):
     uv run camera_plug.py
 """
 
+import os
 from pathlib import Path
 
 from build123d import *
@@ -86,10 +87,10 @@ if __name__ == "__main__":
         show(bottom, top, names=["bottom", "top"])
     except Exception as exc:
         print(f"OCP-viewer utilgjengelig ({type(exc).__name__})")
-    out = Path(__file__).parent / "stl"
-    out.mkdir(exist_ok=True)
-    export_stl(bottom_print, str(out / "openrz67-camera-plug-bottom.stl"))
-    export_stl(top_print, str(out / "openrz67-camera-plug-top.stl"))
+    out = Path(os.environ.get("OUTDIR", Path(__file__).parent / "stl"))
+    out.mkdir(parents=True, exist_ok=True)
+    export_stl(bottom_print, str(out / "openrz67-camera-plug-bottom.stl"), ascii_format=True)  # make_3mf.py parses ASCII
+    export_stl(top_print, str(out / "openrz67-camera-plug-top.stl"), ascii_format=True)
     bb = plug.bounding_box()
     print(f"plug {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm, skin {skin:.2f}, cheeks {cheek:.2f}, "
           f"halves z-min {bottom_print.bounding_box().min.Z:.2f}/{top_print.bounding_box().min.Z:.2f}")
