@@ -1,9 +1,54 @@
-ERC report (2026-09-07T12:11:23, Encoding UTF8)
+ERC report (2026-09-07T19:17:51, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(99.92 mm, 40.00 mm): Symbol C21 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(99.92 mm, 50.00 mm): Symbol C22 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(110.08 mm, 30.00 mm): Symbol C20 Pin 2 [2, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(123.08 mm, 22.00 mm): Symbol R18 Pin 2 [2, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(128.92 mm, 22.00 mm): Symbol D3 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(143.49 mm, 31.65 mm): Symbol U3 Pin 1 [SYS, Power output, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(187.92 mm, 44.00 mm): Symbol R13 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(187.92 mm, 60.00 mm): Symbol R16 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(198.08 mm, 28.00 mm): Symbol R11 Pin 2 [2, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(284.92 mm, 28.00 mm): Symbol L3 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(287.46 mm, 43.65 mm): Symbol S3 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(299.92 mm, 55.00 mm): Symbol C23 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(314.76 mm, 30.38 mm): Symbol U2 Pin 1 [VOUT, Power output, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(319.92 mm, 55.00 mm): Symbol C24 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(350.08 mm, 55.00 mm): Symbol C25 Pin 2 [2, Passive, Line]
 
- ** ERC messages: 0  Errors 0  Warnings 0
+ ** ERC messages: 15  Errors 0  Warnings 15
 
  ** Ignored checks:
     - Global label only appears once in the schematic

@@ -1,7 +1,7 @@
 # openrz67 PCB — KiCad project
 
 KiCad 10 project for the OpenRZ67 trigger board (48 × 22 mm, 2 layers, ESP32-C3,
-two TLP172AM PhotoMOS relays, LGS5500 charger/boost). This is now the **source**; the EasyEDA Pro
+two TLP172AM PhotoMOS relays, BQ25185 charger + TPS63031 buck-boost). This is now the **source**; the EasyEDA Pro
 project it was ported from is archived in `../archive/easyeda/` (v2 `.epro` and v3 `.epro2`);
 the fabricated 2025-09-23 revision (Gerber, BOM, PnP, STEP) is in `../archive/2025-09-23-rev1/`.
 
@@ -42,21 +42,23 @@ KICAD_CLI=/usr/bin/kicad-cli KICAD_PY=/usr/bin/python3 tools/regen.sh
 Clearance 0.127 mm (EasyEDA pour-to-track minimum; track-to-track was 0.152), min track
 0.127, default track 0.16, via 0.45/0.20 (min 0.40/0.20), hole-to-track 0.175,
 hole-to-hole 0.30, solder-mask expansion 0.051, thermal spoke 0.254 / gap 0.152.
-Net classes: `gnd` (GND, 0.13 track), `3v` (VCC, 0.20), `5v` (+5V, 0.254 track, 0.5/0.3 via).
+Net classes: `gnd` (GND, 0.13 track), `3v` (VCC, VDDA, 0.20), `5v` (VBUS, BAT+, VSYS, SW_SYS,
+SW1, SW2: 0.254 track, 0.5/0.3 via).
 Copper-to-edge clearance is 0.30 mm (JLCPCB recommendation; the original pours ran to
 the outline). Silkscreen minimums are JLCPCB's: 1.0 mm text height, 0.15 mm line width.
 
 ## Accepted warnings
 
-ERC is clean: **0 errors, 0 warnings**. DRC has no errors; the warnings below are known,
+ERC has **0 errors** (15 `endpoint_off_grid` warnings from the redrawn charger section, see the port notes). DRC has no errors; the warnings below are known,
 understood and left in the reports rather than silenced, so a genuinely new one stands
 out. No DRC or ERC exclusions are configured; the only custom rules are in `openrz67.kicad_dru`
 (hole clearance around USB1's two locating-peg holes, see the port notes).
 
 | Check | Count | What |
 |---|---|---|
-| `courtyards_overlap` | 5 | Neighbours closer than 0.1 mm on the fabricated rev-1 layout: C21/USB1, L3 against C20/R9/R12, H1/USB1. |
-| `starved_thermal` | 2 | USB1 pads 1/12 get one GND spoke instead of two: the 0.7 mm locating-peg holes next to them take the second one. Same geometry as the fabricated rev 1. |
+| `courtyards_overlap` | 7 | Neighbours closer than 0.1 mm: C21/USB1, L3 against C20/R9, H1/USB1 (all as on the fabricated rev-1 layout), plus C25 against R20/R6 and C24/D3 in the rev-2 power corner (pad-to-pad ≥ 0.40 mm everywhere). |
+| `starved_thermal` | 4 | USB1 pads 1/12 get one GND spoke instead of two: the 0.7 mm locating-peg holes next to them take the second one. Same geometry as the fabricated rev 1. U2 pads 7/9 (GND, 0.28 mm wide) likewise get one spoke; both also have a 0.16 mm track into the exposed pad. |
+| `silk_overlap` | 1 | U2's pin-1 dot touches L3's silkscreen outline (0.02 mm). |
 | `text_height`, `text_thickness` | 2 | The `BOOT EN` label on F.SilkS is 0.5 mm / 0.10 mm, under JLCPCB's 1.0 mm / 0.15 mm. Enlarged in place it runs over the R18 pads and the S3 body, where the fab clips silkscreen against solder mask. Splitting it into separate `BOOT` and `EN` labels does not help: the free band above the S1 pads is 0.85 mm and the one below the switches is 0.7 mm, both under the 1.0 mm the text needs. Fixing it means moving parts. Every other silkscreen text is at or above 1.067 mm. |
 
 ## Rev 2 layout changes (2026-09-03)
@@ -78,9 +80,10 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
 - **Shutter outputs are PhotoMOS, not relays (2026-09-04).** K1/K2 (G6K-2F-Y), their DTC114E
   drivers Q1/Q2, flyback diodes D1/D2 and coil decoupling C27/C28 are gone. Each channel is one
   **TLP172AM** (Toshiba, LCSC C2152276, 4-pin SO6): the ESP32 GPIO drives the LED through a
-  **220 Ω** 0402 (R21/R22, C25091), about 9 mA nominal. At 3.3 V, VOH = 0.8 × VDD,
-  VF = 1.4 V and +1% resistance give 5.6 mA at 25 °C, within the datasheet's 5 to 25 mA
-  recommendation. The MOSFET output closes S1/S2 to camera ground.
+  **150 Ω** 0402 (R21/R22, UNI-ROYAL 0402WGF1500TCE C25082), about 12.7 mA nominal. At 3.3 V,
+  VOH = 0.8 × VDD, VF = 1.4 V and +1% resistance give 8.2 mA at 25 °C, within the datasheet's
+  5 to 25 mA recommendation. (220 Ω until 2026-09-07: its 5.6 mA worst case sat exactly on the
+  5 mA minimum that the 2 Ω on-resistance is specified at.) The MOSFET output closes S1/S2 to camera ground.
   TLP172AM replaced TLP172GM on 2026-09-05: maximum on-resistance is 2 Ω at 25 °C / IF = 5 mA,
   versus 50 Ω continuous for GM. AM's output rating is 60 V / 500 mA; package and pin functions
   are unchanged. The imported pad numbering 1/2/3/4 maps to Toshiba pins 1/3/4/6.
@@ -105,13 +108,31 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
   2026-09-07 the via sat on the pad's edge with its hole 0.083 mm inside the pad copper — a
   paste-wicking risk DRC cannot see because both are VCC; the pre-fab review caught it.)
   Same part, same position, no BOM change. B.Cu ground under U1 stays connected.
-- **R11 100 kΩ → 10 kΩ (2026-09-07).** R11 sets the LGS5500 charge current (ISET pin). The
-  datasheet table reads ≤14 k → 400 mA, 20 k → 600, 27 k → 800, ≥36 k or open → 1000 mA, and
-  the value is latched at power-up, so rev 1 charged the 250 mAh cell at 1 A (4C). 10 kΩ is the
-  datasheet's reference value: 400 mA. Note the JEITA thermistor R16 sits on the PCB, not in
-  the pack, so it reads board temperature.
+- **Power path: LGS5500 + ME6211 → BQ25185 + TPS63031 (2026-09-07).** Rev 1 charged the
+  250 mAh cell at 1 A (R11 = 100 kΩ on the LGS5500's ISET pin, latched at power-up); the
+  LGS5500's lowest setting is 400 mA and the cell is rated for **120 mA**, so the charger IC
+  was replaced rather than re-programmed. U3 is now a **BQ25185DLHR** (TI, LCSC C19725033,
+  WSON-10): linear charger with power path, `IN` = VBUS, `BAT` = BAT+, `SYS` = VSYS.
+  R11 2.7 kΩ ±1 % (C25885) on ISET → ICHG = 300 AΩ / 2.7 kΩ = **111 mA** nominal; the datasheet's
+  ±10 % accuracy puts the worst case at ~122 mA against the cell's 120 mA rating, accepted
+  (3.3 kΩ / 91 mA is the conservative alternative); R13 18 kΩ on ILIM/VSET → 500 mA input limit, 4.20 V regulation, 3.0 V precharge
+  threshold (datasheet table 6-1, the value TI's own example uses); R16 (10 kΩ NTC, β 3434 K)
+  on TS/MR matches the 10 kΩ / β 3435 K the pin is calibrated for — it still sits on the PCB,
+  not in the pack. ~CE is grounded (always enabled), STAT1 is unused, STAT2 drives D3 (red)
+  through R18 3 kΩ from VSYS: **lit = charging**, off = done / no USB / fault. SYS feeds the
+  power switch S3 and then U2, a **TPS63031DSKR** fixed 3.3 V buck-boost (LCSC C15516,
+  VSON-10, 1.8–5.5 V in, up to 500 mA out in boost), which replaces the ME6211 LDO: VCC now
+  stays at 3.3 V down to the 3.0 V cutoff instead of sagging with the cell. L3 (2.2 µH,
+  SPM6530T) is reused as its inductor (datasheet typical 1.5 µH; peak current ≈ 0.5 A at
+  3.0 V in / 0.4 A out); C23 10 µF in, C24 10 µF out, C25 100 nF on VINA, PS/SYNC low =
+  power-save, EN tied to VIN. LDO1, R12, R14, R17 and the +5V / +5V_VIN nets are gone.
+  Footprints came from LCSC: the VSON-10 matches KiCad's `WSON-10-1EP_2.5x2.5mm_P0.5mm`
+  pattern; the WSON-10 (TI `DLH`) has its 0.5 × 0.2 pads centred 0.25 mm further out than
+  TI's land pattern (0.8 vs 0.55–1.05 mm), the usual LCSC/JLCPCB style. Check pin 1 of U2 and
+  U3 in the assembly preview. Electrical cross-check against the TI datasheets (SLUSF65B,
+  SLVS696D) 2026-09-07; not yet built.
 - **Resistor sourcing (2026-09-07).** Three lines had 19–40 pieces in JLCPCB stock: the 10 kΩ
-  group R6/R7/R8/R13/R14/R17/R20 (+R11) → UNI-ROYAL 0402WGF1002TCE C25744 (Basic), R12 1 kΩ →
+  group R6/R7/R8/R20 → UNI-ROYAL 0402WGF1002TCE C25744 (Basic), R12 1 kΩ →
   0603WAF1001T5E C21190 (Basic, ±1 % instead of ±5 %), R18 3 kΩ → FOJAN FRC0402F3001TS
   C2909355. Library symbols are named after the MPN, so the three symbols were renamed and the
   100 kΩ one removed. Re-check stock at JLCPCB right before ordering.
@@ -181,8 +202,17 @@ file". Gerbers, drill files and the position file all use the drill/aux origin a
 board's top-left corner (since 2026-09-07 — before that the gerbers were in KiCad's absolute
 sheet frame while the CPL was origin-relative, which JLCPCB aligned silently). That is the
 rev-1 frame, so `out/gerber/*.drl` diff directly against `../archive/2025-09-23-rev1/`.
-Rotations for the top-side parts are unchanged since that order. BAT1 is back on top with its original through-hole
-footprint and rotation. Check BAT1 pin 1 in the fab's assembly preview before confirming.
+Rotations for the parts carried over from rev 1 are unchanged since that order, except where
+`ROT_FIX` in `regen.sh` adds a per-footprint offset so JLCPCB's order preview shows the part the way
+KiCad does: +90° for the ESP32-C3 QFN-32 (U1: 0 → 90) and the TLP172AM SO-4 (U5/U6: 180 → 270).
+JLCPCB's library orientation for those two packages is 90° off the KiCad footprint; their preview drew
+U1 with pin 1 top-left (KiCad: bottom-left) and U5/U6 with the leads across the pads. The rev-1 order
+had the same U1 offset with rotation 0 and JLCPCB's engineers corrected it against the silkscreen arc
+(their FAQ: rotation and polarity are fixed from the silkscreen markings before assembly), so the
+board came out right — sending the corrected angle just leaves them nothing to fix. The board itself is
+unchanged. After uploading, U1, U5 and U6 must look like `out/openrz67-top.png` in the preview; then
+check the DFM analysis in Order History (U1, U5, U6, X1, D3, D4) before approving production. Check pin 1 of U2, U3, U5, U6 and BAT1 in the fab's assembly preview before confirming:
+the dot on the body must sit where `out/openrz67-top.png` shows it.
 No bottom-side component assembly is needed. BAT1, S3 and U4 are through-hole parts;
 confirm the assembler's through-hole service or hand-solder them after SMD assembly. J1
 (the GPIO header) is DNP and absent from both files; nothing to select for it.
@@ -229,10 +259,12 @@ confirm the assembler's through-hole service or hand-solder them after SMD assem
   (needs the `.step` files, run `tools/fetch_3d.sh` first).
 - Bottom silkscreen label changed from "EPS32-C3 Camera Trigger V1.0 / 2025-08-23" to
   "OpenRZ67 Trigger v2 / 2026-09".
-- Pin electrical types were set by hand for the ICs (ESP32-C3, LGS5500, ME6211, USB-C);
+- Pin electrical types were set by hand for the ICs (ESP32-C3, BQ25185, TPS63031, USB-C);
   passives, connectors and the PhotoMOS pins are `passive`. Supply nets without a driver carry `PWR_FLAG`
-  (GND, AGND, BAT+, VBUS, +5V_VIN, VDDA). ERC runs at default severities: 0 errors, 0
-  warnings. The eight dangling wire ends inherited from the EasyEDA drawing were removed
+  (GND, AGND, BAT+, VBUS, SW_SYS, VDDA). ERC runs at default severities: 0 errors; the 15
+  warnings are `endpoint_off_grid` from the redrawn charger/buck-boost section, whose
+  symbols sit on whole millimetres rather than the 1.27 mm grid (cosmetic, connectivity
+  verified by the netlist). The eight dangling wire ends inherited from the EasyEDA drawing were removed
   (an orphan S1/S2/AGND label cluster and three over-long wire tails); the netlist is
   unchanged, verified node-for-node before and after.
 - The two mounting holes are real footprints (`MountingHole_2.0mm_Pad3.0`, plated 3.0 mm pad,

@@ -49,13 +49,23 @@ echo "==> position file"
 "$KICAD_PY" - out/openrz67-pos.csv <<'PY'
 import csv, sys
 p = sys.argv[1]
+# Per-footprint rotation correction (degrees, counter-clockwise) added to the KiCad angle
+# where JLCPCB's library orientation differs from the KiCad footprint, so their order
+# preview shows the part as KiCad does and their engineers have nothing to re-orient.
+# Derived from the preview on 2026-09-07 (pin-1 dot vs out/openrz67-top.png); the rev-1
+# order had the same U1 offset and JLCPCB corrected it against the silkscreen mark.
+ROT_FIX = {
+    "QFN-32_L5.0-W5.0-P0.50-BL-EP3.7": 90,  # ESP32-C3 (U1): preview pin 1 top-left, KiCad bottom-left
+    "SMD-4_L4.6-W3.7-P2.54-LS7.0-BR": 90,   # TLP172AM (U5/U6): preview leads top/bottom, pin 1 top-right
+}
 rows = list(csv.DictReader(open(p, newline="")))
 with open(p, "w", newline="") as f:
     w = csv.writer(f)
     w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
     for r in rows:
+        rot = float(r["Rot"]) + ROT_FIX.get(r["Package"], 0)
         w.writerow([r["Ref"], f'{float(r["PosX"]):.3f}mm', f'{float(r["PosY"]):.3f}mm',
-                    r["Side"].capitalize(), f'{float(r["Rot"]) % 360:g}'])
+                    r["Side"].capitalize(), f'{rot % 360:g}'])
 PY
 
 echo "==> bill of materials"
