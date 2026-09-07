@@ -289,3 +289,17 @@ short end first.
   head into the counterbore for a permanent/sealed fit.
 - The USB-C and switch openings are open out of necessity; the LED window is sealed by
   the light pipe.
+
+## Camera plug — `camera_plug.py`
+
+Separate part, not in the .3mf: a shell around four female jumper-wire ends (2.54 mm
+Dupont sleeves) so they go onto the RZ67 RC-outlet as one plug. Port measured 2026-09-06:
+pocket 13.91 × 3.57 mm, ~6.3 deep (uncertain), Ø0.8 round pins, 2.54 pitch, row centred.
+Nose fills the pocket with two 1.6 mm side cheeks and a 0.8 mm front plate with pin holes (stops
+the sleeves sliding forward on pull-off); the body holds the sleeves in a channel
+and ends in a chamber open at the back and bottom — bend the wires down along the camera,
+fill with hot glue. Debossed triangle on top = 6 V pin (leave unconnected), like the camera's
+own mark. `uv run camera_plug.py` → `stl/openrz67-camera-plug.stl`. Print standing on the
+rear face, nose up, PETG. Tune `nose_fit` (per-side clearance, go negative for press) and
+`cover_setback` (clearance to the sliding dust-cover housing, unmeasured) after the first print.
+Not print-tested.
