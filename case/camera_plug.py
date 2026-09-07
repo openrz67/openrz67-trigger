@@ -4,22 +4,25 @@
 # ///
 """Camera-end plug for the Mamiya RZ67 RC-outlet (build123d).
 
-A printed shell around four ordinary female jumper-wire ends (2.54 mm Dupont
+A printed clamshell around four ordinary female jumper-wire ends (2.54 mm Dupont
 sleeves) so they go onto the camera's 4-pin remote port as one plug. The nose
 fills the port's rectangular pocket (measured 13.91 x 3.57 mm, ~6.3 deep,
-Ø0.8 round pins, pins centred in the pocket); two side cheeks give the lateral
-location the loose/taped sleeves lack. A front plate with four pin holes stops
-the sleeves sliding forward when the plug is pulled off the camera; the body
-behind holds them in a channel and ends in an open chamber: wires bend 90 deg and exit downwards
-(along the camera body), then the chamber is filled with hot glue as strain
-relief. Pin order facing the port, left to right: 6 V (do NOT connect), GND,
-S1, S2 — a triangle on top marks the 6 V side, like the camera's own mark.
+Ø0.8 round pins, 2.54 pitch, row centred); two side cheeks give the lateral
+location the loose/taped sleeves lack. A front plate with pin holes stops the
+sleeves sliding forward on pull-off, a rear wall with wire notches stops them
+sliding back on push-on — no glue on the sleeves. The body is as tall as the
+nose (only ~0.4 mm skins over and under the sleeves), so each half prints flat
+on its outer face with every cavity opening upward: no bridges, no supports.
+Assemble: lay the sleeves in the bottom half, wires out the back, glue the top
+half on (CA along the walls). Pin order facing the port, left to right: 6 V
+(do NOT connect), GND, S1, S2 — a triangle on top marks the 6 V side, like the
+camera's own mark.
 
 Coordinates: x along the pin row (+x = right when facing the port), z up
 (toward the sliding dust cover), -y = into the camera. z = 0 is the pocket
-floor wall. Print standing on the rear face (nose up), no supports.
+floor wall. Exports both halves already lying print-side down.
 
-Run (exports stl/openrz67-camera-plug.stl):
+Run (exports stl/openrz67-camera-plug-{bottom,top}.stl):
     uv run camera_plug.py
 """
 
@@ -31,51 +34,62 @@ from build123d import *
 pocket_w, pocket_h, pocket_d = 13.91, 3.57, 6.3   # depth is uncertain
 pin_pitch, pin_d = 2.54, 0.8
 pin_z = pocket_h / 2            # row centred: ~3.0 from the left wall, ~1.8 above the floor
-# --- Dupont sleeve ----------------------------------------------------------------
-sleeve, sleeve_len, sleeve_clr = 2.54, 14.0, 0.15
+# --- Dupont sleeve + wire (measure yours: sleeves are often 2.50, not 2.54) ---------
+sleeve, sleeve_len, sleeve_clr = 2.54, 14.0, 0.05
+wire_d = 1.5                    # notch for the jumper wire (~1.3 OD)
 # --- Fit / walls (tune after the first print) --------------------------------------
-nose_fit = 0.10        # per-side clearance of the nose in the pocket; go negative for press
+nose_fit = 0.05        # per-side clearance of the nose in the pocket; go negative for press
 cheek_len = pocket_d - 0.3
-wall = 1.5
-cover_setback = 1.5    # body above the pocket starts this far back, clearing the cover housing
-chamber = 5.0          # glue / wire-bend chamber at the rear
+wall, plate_t, rear_t = 1.5, 0.8, 1.5
+pin_hole = 1.4
 mark = 2.0             # triangle side
-plate_t, pin_hole = 0.8, 1.4   # front plate the sleeves butt against; pins pass through
 
-nose_w, nose_h = pocket_w - 2 * nose_fit, pocket_h - 2 * nose_fit
+z0, z1 = nose_fit, pocket_h - nose_fit               # whole plug lives inside the pocket height
+nose_w, body_w = pocket_w - 2 * nose_fit, pocket_w - 2 * nose_fit + 2 * wall
 ch_w, ch_h = 4 * sleeve + 2 * sleeve_clr, sleeve + 2 * sleeve_clr
-body_w = nose_w + 2 * wall
-body_len = sleeve_len - cheek_len + chamber
-z_lo, z_hi = -1.0, pin_z + ch_h / 2 + wall
+y_plate = -cheek_len + plate_t                       # sleeve fronts
+y_rear = y_plate + sleeve_len + 0.2                  # rear wall starts here
+body_len = y_rear + rear_t
+skin = pin_z - ch_h / 2 - z0
 cheek = (nose_w - ch_w) / 2
+assert skin >= 0.4, f"skin {skin:.2f} < 0.4: measure the sleeve height, or lower sleeve_clr/nose_fit"
 assert cheek >= 1.2, f"cheek {cheek:.2f} too thin to print"
-assert pin_z - ch_h / 2 > nose_fit and pin_z + ch_h / 2 < pocket_h - nose_fit, "sleeves hit the pocket walls"
+assert pocket_d - 0.3 - plate_t >= 4.0, "too little pin engagement in the sleeves"
 
 
 def box(x0, y0, z0, dx, dy, dz):
     return Pos(x0 + dx / 2, y0 + dy / 2, z0 + dz / 2) * Box(dx, dy, dz)
 
 
-nose = box(-nose_w / 2, -cheek_len, nose_fit, nose_w, cheek_len, nose_h)
-body = box(-body_w / 2, 0, z_lo, body_w, body_len, pocket_h - z_lo)
-body += box(-body_w / 2, cover_setback, pocket_h, body_w, body_len - cover_setback, z_hi - pocket_h)
-plug = nose + body
-plug -= box(-ch_w / 2, -cheek_len + plate_t, pin_z - ch_h / 2, ch_w, body_len + cheek_len + 1, ch_h)  # sleeve channel
-for i in range(4):  # pin holes through the front plate
-    plug -= Pos((i - 1.5) * pin_pitch, -cheek_len + plate_t / 2, pin_z) * Rot(90, 0, 0) * Cylinder(pin_hole / 2, plate_t + 1)
-assert pocket_d - 0.3 - plate_t >= 4.0, "too little pin engagement in the sleeves"
-plug -= box(-ch_w / 2, body_len - chamber, z_lo - 1, ch_w, chamber + 1, pin_z + ch_h / 2 - z_lo + 1)  # chamber, open back+bottom
-tri = Pos(-1.5 * pin_pitch, body_len / 2 + cover_setback / 2, z_hi) * Rot(0, 0, 180) * Triangle(a=mark, b=mark, c=mark)
-plug -= extrude(tri, -0.4)  # debossed 6 V mark, apex toward the camera
+def yholes(d, y, length):
+    return [Pos((i - 1.5) * pin_pitch, y, pin_z) * Rot(90, 0, 0) * Cylinder(d / 2, length) for i in range(4)]
+
+
+plug = box(-nose_w / 2, -cheek_len, z0, nose_w, cheek_len, z1 - z0) + box(-body_w / 2, 0, z0, body_w, body_len, z1 - z0)
+plug -= box(-ch_w / 2, y_plate, pin_z - ch_h / 2, ch_w, y_rear - y_plate, ch_h)      # sleeve channel
+for h in yholes(pin_hole, y_plate - plate_t / 2, plate_t + 1):                        # pins through the front plate
+    plug -= h
+for h in yholes(wire_d, y_rear + rear_t / 2, rear_t + 1):                             # wires through the rear wall
+    plug -= h
+tri = Pos(-1.5 * pin_pitch, body_len / 2, z1) * Rot(0, 0, 180) * Triangle(a=mark, b=mark, c=mark)
+plug -= extrude(tri, -0.2)                                                            # 6 V mark, apex toward the camera
+
+cut = Plane.XY.offset(pin_z)
+bottom = split(plug, bisect_by=cut, keep=Keep.BOTTOM)
+top = split(plug, bisect_by=cut, keep=Keep.TOP)
+bottom_print = Pos(0, 0, -z0) * bottom                       # outer face on z = 0
+top_print = Pos(0, 0, z1) * Rot(180, 0, 0) * top             # flipped, outer face on z = 0
 
 if __name__ == "__main__":
     try:  # preview in VS Code's OCP CAD Viewer when it is open (port 3939)
         from ocp_vscode import show
-        show(plug, names=["camera-plug"])
+        show(bottom, top, names=["bottom", "top"])
     except Exception as exc:
         print(f"OCP-viewer utilgjengelig ({type(exc).__name__})")
     out = Path(__file__).parent / "stl"
     out.mkdir(exist_ok=True)
-    export_stl(plug, str(out / "openrz67-camera-plug.stl"))
+    export_stl(bottom_print, str(out / "openrz67-camera-plug-bottom.stl"))
+    export_stl(top_print, str(out / "openrz67-camera-plug-top.stl"))
     bb = plug.bounding_box()
-    print(f"plug {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm, cheeks {cheek:.2f}, volume {plug.volume:.0f} mm3")
+    print(f"plug {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm, skin {skin:.2f}, cheeks {cheek:.2f}, "
+          f"halves z-min {bottom_print.bounding_box().min.Z:.2f}/{top_print.bounding_box().min.Z:.2f}")
