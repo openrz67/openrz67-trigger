@@ -876,13 +876,13 @@
 	(embedded_fonts no)
 	(model "${KIPRJMOD}/openrz67.3dshapes/USB-C-SMD_TYPE-C-6PIN-2MD-073.wrl"
 		(offset
-			(xyz 0 -1.2 -0.9)
+			(xyz 0 0 0)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz -0 -0 -0)
+			(xyz 0 0 0)
 		)
 	)
 )

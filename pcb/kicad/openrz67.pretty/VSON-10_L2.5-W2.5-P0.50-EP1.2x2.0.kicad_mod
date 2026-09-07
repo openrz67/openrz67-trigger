@@ -295,3 +295,15 @@
 	)
 	(embedded_fonts no)
 )
+	(model "${KIPRJMOD}/openrz67.3dshapes/SON-10_L2.5-W2.5-H0.8-P0.50.wrl"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

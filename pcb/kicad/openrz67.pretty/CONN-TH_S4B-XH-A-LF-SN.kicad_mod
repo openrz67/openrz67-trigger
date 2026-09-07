@@ -401,13 +401,13 @@
 	(embedded_fonts no)
 	(model "${KIPRJMOD}/openrz67.3dshapes/CONN-TH_S4B-XH-A-LF-SN.wrl"
 		(offset
-			(xyz 0.015 3.464 -3.4)
+			(xyz 0 6.91 0)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz -0 -0 -180)
+			(xyz 0 0 180)
 		)
 	)
 )

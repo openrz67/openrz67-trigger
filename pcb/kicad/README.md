@@ -131,6 +131,9 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
   TI's land pattern (0.8 vs 0.55–1.05 mm), the usual LCSC/JLCPCB style. Check pin 1 of U2 and
   U3 in the assembly preview. Electrical cross-check against the TI datasheets (SLUSF65B,
   SLVS696D) 2026-09-07; not yet built.
+- **R20 10 kΩ → 1 kΩ (2026-09-07, UNI-ROYAL 0402WGF1001TCE C11702, Basic).** The blue status LED
+  D4 (Vf ≈ 2.7 V) got 30–100 µA through 10 kΩ and was practically invisible; 1 kΩ gives ≈ 0.5 mA.
+  Unchanged from rev 1 until now, where the inverted firmware polarity kept it lit most of the time.
 - **Resistor sourcing (2026-09-07).** Three lines had 19–40 pieces in JLCPCB stock: the 10 kΩ
   group R6/R7/R8/R20 → UNI-ROYAL 0402WGF1002TCE C25744 (Basic), R12 1 kΩ →
   0603WAF1001T5E C21190 (Basic, ±1 % instead of ±5 %), R18 3 kΩ → FOJAN FRC0402F3001TS
@@ -146,8 +149,9 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
   **3V3**, 2 = **GND**, 3 = **GPIO21** (U0TXD, so it doubles as a UART TX for logging with a
   USB-UART dongle), 4 = **GPIO6**. Silkscreen labels `3V3 GND TX IO6` sit above the pads in
   two staggered rows (1.0 mm text), below the U4 housing so they stay readable with the
-  connector fitted; the footprint's own silk outline was removed to make room. The symbol is marked DNP, so `--exclude-dnp` keeps it out of the BOM and
-  the position file and JLCPCB never sees it; the pads are just copper and holes on the
+  connector fitted; the footprint's own silk outline was removed to make room. The symbol is marked DNP and excluded from the BOM, and the footprint carries
+  `exclude_from_bom` / `exclude_from_pos_files`, so J1 stays out of the BOM and the position file
+  whichever way they are exported and JLCPCB never sees it; the pads are just copper and holes on the
   bare board. Why only two GPIOs: GPIO21 sits on the QFN's left column and escapes freely,
   but every other free pin (GPIO5/6/7/8/10) is on the right column, where the single gap
   between the VCC, CHIP_EN and S2_DRV tracks fits exactly one more escape — the same limit
@@ -253,8 +257,13 @@ confirm the assembler's through-hole service or hand-solder them after SMD assem
   compare `out/gerber/*.drl` against the archive whenever a footprint changes.
 - 3D models: the importer left dangling `EASYEDA_MODELS/…` references. Models were fetched
   per LCSC number with `easyeda2kicad` (`tools/fetch_3d.sh`) and both the board footprints and
-  the library `.kicad_mod` files repointed to `openrz67.3dshapes/<name>.wrl`, keeping the
-  importer's offsets/rotations, so "Update Footprints from Library" does not undo it. Board STEP:
+  the library `.kicad_mod` files repointed to `openrz67.3dshapes/<name>.wrl`, so "Update
+  Footprints from Library" does not undo it. The importer's model offsets were wrong for the
+  three connectors (checked 2026-09-07 against the pin geometry inside the `.wrl` files): U4 sat
+  3.45 mm off along its axis and 3.4 mm low, BAT1/S3 0.6 mm off and 3.5 mm low, USB1 1.2 mm off
+  and 0.9 mm low. They now read U4 `offset 0 6.91 0, rotate 180`, PH `0 1.2 0, 180`, USB1
+  `0 0 0, 0`; the pin tails land in their holes in the side renders. U2/U3 got the LCSC models
+  (`WSON-10…DLH0010A.wrl` rotate 270, `SON-10…P0.50.wrl` rotate 0, as easyeda2kicad emits them). Board STEP:
   `kicad-cli pcb export step --subst-models -o out/openrz67.step openrz67.kicad_pcb`
   (needs the `.step` files, run `tools/fetch_3d.sh` first).
 - Bottom silkscreen label changed from "EPS32-C3 Camera Trigger V1.0 / 2025-08-23" to
