@@ -29,7 +29,7 @@ negative numbers — drop the sign).
 | USB-C connector | body 8.95 × 3.2 mm on the PCB, left edge 4.8 mm in from the PCB's left edge; the shell protrudes ~2 mm past the board edge | measured physically |
 | Total HW length | ~50 mm (PCB 48 + USB-C shell 2) | `pcb_overhang_left` |
 | Slide switch (SS12F15) | actuator opening 10.65×6.3; flat bracket 19.45×5.75×0.4; screw holes Ø2.2 at 15.0 mm spacing; body ~19.5×20×12.9 | `SS12F15.stp` + measured |
-| LEDs | D3 red (22.5, 20.2), D4 blue (24.2, 20.2) – 0603 SMD, top-emitting, 1.7 mm apart | `out/openrz67-pos.csv` |
+| LEDs | D3 red (20.5, 18.0), D4 blue (24.2, 20.2) – 0603 SMD, top-emitting; D3 moved next to the BQ25185 charger 2026-09-07, so the 6 × 4.4 light-pipe window is centred between them | `out/openrz67-pos.csv` |
 
 Component **heights** are editable constants (`h_usbc`, `h_ph_plug`, `xh_h`) from the
 datasheets / 3D models. `h_ph_plug` (8 mm: a PHR-2 plug in the 6 mm PH header plus the
@@ -65,8 +65,10 @@ a known collision fails loudly instead of surfacing in the print.
   camera connector (right), the LED light-pipe window (top), and the slot + screw
   pillars for the SS12F15 slide switch.
   - **U4 opening** (`cut_xh`): the side-entry S4B-XH-A body sits in a rectangular
-    through-cut in the lid's right wall (body + `xh_clr` all round), open at the bottom
-    so the lid simply drops over the connector; the XHP plug goes in from **outside**,
+    through-cut in the lid's right wall (body + `xh_clr` all round). The cut runs the full
+    `lap` below the split too, so there is no tongue or snap bead in the U4 band: the tongue
+    would otherwise have to pass through the connector body while the lid is lowered (a
+    closed-state probe cannot see that; a lift sweep does). The XHP plug goes in from **outside**,
     like the USB-C. The mouth face ends `xh_recess` (0.3 mm) inside the outer wall face —
     `pcb_overhang_right` is derived from that, so a different connector reach
     (`xh_mouth`) moves the wall, not the connector. The old drop-in cable slit is gone:

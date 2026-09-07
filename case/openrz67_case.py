@@ -79,8 +79,8 @@ batt_clr, batt_dx, divider_t, rib_h = 0.5, 0, 1.6, 2.5
 usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # outer lip (stops the cable body)
 usb_recess_w, usb_recess_h, usb_recess_r = 13.0, 9.0, 3.0
 usb_recess_d = wall - 0.5            # keep a 0.5 lip so the plug still seats fully
-led_pos = [(22.514, 20.186), (24.224, 20.186)]           # D3, D4
-led_win_l, led_win_w, led_win_r = 6.0, 3.0, 1.2
+led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
+led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 1.0, 1.0, 0.2, 1.5
 
 # --- Slide switch SS12F15 (front wall, wired to S3) --------------------------
@@ -193,10 +193,12 @@ cut_usb += xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_recess_w, usb_reces
 
 # U4 opening (right wall): the side-entry XH body sits in a rectangular through-cut
 # in the lid wall, mouth xh_recess inside the outer face; the XHP plug goes in from
-# outside. Everything is above the split, so the lid just drops over the connector.
+# outside. The body is above the split, but the lid's tongue (and its snap bead)
+# hang `lap` below the split and would have to pass through the body while the lid
+# is lowered, so the cut runs the full lap depth too: no tongue in the U4 band.
 xh_cy = by(xh_y)
-cut_xh = box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - eps,
-             wall + 2, xh_w + 2 * xh_clr, xh_h + xh_clr + eps)
+cut_xh = box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - lap - eps,
+             wall + 2, xh_w + 2 * xh_clr, xh_h + xh_clr + lap + eps)
 
 # Frame-fin tongue notches (cut from the lid tongue where the base fins stand)
 fin_ycap = off - frame_clr
