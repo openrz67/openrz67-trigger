@@ -131,9 +131,14 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
   TI's land pattern (0.8 vs 0.55–1.05 mm), the usual LCSC/JLCPCB style. Check pin 1 of U2 and
   U3 in the assembly preview. Electrical cross-check against the TI datasheets (SLUSF65B,
   SLVS696D) 2026-09-07; not yet built.
-- **R20 10 kΩ → 1 kΩ (2026-09-07, UNI-ROYAL 0402WGF1001TCE C11702, Basic).** The blue status LED
-  D4 (Vf ≈ 2.7 V) got 30–100 µA through 10 kΩ and was practically invisible; 1 kΩ gives ≈ 0.5 mA.
-  Unchanged from rev 1 until now, where the inverted firmware polarity kept it lit most of the time.
+- **R20 10 kΩ → 1 kΩ (2026-09-07, UNI-ROYAL 0402WGF1001TCE C11702, Basic).** D4 is an
+  XL-1608UBC-04 (blue, 300 mcd at 20 mA, Vf 3.3 V typical at that current). On a 3.3 V rail
+  the LED can never get near its rated current, so it runs current-starved: 10 kΩ gave ≈ 80 µA,
+  about 1 mcd, which the fabricated rev 1 shows is visible indoors (the inverted firmware kept
+  it lit at idle); 1 kΩ gives ≈ 0.3–0.8 mA depending on the part's Vf, 5–10× brighter, a normal
+  indicator level, and well inside the GPIO's sink rating. The LED is now only on during
+  trigger/bulb/countdown, so the extra current costs nothing at idle. Wiring is unchanged since
+  rev 1: VCC → D4 anode, cathode → R20 → GPIO20 (active-low).
 - **Resistor sourcing (2026-09-07).** Three lines had 19–40 pieces in JLCPCB stock: the 10 kΩ
   group R6/R7/R8/R20 → UNI-ROYAL 0402WGF1002TCE C25744 (Basic), R12 1 kΩ →
   0603WAF1001T5E C21190 (Basic, ±1 % instead of ±5 %), R18 3 kΩ → FOJAN FRC0402F3001TS
