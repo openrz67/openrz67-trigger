@@ -50,8 +50,8 @@ the outline). Silkscreen minimums are JLCPCB's: 1.0 mm text height, 0.15 mm line
 
 ERC is clean: **0 errors, 0 warnings**. DRC has no errors; the warnings below are known,
 understood and left in the reports rather than silenced, so a genuinely new one stands
-out. No DRC or ERC exclusions are configured; the only custom rule is in `openrz67.kicad_dru`
-(hole clearance 0.15 mm for USB1's two locating-peg holes, see the port notes).
+out. No DRC or ERC exclusions are configured; the only custom rules are in `openrz67.kicad_dru`
+(hole clearance around USB1's two locating-peg holes, see the port notes).
 
 | Check | Count | What |
 |---|---|---|
@@ -101,8 +101,24 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
 - **C5** moved to the analog supply: the 100 nF that sat on VCC next to the ferrite bead
   L2 now sits on the far side of it, on the new **VDDA** net feeding U1 pins 31/32 (radio and
   ADC supply). Before, nothing decoupled that net; the bead alone was just series impedance.
-  VCC reaches L2 pin 1 through a new via beside the pad. Same part, same position, no BOM
-  change. B.Cu ground under U1 stays one region (648.7 mm²).
+  VCC reaches L2 pin 1 through a new via 0.55 mm below the pad and a short F.Cu stub. (Until
+  2026-09-07 the via sat on the pad's edge with its hole 0.083 mm inside the pad copper — a
+  paste-wicking risk DRC cannot see because both are VCC; the pre-fab review caught it.)
+  Same part, same position, no BOM change. B.Cu ground under U1 stays connected.
+- **R11 100 kΩ → 10 kΩ (2026-09-07).** R11 sets the LGS5500 charge current (ISET pin). The
+  datasheet table reads ≤14 k → 400 mA, 20 k → 600, 27 k → 800, ≥36 k or open → 1000 mA, and
+  the value is latched at power-up, so rev 1 charged the 250 mAh cell at 1 A (4C). 10 kΩ is the
+  datasheet's reference value: 400 mA. Note the JEITA thermistor R16 sits on the PCB, not in
+  the pack, so it reads board temperature.
+- **Resistor sourcing (2026-09-07).** Three lines had 19–40 pieces in JLCPCB stock: the 10 kΩ
+  group R6/R7/R8/R13/R14/R17/R20 (+R11) → UNI-ROYAL 0402WGF1002TCE C25744 (Basic), R12 1 kΩ →
+  0603WAF1001T5E C21190 (Basic, ±1 % instead of ±5 %), R18 3 kΩ → FOJAN FRC0402F3001TS
+  C2909355. Library symbols are named after the MPN, so the three symbols were renamed and the
+  100 kΩ one removed. Re-check stock at JLCPCB right before ordering.
+- **U4 pads** are 1.6 mm on the unchanged 1.0 mm drill (rev 1: 1.7 mm) because the S4B-XH-A
+  footprint from LCSC draws them so — annular ring 0.30 mm, above JLCPCB's 0.20 mm minimum.
+- The S1_DRV via next to U1 pin 9 moved 0.15 mm east (mask dam to the pad was 0.067 mm), and
+  `VDDA` joined the `3v` net class so its stub is 0.20 mm like the VCC copper it replaced.
 - **Under-board clearance** the enclosure has to provide, from the datasheets:
 
   | What | Height below the board |
@@ -134,20 +150,16 @@ history as a binary blob on every regen. When a revision is actually ordered, co
 the zip, BOM and position file into `../archive/<date>-rev<n>/` as the record of
 what was fabricated.
 
-JLCPCB's uploader asks you to map columns; the exports do not use its header names:
-
-| JLCPCB field | Column in `out/openrz67-bom.csv` |
-|---|---|
-| Comment | `Value` |
-| Designator | `Designator` |
-| Footprint | `Footprint` |
-| LCSC Part # | `LCSC` |
-
-The position file is rewritten by `regen.sh` into JLCPCB's CPL layout (`Designator, Mid X,
-Mid Y, Layer, Rotation`, mm suffix); their parser rejects KiCad's native header with
-"Failed processing the CPL file". Origin is the drill-file origin at the board's top-left
-corner, the same convention JLCPCB accepted for rev 1, and rotations for the top-side
-parts are unchanged since that order. BAT1 is back on top with its original through-hole
+The BOM is written with JLCPCB's column names (`Comment, Designator, Footprint, LCSC Part #`,
+then Manufacturer, MPN, Qty) and the footprint column without KiCad's library prefix, so it
+uploads without column mapping. The position file is rewritten by `regen.sh` into JLCPCB's
+CPL layout (`Designator, Mid X, Mid Y, Layer, Rotation`, mm suffix, rotations 0–359 as in the
+rev-1 file); their parser rejects KiCad's native header with "Failed processing the CPL
+file". Gerbers, drill files and the position file all use the drill/aux origin at the
+board's top-left corner (since 2026-09-07 — before that the gerbers were in KiCad's absolute
+sheet frame while the CPL was origin-relative, which JLCPCB aligned silently). That is the
+rev-1 frame, so `out/gerber/*.drl` diff directly against `../archive/2025-09-23-rev1/`.
+Rotations for the top-side parts are unchanged since that order. BAT1 is back on top with its original through-hole
 footprint and rotation. Check BAT1 pin 1 in the fab's assembly preview before confirming.
 No bottom-side component assembly is needed. BAT1, S3 and U4 are through-hole parts;
 confirm the assembler's through-hole service or hand-solder them after SMD assembly.
@@ -177,7 +189,9 @@ confirm the assembler's through-hole service or hand-solder them after SMD assem
   cancelled. The pegs are `np_thru_hole` pads again, in the library footprint and on the
   board, at the rev-1 positions (NPTH drill matches `archive/2025-09-23-rev1` exactly).
   They sit 0.171 mm from pads 1/12, as in the LCSC footprint and the fabricated rev 1;
-  `openrz67.kicad_dru` relaxes hole clearance to 0.15 mm for those two pads only.
+  `openrz67.kicad_dru` accepts 0.17 mm between the pegs and USB1's own pads, and holds the
+  pours 0.25 mm off the peg holes like rev 1 (JLCPCB's NPTH-to-copper minimum is 0.2 mm). A
+  first version of the rule was unscoped, so the zone filler took 0.15 mm as its target too.
   Side effect: pads 1/12 now get one thermal spoke instead of two (2 DRC warnings).
 - Gerber check against the fabricated 2025-09-23 set: copper and mask match apart from
   U4 (now S4B-XH-A side-entry instead of B4B-XH-A) and pour-fill details after KiCad's

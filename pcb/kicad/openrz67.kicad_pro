@@ -587,6 +587,10 @@
       {
         "netclass": "5v",
         "pattern": "+5V"
+      },
+      {
+        "netclass": "3v",
+        "pattern": "VDDA"
       }
     ]
   },

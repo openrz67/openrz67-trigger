@@ -26,7 +26,7 @@ ids=$(python3 - "$BOM" <<'PY'
 import csv, sys
 with open(sys.argv[1], newline="", encoding="utf-8") as fh:
     rows = list(csv.DictReader(fh))
-col = next((c for c in (rows[0].keys() if rows else []) if c.strip().upper() == "LCSC"), None)
+col = next((c for c in (rows[0].keys() if rows else []) if c.strip().upper().startswith("LCSC")), None)
 if not col:
     sys.exit("no LCSC column in BOM")
 seen = []

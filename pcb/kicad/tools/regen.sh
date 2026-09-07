@@ -28,10 +28,13 @@ echo "==> gerbers + drill"
 rm -f out/gerber/*.gbr out/gerber/*.gbl out/gerber/*.gtl out/gerber/*.gbs out/gerber/*.gts \
       out/gerber/*.gbp out/gerber/*.gtp out/gerber/*.gbo out/gerber/*.gto out/gerber/*.gm1 \
       out/gerber/*.drl out/gerber/*.gbrjob
+# Gerbers and drill share the position file's origin (the aux/drill origin at the
+# board's top-left corner), so all three fab files are in one frame and the drill
+# files diff directly against the rev-1 archive.
 "$KICAD_CLI" pcb export gerbers \
   --layers F.Cu,B.Cu,F.Mask,B.Mask,F.Paste,B.Paste,F.SilkS,B.SilkS,Edge.Cuts \
-  --subtract-soldermask -o out/gerber/ "$PCB" >/dev/null
-"$KICAD_CLI" pcb export drill --format excellon --excellon-units mm \
+  --subtract-soldermask --use-drill-file-origin -o out/gerber/ "$PCB" >/dev/null
+"$KICAD_CLI" pcb export drill --format excellon --excellon-units mm --drill-origin plot \
   --excellon-separate-th --generate-map --map-format gerberx2 -o out/gerber/ "$PCB" >/dev/null
 
 echo "==> gerber zip"
@@ -52,7 +55,7 @@ with open(p, "w", newline="") as f:
     w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
     for r in rows:
         w.writerow([r["Ref"], f'{float(r["PosX"]):.3f}mm', f'{float(r["PosY"]):.3f}mm',
-                    r["Side"].capitalize(), f'{float(r["Rot"]):g}'])
+                    r["Side"].capitalize(), f'{float(r["Rot"]) % 360:g}'])
 PY
 
 echo "==> bill of materials"
@@ -60,10 +63,23 @@ echo "==> bill of materials"
 # JLCPCB accepted for the rev-1 order; ranges like "C3-C7" are not documented as
 # supported by their BOM parser.
 "$KICAD_CLI" sch export bom \
-  --fields 'Reference,${QUANTITY},Value,Footprint,Manufacturer,Manufacturer Part,Supplier Part' \
-  --labels 'Designator,Qty,Value,Footprint,Manufacturer,MPN,LCSC' \
+  --fields 'Value,Reference,Footprint,Supplier Part,Manufacturer,Manufacturer Part,${QUANTITY}' \
+  --labels 'Comment,Designator,Footprint,LCSC Part #,Manufacturer,MPN,Qty' \
   --group-by 'Value,Footprint,Supplier Part' --ref-range-delimiter '' --exclude-dnp \
   -o out/openrz67-bom.csv "$SCH" >/dev/null
+# JLCPCB's BOM parser looks for these four leading column names; the footprint column
+# is display-only, so drop KiCad's library prefix to match the rev-1 file it accepted.
+"$KICAD_PY" - out/openrz67-bom.csv <<'PY'
+import csv, sys
+p = sys.argv[1]
+rows = list(csv.reader(open(p, newline="", encoding="utf-8")))
+with open(p, "w", newline="", encoding="utf-8") as f:
+    w = csv.writer(f)
+    for i, r in enumerate(rows):
+        if i and ":" in r[2]:
+            r[2] = r[2].split(":", 1)[1]
+        w.writerow(r)
+PY
 
 echo "==> schematic pdf"
 "$KICAD_CLI" sch export pdf -o out/openrz67-schematic.pdf "$SCH" >/dev/null

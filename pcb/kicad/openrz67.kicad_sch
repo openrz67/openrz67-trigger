@@ -109,172 +109,6 @@
 		      )
 		    )
 		  )
-	(symbol "openrz67:0402WGF1003TCE"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "R"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "100kΩ"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" "openrz67:R0402"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" "https://item.szlcsc.com/datasheet/0402WGF1003TCE/26484.html"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Manufacturer Part" "0402WGF1003TCE"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Manufacturer" "UNI-ROYAL(厚声)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Supplier Part" "C25741"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Supplier" "LCSC"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "LCSC Part Name" "100kΩ ±1% 62.5mW 厚膜电阻"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "0402WGF1003TCE_1_0"
-				(rectangle
-					(start -2.54 1.016)
-					(end 2.54 -1.016)
-					(stroke
-						(width 0.254)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 0.0254 0.0254)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0.0254 0.0254)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 0 180)
-					(length 2.54)
-					(name "2"
-						(effects
-							(font
-								(size 0.0254 0.0254)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 0.0254 0.0254)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 	(symbol "openrz67:0402WGF5101TCE"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -441,7 +275,7 @@
 			)
 			(embedded_fonts no)
 		)
-	(symbol "openrz67:0603WAF3001T5E"
+	(symbol "openrz67:FRC0402F3001TS"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -479,7 +313,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "https://item.szlcsc.com/datasheet/0603WAF3001T5E/4618.html"
+			(property "Datasheet" "https://www.lcsc.com/product-detail/C2909355.html"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -501,7 +335,7 @@
 					)
 				)
 			)
-			(property "Manufacturer Part" "0603WAF3001T5E"
+			(property "Manufacturer Part" "FRC0402F3001TS"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -512,7 +346,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "UNI-ROYAL(厚声)"
+			(property "Manufacturer" "FOJAN"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -523,7 +357,7 @@
 					)
 				)
 			)
-			(property "Supplier Part" "C4211"
+			(property "Supplier Part" "C2909355"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -545,7 +379,7 @@
 					)
 				)
 			)
-			(property "LCSC Part Name" "3kΩ ±1% 100mW 厚膜电阻"
+			(property "LCSC Part Name" "3kΩ ±1% 62.5mW 厚膜电阻"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -556,7 +390,7 @@
 					)
 				)
 			)
-			(symbol "0603WAF3001T5E_1_0"
+			(symbol "FRC0402F3001TS_1_0"
 				(rectangle
 					(start -2.54 1.016)
 					(end 2.54 -1.016)
@@ -607,7 +441,7 @@
 			)
 			(embedded_fonts no)
 		)
-	(symbol "openrz67:0603WAJ0102T5E"
+	(symbol "openrz67:0603WAF1001T5E"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -645,7 +479,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "https://item.szlcsc.com/datasheet/0603WAJ0102T5E/26328.html"
+			(property "Datasheet" "https://www.lcsc.com/product-detail/C21190.html"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -667,7 +501,7 @@
 					)
 				)
 			)
-			(property "Manufacturer Part" "0603WAJ0102T5E"
+			(property "Manufacturer Part" "0603WAF1001T5E"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -689,7 +523,7 @@
 					)
 				)
 			)
-			(property "Supplier Part" "C25585"
+			(property "Supplier Part" "C21190"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -711,7 +545,7 @@
 					)
 				)
 			)
-			(property "LCSC Part Name" "1kΩ ±5% 100mW 厚膜电阻"
+			(property "LCSC Part Name" "1kΩ ±1% 100mW 厚膜电阻"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -722,7 +556,7 @@
 					)
 				)
 			)
-			(symbol "0603WAJ0102T5E_1_0"
+			(symbol "0603WAF1001T5E_1_0"
 				(rectangle
 					(start -2.54 1.016)
 					(end 2.54 -1.016)
@@ -5243,7 +5077,7 @@
 			)
 			(embedded_fonts no)
 		)
-	(symbol "openrz67:RC0402FR-0710KL"
+	(symbol "openrz67:0402WGF1002TCE"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -5281,7 +5115,7 @@
 					)
 				)
 			)
-			(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+			(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -5303,7 +5137,7 @@
 					)
 				)
 			)
-			(property "Manufacturer Part" "RC0402FR-0710KL"
+			(property "Manufacturer Part" "0402WGF1002TCE"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -5314,7 +5148,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "YAGEO(国巨)"
+			(property "Manufacturer" "UNI-ROYAL(厚声)"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -5325,7 +5159,7 @@
 					)
 				)
 			)
-			(property "Supplier Part" "C60490"
+			(property "Supplier Part" "C25744"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -5347,7 +5181,7 @@
 					)
 				)
 			)
-			(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+			(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -5358,7 +5192,7 @@
 					)
 				)
 			)
-			(symbol "RC0402FR-0710KL_1_0"
+			(symbol "0402WGF1002TCE_1_0"
 				(rectangle
 					(start -2.54 1.016)
 					(end 2.54 -1.016)
@@ -11700,7 +11534,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:0603WAJ0102T5E")
+		(lib_id "openrz67:0603WAF1001T5E")
 		(at 106.68 45.72 90)
 		(unit 1)
 		(body_style 0)
@@ -11743,7 +11577,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://item.szlcsc.com/datasheet/0603WAJ0102T5E/26328.html"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C21190.html"
 			(at 106.68 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -11765,7 +11599,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "0603WAJ0102T5E"
+		(property "Manufacturer Part" "0603WAF1001T5E"
 			(at 106.68 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -11787,7 +11621,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C25585"
+		(property "Supplier Part" "C21190"
 			(at 106.68 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -11809,7 +11643,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "1kΩ ±5% 100mW 厚膜电阻"
+		(property "LCSC Part Name" "1kΩ ±1% 100mW 厚膜电阻"
 			(at 106.68 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -15263,7 +15097,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 208.28 132.08 90)
 		(unit 1)
 		(body_style 0)
@@ -15306,7 +15140,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 208.28 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -15328,7 +15162,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 208.28 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -15339,7 +15173,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 208.28 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -15350,7 +15184,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 208.28 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -15372,7 +15206,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 208.28 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -15556,7 +15390,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 204.47 20.32 0)
 		(unit 1)
 		(body_style 0)
@@ -15599,7 +15433,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 204.47 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -15621,7 +15455,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 204.47 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -15632,7 +15466,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 204.47 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -15643,7 +15477,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 204.47 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -15665,7 +15499,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 204.47 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -17163,7 +16997,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:0603WAF3001T5E")
+		(lib_id "openrz67:FRC0402F3001TS")
 		(at 189.23 38.1 0)
 		(unit 1)
 		(body_style 0)
@@ -17206,7 +17040,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20200306/C422600_1E6D84923E4A46A82E41ADD87F860B5C.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C2909355.html"
 			(at 189.23 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -17217,7 +17051,7 @@
 				)
 			)
 		)
-		(property "Description" "Type:Thick Film Resistors Resistance:3kΩ Tolerance:±1% Tolerance:±1% Power(Watts): Overload Voltage (Max): Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature Range:-55℃~+155℃ Operating Temperature Range:-55℃~+155℃"
+		(property "Description" ""
 			(at 189.23 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -17229,7 +17063,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Manufacturer Part" "0402WGF3001TCE"
+		(property "Manufacturer Part" "FRC0402F3001TS"
 			(at 189.23 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -17240,7 +17074,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "FOJAN"
 			(at 189.23 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -17251,7 +17085,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C25784"
+		(property "Supplier Part" "C2909355"
 			(at 189.23 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -17377,7 +17211,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 109.22 184.15 0)
 		(unit 1)
 		(body_style 0)
@@ -17420,7 +17254,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 109.22 184.15 0)
 			(hide yes)
 			(show_name no)
@@ -17442,7 +17276,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 109.22 184.15 0)
 			(hide yes)
 			(show_name no)
@@ -17453,7 +17287,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 109.22 184.15 0)
 			(hide yes)
 			(show_name no)
@@ -17464,7 +17298,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 109.22 184.15 0)
 			(hide yes)
 			(show_name no)
@@ -17486,7 +17320,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 109.22 184.15 0)
 			(hide yes)
 			(show_name no)
@@ -19408,7 +19242,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:0402WGF1003TCE")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 135.89 35.56 0)
 		(unit 1)
 		(body_style 0)
@@ -19429,7 +19263,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Value" "100kΩ"
+		(property "Value" "10kΩ"
 			(at 138.43 35.56 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19451,7 +19285,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://item.szlcsc.com/datasheet/0402WGF1003TCE/26484.html"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 135.89 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -19473,7 +19307,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "0402WGF1003TCE"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 135.89 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -19495,7 +19329,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C25741"
+		(property "Supplier Part" "C25744"
 			(at 135.89 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -19517,7 +19351,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "100kΩ ±1% 62.5mW 厚膜电阻"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 135.89 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -20184,7 +20018,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 166.37 232.41 0)
 		(unit 1)
 		(body_style 0)
@@ -20227,7 +20061,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 166.37 232.41 0)
 			(hide yes)
 			(show_name no)
@@ -20249,7 +20083,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 166.37 232.41 0)
 			(hide yes)
 			(show_name no)
@@ -20260,7 +20094,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 166.37 232.41 0)
 			(hide yes)
 			(show_name no)
@@ -20271,7 +20105,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 166.37 232.41 0)
 			(hide yes)
 			(show_name no)
@@ -20293,7 +20127,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 166.37 232.41 0)
 			(hide yes)
 			(show_name no)
@@ -20533,7 +20367,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 189.23 41.91 0)
 		(unit 1)
 		(body_style 0)
@@ -20576,7 +20410,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 189.23 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -20598,7 +20432,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 189.23 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -20609,7 +20443,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 189.23 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -20620,7 +20454,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 189.23 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -20642,7 +20476,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 189.23 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -21433,7 +21267,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 191.77 20.32 0)
 		(unit 1)
 		(body_style 0)
@@ -21476,7 +21310,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 191.77 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -21498,7 +21332,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 191.77 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -21509,7 +21343,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 191.77 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -21520,7 +21354,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 191.77 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -21542,7 +21376,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 191.77 20.32 0)
 			(hide yes)
 			(show_name no)
@@ -21648,7 +21482,7 @@
 		)
 	)
 	(symbol
-		(lib_id "openrz67:RC0402FR-0710KL")
+		(lib_id "openrz67:0402WGF1002TCE")
 		(at 100.33 191.77 270)
 		(unit 1)
 		(body_style 0)
@@ -21691,7 +21525,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://atta.szlcsc.com/upload/public/pdf/source/20170925/C131467_1506321478108990263.pdf"
+		(property "Datasheet" "https://www.lcsc.com/product-detail/C25744.html"
 			(at 100.33 191.77 0)
 			(hide yes)
 			(show_name no)
@@ -21713,7 +21547,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "RC0402FR-0710KL"
+		(property "Manufacturer Part" "0402WGF1002TCE"
 			(at 100.33 191.77 0)
 			(hide yes)
 			(show_name no)
@@ -21724,7 +21558,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "UNI-ROYAL(厚声)"
 			(at 100.33 191.77 0)
 			(hide yes)
 			(show_name no)
@@ -21735,7 +21569,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C60490"
+		(property "Supplier Part" "C25744"
 			(at 100.33 191.77 0)
 			(hide yes)
 			(show_name no)
@@ -21757,7 +21591,7 @@
 				)
 			)
 		)
-		(property "LCSC Part Name" "厚膜电阻 10kΩ ±1% 62.5mW"
+		(property "LCSC Part Name" "10kΩ ±1% 62.5mW 厚膜电阻"
 			(at 100.33 191.77 0)
 			(hide yes)
 			(show_name no)
