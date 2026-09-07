@@ -7,7 +7,7 @@
 		(at 0 -5.05 0)
 		(layer "F.SilkS")
 		(hide yes)
-		(uuid "bcc0f841-7c39-4441-b866-6e3574fa357c")
+		(uuid "f4a6c34f-11e4-4b01-8bf4-30634071ec4b")
 		(effects
 			(font
 				(size 1 1)
@@ -19,7 +19,7 @@
 		(at 0 5.05 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "aa6539e3-89f9-44de-a59a-0c9592fde501")
+		(uuid "59e4d6b9-9b14-438d-9b6f-4b4248bb81a1")
 		(effects
 			(font
 				(size 1 1)
@@ -31,18 +31,18 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "7fcfc3e2-5df1-43f0-aff7-7004b20695df")
+		(uuid "60ed5edf-5e06-4334-a5a6-81c87befbc12")
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
 	)
-	(property "Description" "1-cell linear charger with power path, set to 90.9 mA"
+	(property "Description" "1-cell linear charger with power path, set to 111 mA"
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "991a5c4e-aacd-40ff-a5b8-b89dc2f587f4")
+		(uuid "7a932140-e8d8-439f-ac7f-fb5c147f5fcc")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -345,7 +345,6 @@
 		(uuid "1a35dd1f-1455-4bc1-b580-9db092ab895a")
 	)
 	(embedded_fonts no)
-)
 	(model "${KIPRJMOD}/openrz67.3dshapes/WSON-10_L2.2-W2.0-P0.40-BL-EP_TI_DLH0010A.wrl"
 		(offset
 			(xyz 0 0 0)

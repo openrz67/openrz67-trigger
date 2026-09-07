@@ -7,7 +7,7 @@
 		(at 0 -5 0)
 		(layer "F.SilkS")
 		(hide yes)
-		(uuid "37241f23-b12e-45d0-a093-0984b981be94")
+		(uuid "004329a6-dd9b-48d4-b704-9a510429ed98")
 		(effects
 			(font
 				(size 1 1)
@@ -19,7 +19,7 @@
 		(at 0 5 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "ba1dcfe4-7089-458d-b9d4-33aa45dd38e6")
+		(uuid "e968aa8b-b4a6-4cf9-8993-030b9d780715")
 		(effects
 			(font
 				(size 1 1)
@@ -31,7 +31,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "98a07961-e357-4c25-8018-caad525d7a9f")
+		(uuid "f3de9a9f-292b-4dda-a91c-4a9f2e4bad2d")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -42,7 +42,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "de81e240-ed27-497c-8708-e23e25d55dab")
+		(uuid "ac11f92d-efb6-41f8-b0a7-fe81a9b843ed")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -294,7 +294,6 @@
 		(uuid "9b1aecd2-8b95-44f5-946c-f2cf17f41fd1")
 	)
 	(embedded_fonts no)
-)
 	(model "${KIPRJMOD}/openrz67.3dshapes/SON-10_L2.5-W2.5-H0.8-P0.50.wrl"
 		(offset
 			(xyz 0 0 0)
