@@ -178,7 +178,7 @@ cd case
 applies when unset); anything else is a one-line edit of the constant:
 
 ```bash
-LID_TEXT_SHOW=true   ./export.sh   # turn the lid text ON (off by default; for the final print)
+LID_TEXT_SHOW=true   ./export.sh   # lid text (on by default); LID_TEXT_SHOW=false hides it
 LID_TEXT="My text"   ./export.sh   # change the lid text string
 LID_TEXT_SIZE=4.0    ./export.sh   # cap height (mm)
 SNAP_TEST=true       ./export.sh   # also export the corner test pair for snap tuning
@@ -289,7 +289,7 @@ short end first.
 
 ## Known / to verify
 - Check that your charging cable reaches the port (see "USB-C opening" above).
-- Check that the wire bundle from the XH cable fits the `cable_port_*` mouth.
+- Check that the XHP plug passes the U4 opening in the lid wall (`xh_clr`).
 - **Light pipe**: verify the rod lands directly over D3/D4 (adjust `led_pos` if needed)
   and that the bottom clears the LEDs (`led_pipe_gap`). Print in clear filament; glue the
   head into the counterbore for a permanent/sealed fit.

@@ -6,8 +6,8 @@ the KiCad project in [`../kicad/`](../kicad/).
 ## `2025-09-23-rev1/`
 
 The fabrication package for **rev 1**, the revision that was actually manufactured
-and assembled, exported from EasyEDA Pro on 2025-09-23. This is what the enclosure
-in [`../../case/`](../../case/) is built against.
+and assembled, exported from EasyEDA Pro on 2025-09-23. The enclosure in
+[`../../case/`](../../case/) was first drawn against it; since 2026-09-05 it follows rev 2.
 
 | File | What |
 |---|---|

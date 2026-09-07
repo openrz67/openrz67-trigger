@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title description">
   <title id="title">OpenRZ67 PhotoMOS wiring diagram</title>
-  <desc id="description">GPIO4 and GPIO3 drive two TLP172AM input LEDs through 220 ohm resistors. Their isolated outputs close the Mamiya RZ67 S1 and S2 signals to camera ground. The camera 6 volt pin is not connected, and camera ground stays isolated from ESP32 ground.</desc>
+  <desc id="description">GPIO4 and GPIO3 drive two TLP172AM input LEDs through 150 ohm resistors. Their isolated outputs close the Mamiya RZ67 S1 and S2 signals to camera ground. The camera 6 volt pin is not connected, and camera ground stays isolated from ESP32 ground.</desc>
   <defs>
     <style>
       text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #17202a; }
@@ -43,7 +43,7 @@
   <rect x="410" y="190" width="360" height="180" rx="14" class="channel"/>
   <text x="430" y="220" class="label">U5 · TLP172AM · S1</text>
   <rect x="430" y="263" width="82" height="34" rx="7" fill="#fff7e8" stroke="#d88718" stroke-width="2"/>
-  <text x="471" y="285" text-anchor="middle" class="small">R21 220 Ω</text>
+  <text x="471" y="285" text-anchor="middle" class="small">R21 150 Ω</text>
   <line x1="316" y1="280" x2="430" y2="280" stroke="#c13c66" stroke-width="4" stroke-linecap="round"/>
   <line x1="512" y1="280" x2="535" y2="280" stroke="#c13c66" stroke-width="4" stroke-linecap="round"/>
   <rect x="535" y="258" width="58" height="44" rx="8" fill="#fff7e8" stroke="#d88718" stroke-width="2"/>
@@ -67,7 +67,7 @@
   <rect x="410" y="390" width="360" height="180" rx="14" class="channel"/>
   <text x="430" y="420" class="label">U6 · TLP172AM · S2</text>
   <rect x="430" y="443" width="82" height="34" rx="7" fill="#fff7e8" stroke="#d88718" stroke-width="2"/>
-  <text x="471" y="465" text-anchor="middle" class="small">R22 220 Ω</text>
+  <text x="471" y="465" text-anchor="middle" class="small">R22 150 Ω</text>
   <line x1="316" y1="460" x2="430" y2="460" stroke="#c13c66" stroke-width="4" stroke-linecap="round"/>
   <line x1="512" y1="460" x2="535" y2="460" stroke="#c13c66" stroke-width="4" stroke-linecap="round"/>
   <rect x="535" y="438" width="58" height="44" rx="8" fill="#fff7e8" stroke="#d88718" stroke-width="2"/>
