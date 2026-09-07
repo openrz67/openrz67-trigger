@@ -10,9 +10,11 @@
 #define BLINK_SPEED 500
 #define COUNTDOWN_DURATION 10000  // 10 seconds in milliseconds
 
-// Serial goes over USB CDC (see platformio.ini), so logging costs no pins.
-// Set VERBOSE to 0 to compile every Serial call away.
-#define VERBOSE 1
+// VERBOSE comes from platformio.ini: 0 in the production env (every Serial call
+// compiles to a no-op), 1 in the debug env, where Serial is USB CDC.
+#ifndef VERBOSE
+#define VERBOSE 0
+#endif
 #if !VERBOSE
   struct NullStream {
       template<typename T> NullStream& operator<<(T const&) { return *this; }
@@ -289,7 +291,9 @@ void configurePowerManagement() {
     esp_pm_config_esp32c3_t pm_config = {
         .max_freq_mhz = 80,
         .min_freq_mhz = 10,
-        .light_sleep_enable = true
+        // USB Serial/JTAG drops off the bus when the C3 enters light sleep, so the
+        // debug build (CDC on) keeps the chip awake; production sleeps.
+        .light_sleep_enable = !ARDUINO_USB_CDC_ON_BOOT
     };
     esp_pm_configure(&pm_config);
 
