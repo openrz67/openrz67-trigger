@@ -1,8 +1,8 @@
 ** Drc report for openrz67.kicad_pcb **
-** Created on 2026-09-05T13:16:53 **
+** Created on 2026-09-07T09:23:06 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 7 DRC violations **
+** Found 9 DRC violations **
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(126.0720 mm, 96.5875 mm): Footprint C21
@@ -29,6 +29,14 @@
 [text_height]: Text height out of range (board setup constraints silk text height min height 1.0000 mm; actual 0.5000 mm)
     Rule: board setup constraints silk text height; warning
     @(143.3000 mm, 96.3000 mm): PCB text 'BOOT EN ' on F.Silkscreen
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; warning
+    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
+    @(125.9820 mm, 100.0590 mm): Pad 1 [GND] of USB1 on F.Cu
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; warning
+    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
+    @(125.9820 mm, 106.4590 mm): Pad 12 [GND] of USB1 on F.Cu
 
 ** Found 0 unconnected pads **
 

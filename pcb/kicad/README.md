@@ -50,11 +50,13 @@ the outline). Silkscreen minimums are JLCPCB's: 1.0 mm text height, 0.15 mm line
 
 ERC is clean: **0 errors, 0 warnings**. DRC has no errors; the warnings below are known,
 understood and left in the reports rather than silenced, so a genuinely new one stands
-out. No DRC or ERC exclusions are configured.
+out. No DRC or ERC exclusions are configured; the only custom rule is in `openrz67.kicad_dru`
+(hole clearance 0.15 mm for USB1's two locating-peg holes, see the port notes).
 
 | Check | Count | What |
 |---|---|---|
 | `courtyards_overlap` | 5 | Neighbours closer than 0.1 mm on the fabricated rev-1 layout: C21/USB1, L3 against C20/R9/R12, H1/USB1. |
+| `starved_thermal` | 2 | USB1 pads 1/12 get one GND spoke instead of two: the 0.7 mm locating-peg holes next to them take the second one. Same geometry as the fabricated rev 1. |
 | `text_height`, `text_thickness` | 2 | The `BOOT EN` label on F.SilkS is 0.5 mm / 0.10 mm, under JLCPCB's 1.0 mm / 0.15 mm. Enlarged in place it runs over the R18 pads and the S3 body, where the fab clips silkscreen against solder mask. Splitting it into separate `BOOT` and `EN` labels does not help: the free band above the S1 pads is 0.85 mm and the one below the switches is 0.7 mm, both under the 1.0 mm the text needs. Fixing it means moving parts. Every other silkscreen text is at or above 1.067 mm. |
 
 ## Rev 2 layout changes (2026-09-03)
@@ -166,11 +168,22 @@ confirm the assembler's through-hole service or hand-solder them after SMD assem
   R18 (R0603→R0402) were corrected to what is actually on the board.
 - DRC: 0 errors, 0 unconnected, schematic parity clean. Remaining warnings are silk
   overlaps/courtyards from the LCSC footprints. Two dangling vias (+5V_VIN, a duplicated
-  VCC via) and a 0.1 mm track stub from the original layout were removed. Two small USB1
-  polygons that the importer put on Edge.Cuts (not in the EasyEDA outline) moved to F.Fab.
+  VCC via) and a 0.1 mm track stub from the original layout were removed.
+- **USB1 locating pegs (fixed 2026-09-07).** The connector (C2765186) has two 0.7 mm
+  locating pegs besides its four shell legs. The importer turned their NPTH holes into
+  two small circles on Edge.Cuts, and the first cleanup pass moved those to F.Fab as
+  "stray polygons" — so the rev-2 drill set had **no NPTH holes at all**. JLCPCB caught it
+  before assembly ("no drill hole for the indicated pins" on USB1); that order was
+  cancelled. The pegs are `np_thru_hole` pads again, in the library footprint and on the
+  board, at the rev-1 positions (NPTH drill matches `archive/2025-09-23-rev1` exactly).
+  They sit 0.171 mm from pads 1/12, as in the LCSC footprint and the fabricated rev 1;
+  `openrz67.kicad_dru` relaxes hole clearance to 0.15 mm for those two pads only.
+  Side effect: pads 1/12 now get one thermal spoke instead of two (2 DRC warnings).
 - Gerber check against the fabricated 2025-09-23 set: copper and mask match apart from
   U4 (now S4B-XH-A side-entry instead of B4B-XH-A) and pour-fill details after KiCad's
-  refill (thermal shapes); silkscreen differs in font rendering only.
+  refill (thermal shapes); silkscreen differs in font rendering only. Drill files: PTH
+  identical (incl. the four USB1 slots); NPTH identical again after the fix above —
+  compare `out/gerber/*.drl` against the archive whenever a footprint changes.
 - 3D models: the importer left dangling `EASYEDA_MODELS/…` references. Models were fetched
   per LCSC number with `easyeda2kicad` (`tools/fetch_3d.sh`) and both the board footprints and
   the library `.kicad_mod` files repointed to `openrz67.3dshapes/<name>.wrl`, keeping the
@@ -189,7 +202,8 @@ confirm the assembler's through-hole service or hand-solder them after SMD assem
   2.0 mm drill) with `MountingHole` symbols H1/H2 in the schematic (excluded from BOM/POS).
 - Courtyards were regenerated as pad/body bounding boxes (+0.05 mm) — the LCSC ones were
   oversized. Silkscreen outlines of 0402/0603 parts and of the two overhanging connectors
-  (USB-C, U4) live on F.Fab now. DRC: 0 errors, 6 courtyard warnings where neighbours are
-  closer than 0.1 mm on the fabricated layout (C28/S3, C21/USB1, L3 vs C20/R9/R12, H1/USB1).
+  (USB-C, U4) live on F.Fab now. DRC: 0 errors, 9 warnings: 5 courtyards where neighbours are
+  closer than 0.1 mm on the fabricated layout (C21/USB1, L3 vs C20/R9/R12, H1/USB1), 2 silk-text
+  size items from the LCSC footprints, 2 starved thermals on USB1 pads 1/12 (see the pegs note).
 - The library symbol file was pruned to the symbols in use; the schematic's embedded copies are
   regenerated from it, so "symbol differs from library" warnings are gone.

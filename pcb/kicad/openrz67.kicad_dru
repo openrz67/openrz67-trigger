@@ -1,0 +1,9 @@
+(version 1)
+
+# USB1's two 0.7 mm locating-peg holes come from the LCSC footprint for C2765186 and
+# sit 0.171 mm from pads 1/12. The rev-1 board was fabricated with exactly this
+# geometry, so accept it here instead of the 0.175 mm board-wide hole clearance.
+(rule "USB1 locating pegs"
+	(condition "A.Reference == 'USB1' && A.Pad_Type == 'NPTH, mechanical'")
+	(constraint hole_clearance (min 0.15mm))
+)
