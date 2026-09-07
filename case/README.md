@@ -298,7 +298,7 @@ short end first.
 
 ## Camera plug — `camera_plug.py`
 
-Separate part, not in the .3mf: a two-half shell around four female jumper-wire ends
+A two-half shell (plate 2 of `openrz67-case.3mf`) around four female jumper-wire ends
 (2.54 mm Dupont sleeves) so they go onto the RZ67 RC-outlet as one plug. Port measured
 2026-09-06: pocket 13.91 × 3.57 mm, ~6.3 deep (uncertain), Ø0.8 round pins, 2.54 pitch,
 row centred. The nose fills the pocket with two side cheeks; a front plate with pin holes
@@ -306,8 +306,8 @@ stops the sleeves on pull-off and a rear wall with wire notches stops them on pu
 the sleeves are not glued. The body is as tall as the nose (0.4 mm skins over/under the
 sleeves), which is what lets each half print flat on its outer face with no bridges or
 supports. Debossed triangle on top = 6 V pin (leave unconnected), like the camera's own
-mark. `uv run camera_plug.py` → `stl/openrz67-camera-plug-{bottom,top}.stl`, both already
-print-side down. Assemble: sleeves into the bottom half, wires out the back, CA glue along
+mark. `uv run camera_plug.py` (also run by `export.sh`) → `stl/openrz67-camera-plug-{bottom,top}.stl`,
+both already print-side down; `make_3mf.py` appends them to the project as plate 2 (`EXTRA_PLATES`). Assemble: sleeves into the bottom half, wires out the back, CA glue along
 the walls, top half on. PETG. Tune `nose_fit` (per-side clearance, go negative for press)
 after the first print; if your sleeves measure 2.50 rather than 2.54, set `sleeve` — the
 skin assert tells you if the stack no longer fits the pocket height. Not print-tested.

@@ -20,6 +20,7 @@ OUTDIR="${1:-stl}"
 command -v uv >/dev/null 2>&1 || { echo "uv not found (https://docs.astral.sh/uv/)" >&2; exit 1; }
 
 OUTDIR="$OUTDIR" uv run openrz67_case.py
+OUTDIR="$OUTDIR" uv run camera_plug.py
 
 # Rebuild the Bambu/Orca project .3mf by swapping the fresh STLs into the hand-made
 # template (bambu-template.3mf), keeping the print profile + plate layout + filament
