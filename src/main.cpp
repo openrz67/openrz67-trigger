@@ -295,10 +295,12 @@ void configurePowerManagement() {
         // debug build (CDC on) keeps the chip awake; production may sleep.
         .light_sleep_enable = !ARDUINO_USB_CDC_ON_BOOT
     };
-    // The Arduino 2.0.17 framework ships its ESP-IDF libraries with CONFIG_PM_ENABLE
-    // unset, so this returns ESP_ERR_NOT_SUPPORTED and neither DFS nor automatic light
-    // sleep is active: the chip runs at the 80 MHz set by the framework and idles in
-    // the BLE stack's own sleep. Kept so a framework with PM enabled picks it up.
+    // The Arduino core used here (2.0.14, framework-arduinoespressif32 3.20014 via
+    // espressif32@6.6.0) ships its ESP-IDF libraries with CONFIG_PM_ENABLE unset, so
+    // this returns ESP_ERR_NOT_SUPPORTED and neither DFS nor automatic light sleep is
+    // active. The CPU clock is therefore fixed at F_CPU, which platformio.ini sets to
+    // 80 MHz (board_build.f_cpu; the board default is 160). Kept so a framework with
+    // PM enabled picks it up.
     esp_err_t err = esp_pm_configure(&pm_config);
     if (err == ESP_OK) {
         Serial.println("Power management: DFS 10-80 MHz, light sleep "
