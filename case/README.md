@@ -39,7 +39,7 @@ height. Check them against your own parts.
 The script carries **module-level assertions**: outer dimensions, plus probe checks that
 every opening actually breaks through (USB, LED window, locating-pin recesses, switch
 screws) and that the fit-critical keepouts (switch body envelope, USB-C body, the U4
-connector body through the right wall) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
+connector body through the right wall, a fitted 8.5 mm vertical header on J1) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
 a known collision fails loudly instead of surfacing in the print.
 
 ## Construction
@@ -51,7 +51,8 @@ a known collision fails loudly instead of surfacing in the print.
   - **Through-hole solder relief** (`th_keepouts`): a small pocket in the top of a
     pillar where a through-hole component's pin tails/solder stick down (the pillar at
     (2,20) sits next to BAT1). The list is `[board_x, board_y, relief_diameter]`;
-    `th_keepout_depth` sets how far down (default 3 mm).
+    `th_keepout_depth` sets how far down (3.5 mm, the PH tail length from the 3D model; with
+    `standoff_h` 3.5 the pocket reaches the floor).
   - **PCB frame / guide fins** (`frame_*`): the lap joint removes the inner wall at board
     height, so **guide fins** in the ~1.2 mm tongue channel hold the PCB sideways: a thick
     fin beside the board edge with `frame_clr` (0.2 mm) clearance, plus a thin lead-in
@@ -73,7 +74,9 @@ a known collision fails loudly instead of surfacing in the print.
     `pcb_overhang_right` is derived from that, so a different connector reach
     (`xh_mouth`) moves the wall, not the connector. The old drop-in cable slit is gone:
     the cable no longer lives inside the box. The lid's (46,20) hold-down boss is cut
-    back (`comp_keepouts`) where it would touch the connector body 0.3 mm away.
+    back (`comp_keepouts`) where it would touch the connector body 0.3 mm away. The base's
+    outer wall half is lowered 0.25 mm in the same band: the body underside sits exactly at
+    the split, and a proud print would otherwise lift the PCB off its posts.
   - **LED light pipe** (`led_*`, separate part): D3 (red) and D4 (blue) are top-emitting
     SMD LEDs ~8 mm below the lid. A separate **clear light pipe** is inserted from above
     as a top hat: a wide head in a top counterbore (flush with the top face) + a rod that
@@ -237,7 +240,8 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   (`"front"`, low Y) is chosen deliberately: the back wall carries the S3 connector
   (board-X 28.7), the LEDs and the battery-bay divider, so there's no room there for a
   centred switch with 15 mm boss spacing. `sw_x = 22` is practically centred (case centre
-  is 23; the bosses at board-X 14.5 and 29.5 sit over low 0402/0603 parts only).
+  is 23; the bosses at board-X 14.5 and 29.5 sit over low 0402/0603 parts only). `sw_z = 4.8`
+  puts the body underside 1.3 mm above the PCB, 0.4 mm over U1 (the body sits partly over it).
   The wire from S3 runs across the board to the switch. Verify against your own components.
 - **Switch screw mount**: the switch's flat bracket mounts on the **outside** of the case;
   screws go from outside → through the bracket and wall → thread into two **rectangular
