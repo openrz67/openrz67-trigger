@@ -26,6 +26,11 @@ static NullStream nullSerial;
 #endif
 
 constexpr int ledPin = 20; // GPIO20 (U0RXD)
+// D4's anode is on VCC and its cathode reaches GPIO20 through R20, so the LED is
+// active-low: driving the pin LOW lights it. Flip these two if a board is wired the
+// other way round.
+constexpr int LED_ON = LOW;
+constexpr int LED_OFF = HIGH;
 constexpr int shutterPinS2 = 3; // GPIO3, drives U6 (camera S2)
 constexpr int shutterPinS1 = 4; // GPIO4, drives U5 (camera S1); rev 1 used GPIO21 (U0TXD)
 
@@ -90,7 +95,7 @@ void startCountdown(unsigned long durationMs) {
     countdownStartTime = millis();
     lastCountdownPrint = 0;
     countdownActive = true;
-    digitalWrite(ledPin, HIGH);
+    digitalWrite(ledPin, LED_ON);
     Serial.print("Starting ");
     Serial.print(durationMs / 1000);
     Serial.println("-second countdown...");
@@ -99,7 +104,7 @@ void startCountdown(unsigned long durationMs) {
 void cancelCountdown() {
     countdownActive = false;
     countdownStartTime = 0;
-    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPin, LED_OFF);
     Serial.println("Countdown cancelled");
 }
 
@@ -144,12 +149,12 @@ class BLECharacteristicCallback : public BLECharacteristicCallbacks {
                         // A pending countdown would keep blinking the LED and
                         // fire the shutter a second time, so cancel it first
                         cancelCountdown();
-                        digitalWrite(ledPin, HIGH);
+                        digitalWrite(ledPin, LED_ON);
                         timestampButton = now;
                         triggerShutter();
                     } else {
                         // Button 1 RELEASE - just turn off LED, don't trigger again
-                        digitalWrite(ledPin, LOW);
+                        digitalWrite(ledPin, LED_OFF);
                     }
                     break;
                 case 2:
@@ -160,11 +165,11 @@ class BLECharacteristicCallback : public BLECharacteristicCallbacks {
                         // A pending countdown would end the bulb exposure when
                         // it expires, so cancel it first
                         cancelCountdown();
-                        digitalWrite(ledPin, HIGH);
+                        digitalWrite(ledPin, LED_ON);
                         startBulbMode();
                     } else {
                         // End bulb mode
-                        digitalWrite(ledPin, LOW);
+                        digitalWrite(ledPin, LED_OFF);
                         endBulbMode();
                     }
                     break;
@@ -315,6 +320,7 @@ void setup() {
 
     Serial.println("Configuring GPIO pins...");
     pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LED_OFF);
     pinMode(shutterPinS1, OUTPUT);
     pinMode(shutterPinS2, OUTPUT);
     Serial.print("LED pin configured: GPIO");
@@ -339,9 +345,9 @@ void loop() {
     if (deviceConnected) {
         now = millis(); // Store current time
 
-        if (incoming == 11 and digitalRead(ledPin) and now > timestampButton + DELAY) {
+        if (incoming == 11 and digitalRead(ledPin) == LED_ON and now > timestampButton + DELAY) {
             // Shutter has fired, disable LED
-            digitalWrite(ledPin, LOW);
+            digitalWrite(ledPin, LED_OFF);
             Serial.println("Button 1 timeout reached");
         }
     }
@@ -365,21 +371,21 @@ void loop() {
             countdownActive = false;
             countdownStartTime = 0;
             triggerShutter();
-            digitalWrite(ledPin, LOW);
+            digitalWrite(ledPin, LED_OFF);
             Serial.println("Countdown complete - shutter triggered!");
         } else {
             // Blink LED during countdown (faster blink than button 2)
             if (elapsed % 250 < 125) {  // 250ms cycle, on for first 125ms
-                digitalWrite(ledPin, HIGH);
+                digitalWrite(ledPin, LED_ON);
             } else {
-                digitalWrite(ledPin, LOW);
+                digitalWrite(ledPin, LED_OFF);
             }
         }
     }
 
     // Handle bulb mode LED indication - steady light when active
     if (bulbModeActive) {
-        digitalWrite(ledPin, HIGH);
+        digitalWrite(ledPin, LED_ON);
     }
 
     delay(10);
