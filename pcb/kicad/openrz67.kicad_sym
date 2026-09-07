@@ -391,7 +391,7 @@
       )
     )
   )
-  (symbol "CGA0603X5R105K500JT" (in_bom yes) (on_board yes)
+  (symbol "CL10A105KB8NNNC" (in_bom yes) (on_board yes)
     (property "Reference" "C" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
@@ -407,13 +407,13 @@
     (property "Description" "" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Manufacturer Part" "CGA0603X5R105K500JT" (at 0 0 0) (show_name)
+    (property "Manufacturer Part" "CL10A105KB8NNNC" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Manufacturer" "HRE(芯声)" (at 0 0 0) (show_name)
+    (property "Manufacturer" "Samsung Electro-Mechanics" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Supplier Part" "C6119852" (at 0 0 0) (show_name)
+    (property "Supplier Part" "C15849" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
     (property "Supplier" "LCSC" (at 0 0 0) (show_name)
@@ -422,7 +422,7 @@
     (property "LCSC Part Name" "1uF ±10% 50V" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
-    (symbol "CGA0603X5R105K500JT_1_0"
+    (symbol "CL10A105KB8NNNC_1_0"
       (polyline
         (pts
           (xy -0.508 0)
@@ -484,7 +484,7 @@
     (property "Manufacturer Part" "CGA0603X5R106K100JT" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Manufacturer" "HRE(芯声)" (at 0 0 0) (show_name)
+    (property "Manufacturer" "Samsung Electro-Mechanics" (at 0 0 0) (show_name)
       (effects (font (size 1.27 1.27)))
     )
     (property "Supplier Part" "C6119842" (at 0 0 0) (show_name)

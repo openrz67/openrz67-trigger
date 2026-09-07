@@ -1615,7 +1615,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "HRE(芯声)"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1627,7 +1627,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "CGA0603X5R105K500JT"
+		(property "Manufacturer Part" "CL10A105KB8NNNC"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1651,7 +1651,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C6119852"
+		(property "Supplier Part" "C15849"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3053,7 +3053,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "HRE(芯声)"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3065,7 +3065,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "CGA0603X5R105K500JT"
+		(property "Manufacturer Part" "CL10A105KB8NNNC"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3089,7 +3089,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C6119852"
+		(property "Supplier Part" "C15849"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4275,7 +4275,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "HRE(芯声)"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4287,7 +4287,7 @@
 				)
 			)
 		)
-		(property "Manufacturer Part" "CGA0603X5R105K500JT"
+		(property "Manufacturer Part" "CL10A105KB8NNNC"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4311,7 +4311,7 @@
 				)
 			)
 		)
-		(property "Supplier Part" "C6119852"
+		(property "Supplier Part" "C15849"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)

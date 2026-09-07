@@ -142,8 +142,14 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
 - **Resistor sourcing (2026-09-07).** Three lines had 19–40 pieces in JLCPCB stock: the 10 kΩ
   group R6/R7/R8/R20 → UNI-ROYAL 0402WGF1002TCE C25744 (Basic), R12 1 kΩ →
   0603WAF1001T5E C21190 (Basic, ±1 % instead of ±5 %), R18 3 kΩ → FOJAN FRC0402F3001TS
-  C2909355. Library symbols are named after the MPN, so the three symbols were renamed and the
+  C2909355. R12 has since gone with the LDO and R20 became 1 kΩ (see above); R6/R7/R8
+  and R18 keep these parts. Library symbols are named after the MPN, so the three symbols were renamed and the
   100 kΩ one removed. Re-check stock at JLCPCB right before ordering.
+- **C14/C26/C29 1 µF → Samsung CL10A105KB8NNNC C15849 (2026-09-07).** The HRE
+  CGA0603X5R105K500JT (C6119852) was down to 8 pieces at JLCPCB. Same spec (1 µF ±10 % 50 V
+  X5R 0603) and a Basic part, so no extended-part fee. All three sit on 3.3 V (VCC, CHIP_EN),
+  so any ≥ 10 V 1 µF 0603 would do if this one runs out too. Every other BOM line had
+  ≥ 500 pieces the same day; U3 (BQ25185, 572) and U2/U1 (~8 k) are the thinnest.
 - **U4 pads** are 1.6 mm on the unchanged 1.0 mm drill (rev 1: 1.7 mm) because the S4B-XH-A
   footprint from LCSC draws them so — annular ring 0.30 mm, above JLCPCB's 0.20 mm minimum.
 - The S1_DRV via next to U1 pin 9 moved 0.15 mm east (mask dam to the pad was 0.067 mm), and
