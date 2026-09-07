@@ -25,6 +25,7 @@ The current source is **rev 2, not yet fabricated**: it swaps the G6K relays for
 * 2.4 GHz antenna with U.FL connector
 * 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`)
 * SS12F15 slide switch
+* Unpopulated 1×4 header `J1` (3V3, GND, GPIO21/TX, GPIO6) along the bottom edge for bench logging and experiments
 
 The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO ESP32C3 and two isolated switch channels work too. Assign two output-capable GPIOs in `src/main.cpp`. On the PCB each channel is a TLP172AM PhotoMOS relay whose LED is driven from the GPIO through 220 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep ESP32 ground and camera ground separate.
 

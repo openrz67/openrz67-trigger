@@ -11,6 +11,143 @@
 		(comment 1 "Ported from EasyEDA Pro project ESP32C3CameraTrigger 2026-09-02 (rev with side-entry U4)")
 	)
 	(lib_symbols
+		(symbol "openrz67:Conn_01x04"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x04"
+				(at 0 -6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "openrz67:PinHeader_1x04_P2.54mm_Vertical"
+				(at 0 0 0)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "1x4 2.54 mm pin header, not populated by the assembler"
+				(at 0 0 0)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x04_1_1"
+				(rectangle
+					(start -1.27 5.08)
+					(end 1.27 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at -5.08 3.81 0)
+					(length 2.54)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 1.27 0)
+					(length 2.54)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -1.27 0)
+					(length 2.54)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -3.81 0)
+					(length 2.54)
+					(name "Pin_4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "openrz67:S2B-PH-SM4-TB"
 		    (in_bom yes)
 		    (on_board yes)
@@ -8407,10 +8544,6 @@
 	(no_connect
 		(at 347.98 35.56)
 		(uuid "1d3d41dc-910a-4c71-a52a-7001a2609df7")
-	)
-	(no_connect
-		(at 153.67 207.01)
-		(uuid "3d66f77c-65c7-414f-93d1-3984902d5920")
 	)
 	(no_connect
 		(at 176.53 176.53)
@@ -23738,11 +23871,7 @@
 			)
 		)
 	)
-		(no_connect
-		(at 156.21 153.67)
-		(uuid "42c4d183-f36e-469e-b615-afb9fa777aa2")
-	)
-		(wire
+			(wire
 		(pts
 			(xy 146.05 207.01) (xy 146.05 214.63)
 		)
@@ -23763,4 +23892,317 @@
 		)
 		(uuid "e91bcc48-2167-44bb-8c3b-228fb45a80e5")
 	)
-)
+
+	(symbol
+		(lib_id "openrz67:Conn_01x04")
+		(at 45.72 88.9 0)
+		(unit 1)
+		(body_style 0)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "b7fbf5da-9546-4cde-95be-313b81c0f9a7")
+		(property "Reference" "J1"
+			(at 48.26 82.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5748 1.5748)
+				)
+			)
+		)
+		(property "Value" "GPIO header"
+			(at 48.26 95.25 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5748 1.5748)
+				)
+			)
+		)
+		(property "Footprint" "openrz67:PinHeader_1x04_P2.54mm_Vertical"
+			(at 45.72 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 45.72 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "1x4 2.54 mm pin header, not populated by the assembler"
+			(at 45.72 88.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0f316303-feff-4053-96d0-b74c43838edf")
+		)
+		(pin "2"
+			(uuid "9159db83-b4ff-4713-a4a4-712a1ad5aefb")
+		)
+		(pin "3"
+			(uuid "ebaf7971-8ed2-43bc-898a-dcbee6c9d522")
+		)
+		(pin "4"
+			(uuid "8f99f90b-69a5-4872-b5ae-6b102fb6ab36")
+		)
+		(instances
+			(project "openrz67"
+				(path "/608428cc-ede5-4359-a9e7-0ca7713b40fb"
+					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 40.64 85.09) (xy 35.56 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3a962f34-0acc-4966-aff9-59cb3c8d1a5f")
+	)
+	(symbol
+		(lib_id "openrz67:Power-VCC")
+		(at 35.56 85.09 0)
+		(unit 1)
+		(body_style 0)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "965657b0-54ff-4d34-abe9-6fd3240f133d")
+		(property "Reference" "#PWR063"
+			(at 35.56 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "VCC"
+			(at 35.56 81.28 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5748 1.5748)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 35.56 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "beb96bef-192a-4861-86d1-0444caa4da1c")
+		)
+		(instances
+			(project "openrz67"
+				(path "/608428cc-ede5-4359-a9e7-0ca7713b40fb"
+					(reference "#PWR063")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 40.64 87.63) (xy 35.56 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "04555a14-cc55-4321-8b44-faf82639996e")
+	)
+	(wire
+		(pts
+			(xy 35.56 87.63) (xy 35.56 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4277364c-1b7e-4d8f-b6e1-2ed7ed38502d")
+	)
+	(symbol
+		(lib_id "openrz67:Ground-GND")
+		(at 35.56 90.17 0)
+		(unit 1)
+		(body_style 0)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "837a52c5-f304-475a-b098-e78b8546a668")
+		(property "Reference" "#PWR064"
+			(at 35.56 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 35.56 96.52 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.5748 1.5748)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 35.56 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1c33f473-05ac-4814-8467-97e423eb9d82")
+		)
+		(instances
+			(project "openrz67"
+				(path "/608428cc-ede5-4359-a9e7-0ca7713b40fb"
+					(reference "#PWR064")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GPIO21"
+		(shape passive)
+		(at 40.64 90.17 180)
+		(effects
+			(font
+				(size 1.5748 1.5748)
+			)
+			(justify right bottom)
+		)
+		(uuid "10d1d25c-912b-4f8b-9637-bfdc7bec651f")
+	)
+	(global_label "GPIO21"
+		(shape passive)
+		(at 156.21 153.67 90)
+		(effects
+			(font
+				(size 1.5748 1.5748)
+			)
+			(justify left bottom)
+		)
+		(uuid "7dab1ff2-2977-45d3-9efc-959245e9caf5")
+	)
+	(global_label "GPIO6"
+		(shape passive)
+		(at 40.64 92.71 180)
+		(effects
+			(font
+				(size 1.5748 1.5748)
+			)
+			(justify right bottom)
+		)
+		(uuid "9174fbc9-4697-44be-96ec-5c7076c3edc9")
+	)
+	(global_label "GPIO6"
+		(shape passive)
+		(at 153.67 207.01 270)
+		(effects
+			(font
+				(size 1.5748 1.5748)
+			)
+			(justify right bottom)
+		)
+		(uuid "2730f27c-b10e-464a-aa24-a5f6778a6773")
+	))

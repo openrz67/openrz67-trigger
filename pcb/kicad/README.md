@@ -119,6 +119,25 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
   footprint from LCSC draws them so — annular ring 0.30 mm, above JLCPCB's 0.20 mm minimum.
 - The S1_DRV via next to U1 pin 9 moved 0.15 mm east (mask dam to the pad was 0.067 mm), and
   `VDDA` joined the `3v` net class so its stub is 0.20 mm like the VCC copper it replaced.
+- **J1 — 1×4 GPIO header, not populated (branch `gpio-header`, 2026-09-07).** Through-hole
+  pads along the bottom edge, x = 34.4–42.0 mm, y = 20.3 mm, 2.54 mm pitch, for a benchtop
+  header or wires soldered straight into the holes. Pin 1 (square) = **3V3**, 2 = **GND**,
+  3 = **GPIO21** (U0TXD, so it doubles as a UART TX for logging with a USB-UART dongle),
+  4 = **GPIO6**. The symbol is marked DNP, so `--exclude-dnp` keeps it out of the BOM and
+  the position file and JLCPCB never sees it; the pads are just copper and holes on the
+  bare board. Why only two GPIOs: GPIO21 sits on the QFN's left column and escapes freely,
+  but every other free pin (GPIO5/6/7/8/10) is on the right column, where the single gap
+  between the VCC, CHIP_EN and S2_DRV tracks fits exactly one more escape — the same limit
+  the 2026-09-03 header attempt hit. GPIO6 took it. A third would need the VCC spine on
+  B.Cu (x ≈ 31) and the S1/S2 drive diagonals moved. The header sits below the AGND island
+  (y > 17.7) in the GND domain, so camera isolation is untouched. Two GND stitching vias that
+  collided with the pads were removed, one was added at (32.8, 17.6) to re-connect the F.Cu
+  ground strip the tracks cut off, and the tracks were routed with a scratch grid router
+  (0.16 mm, DRC-clean at the board's 0.127 mm rule). Cost: GPIO6 has to loop north of U1's
+  right column on B.Cu before it can head south, which separates a ~57 mm² piece of the B.Cu
+  ground east of U1 (under R21/R22 and LDO1) from the main flood; it stays connected through
+  the stitching vias there, and the flood under U1 itself is intact. The case has no opening
+  for the header.
 - **Under-board clearance** the enclosure has to provide, from the datasheets:
 
   | What | Height below the board |
@@ -162,7 +181,8 @@ rev-1 frame, so `out/gerber/*.drl` diff directly against `../archive/2025-09-23-
 Rotations for the top-side parts are unchanged since that order. BAT1 is back on top with its original through-hole
 footprint and rotation. Check BAT1 pin 1 in the fab's assembly preview before confirming.
 No bottom-side component assembly is needed. BAT1, S3 and U4 are through-hole parts;
-confirm the assembler's through-hole service or hand-solder them after SMD assembly.
+confirm the assembler's through-hole service or hand-solder them after SMD assembly. J1
+(the GPIO header) is DNP and absent from both files; nothing to select for it.
 
 ## Port notes (2026-09-03)
 
