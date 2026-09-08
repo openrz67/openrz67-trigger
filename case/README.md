@@ -307,7 +307,9 @@ the sleeves are not glued. The body is as tall as the nose (0.4 mm skins over/un
 sleeves), which is what lets each half print flat on its outer face with no bridges or
 supports. Debossed triangle on top = 6 V pin (leave unconnected), like the camera's own
 mark. `uv run camera_plug.py` (also run by `export.sh`) → `stl/openrz67-camera-plug-{bottom,top}.stl`,
-both already print-side down; `make_3mf.py` appends them to the project as plate 2 (`EXTRA_PLATES`). Assemble: sleeves into the bottom half, wires out the back, CA glue along
-the walls, top half on. PETG. Tune `nose_fit` (per-side clearance, go negative for press)
+both already print-side down; `make_3mf.py` appends them to the project as plate 2 (`EXTRA_PLATES`). Assemble: sleeves into the bottom half, wires out the back, press the top half
+on: four Ø1.6 pegs (`peg_*`) in its 3.2 mm side walls press into Ø1.5 holes in the bottom half,
+no glue (a snap hook is not printable at 1.8 mm half height; loosen `peg_press` if they
+split the wall). PETG. Tune `nose_fit` (per-side clearance, go negative for press)
 after the first print; if your sleeves measure 2.50 rather than 2.54, set `sleeve` — the
 skin assert tells you if the stack no longer fits the pocket height. Not print-tested.

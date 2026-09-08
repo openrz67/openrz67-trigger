@@ -13,8 +13,9 @@ sleeves sliding forward on pull-off, a rear wall with wire notches stops them
 sliding back on push-on — no glue on the sleeves. The body is as tall as the
 nose (only ~0.4 mm skins over and under the sleeves), so each half prints flat
 on its outer face with every cavity opening upward: no bridges, no supports.
-Assemble: lay the sleeves in the bottom half, wires out the back, glue the top
-half on (CA along the walls). Pin order facing the port, left to right: 6 V
+Assemble: lay the sleeves in the bottom half, wires out the back, press the top
+half on: four Ø1.6 pegs in its side walls press into Ø1.5 holes in the bottom
+(no glue; a real snap hook is not printable at 1.8 mm half height). Pin order facing the port, left to right: 6 V
 (do NOT connect), GND, S1, S2 — a triangle on top marks the 6 V side, like the
 camera's own mark.
 
@@ -41,9 +42,10 @@ wire_d = 1.5                    # notch for the jumper wire (~1.3 OD)
 # --- Fit / walls (tune after the first print) --------------------------------------
 nose_fit = 0.05        # per-side clearance of the nose in the pocket; go negative for press
 cheek_len = pocket_d - 0.3
-wall, plate_t, rear_t = 1.5, 0.8, 1.5
+wall, plate_t, rear_t = 3.2, 0.8, 1.5   # wall carries the pegs: (wall - peg_d) / 2 >= 0.8 each side
 pin_hole = 1.4
 mark = 2.0             # triangle side
+peg_d, peg_h, peg_press, peg_ys = 1.6, 1.2, 0.1, [2.0, 8.0]   # pegs on the top half, holes in the bottom
 
 z0, z1 = nose_fit, pocket_h - nose_fit               # whole plug lives inside the pocket height
 nose_w, body_w = pocket_w - 2 * nose_fit, pocket_w - 2 * nose_fit + 2 * wall
@@ -55,6 +57,8 @@ skin = pin_z - ch_h / 2 - z0
 cheek = (nose_w - ch_w) / 2
 assert skin >= 0.4, f"skin {skin:.2f} < 0.4: measure the sleeve height, or lower sleeve_clr/nose_fit"
 assert cheek >= 1.2, f"cheek {cheek:.2f} too thin to print"
+assert (wall - peg_d) / 2 >= 0.8, "too little wall around the pegs"
+assert pin_z - z0 - peg_h - peg_press >= 0.4, "peg holes would break through the bottom skin"
 assert pocket_d - 0.3 - plate_t >= 4.0, "too little pin engagement in the sleeves"
 
 
@@ -78,6 +82,11 @@ plug -= extrude(tri, -0.2)                                                      
 cut = Plane.XY.offset(pin_z)
 bottom = split(plug, bisect_by=cut, keep=Keep.BOTTOM)
 top = split(plug, bisect_by=cut, keep=Keep.TOP)
+peg_x = nose_w / 2 + wall / 2
+for sx in (-1, 1):
+    for py in peg_ys:
+        top += Pos(sx * peg_x, py, pin_z - peg_h / 2) * Cylinder(peg_d / 2, peg_h)
+        bottom -= Pos(sx * peg_x, py, pin_z - (peg_h + peg_press) / 2) * Cylinder((peg_d - peg_press) / 2, peg_h + peg_press)
 bottom_print = Pos(0, 0, -z0) * bottom                       # outer face on z = 0
 top_print = Pos(0, 0, z1) * Rot(180, 0, 0) * top             # flipped, outer face on z = 0
 
