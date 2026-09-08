@@ -1,8 +1,8 @@
 ** Drc report for openrz67.kicad_pcb **
-** Created on 2026-09-08T06:36:08 **
+** Created on 2026-09-08T20:26:25 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 14 DRC violations **
+** Found 10 DRC violations **
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(138.0000 mm, 99.8000 mm): Footprint C25
@@ -37,22 +37,6 @@
 [text_height]: Text height out of range (board setup constraints silk text height min height 1.0000 mm; actual 0.5000 mm)
     Rule: board setup constraints silk text height; warning
     @(143.3000 mm, 96.3000 mm): PCB text 'BOOT EN ' on F.Silkscreen
-[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
-    Local override; warning
-    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
-    @(136.5600 mm, 98.9000 mm): Pad 7 [GND] of U2 on F.Cu
-[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
-    Local override; warning
-    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
-    @(136.5600 mm, 97.9000 mm): Pad 9 [GND] of U2 on F.Cu
-[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
-    Local override; warning
-    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
-    @(125.9820 mm, 100.0590 mm): Pad 1 [GND] of USB1 on F.Cu
-[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
-    Local override; warning
-    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
-    @(125.9820 mm, 106.4590 mm): Pad 12 [GND] of USB1 on F.Cu
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
     @(133.6100 mm, 97.4000 mm): Circle of U2 on F.Silkscreen

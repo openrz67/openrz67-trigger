@@ -40,7 +40,7 @@ KICAD_CLI=/usr/bin/kicad-cli KICAD_PY=/usr/bin/python3 tools/regen.sh
 ## Design rules (from the EasyEDA project)
 
 Clearance 0.127 mm (EasyEDA pour-to-track minimum; track-to-track was 0.152), min track
-0.127, default track 0.16, via 0.45/0.20 (min 0.40/0.20), hole-to-track 0.175,
+0.127, default track 0.16, via 0.45/0.25 (min 0.40/0.20), hole-to-track 0.175,
 hole-to-hole 0.30, solder-mask expansion 0.051, thermal spoke 0.254 / gap 0.152.
 Net classes: `gnd` (GND, 0.13 track), `3v` (VCC, VDDA, 0.20), `5v` (VBUS, BAT+, VSYS, SW_SYS,
 SW1, SW2: 0.254 track, 0.5/0.3 via).
@@ -57,7 +57,6 @@ out. No DRC or ERC exclusions are configured; the only custom rules are in `open
 | Check | Count | What |
 |---|---|---|
 | `courtyards_overlap` | 7 | Neighbours closer than 0.1 mm: C21/USB1, L3 against C20/R9, H1/USB1 (all as on the fabricated rev-1 layout), plus C25 against R20/R6 and C24/D3 in the rev-2 power corner (pad-to-pad ≥ 0.40 mm everywhere). |
-| `starved_thermal` | 4 | USB1 pads 1/12 get one GND spoke instead of two: the 0.7 mm locating-peg holes next to them take the second one. Same geometry as the fabricated rev 1. U2 pads 7/9 (GND, 0.28 mm wide) likewise get one spoke; both also have a 0.16 mm track into the exposed pad. |
 | `silk_overlap` | 1 | U2's pin-1 dot touches L3's silkscreen outline (0.02 mm). |
 | `text_height`, `text_thickness` | 2 | The `BOOT EN` label on F.SilkS is 0.5 mm / 0.10 mm, under JLCPCB's 1.0 mm / 0.15 mm. Enlarged in place it runs over the R18 pads and the S3 body, where the fab clips silkscreen against solder mask. Splitting it into separate `BOOT` and `EN` labels does not help: the free band above the S1 pads is 0.85 mm and the one below the switches is 0.7 mm, both under the 1.0 mm the text needs. Fixing it means moving parts. Every other silkscreen text is at or above 1.067 mm. |
 
@@ -198,6 +197,16 @@ antenna trace. One GPIO, on a header that was not going to be populated, did not
 that. There is no room on this outline for a through-hole header: a hole needs both layers
 clear at once, and only two isolated spots on the whole board qualify. Bottom-side solder
 pads do fit, but the cell now occupies the bottom. Revisit it together with the enclosure.
+
+- **Routing pass (2026-09-08).** U2's exposed pad has four GND vias (0.45/0.25) and U2's
+  pads, like USB1's GND pads 1/12, now connect to the GND pour solid instead of through one
+  thermal spoke — the four `starved_thermal` warnings are gone. The B.Cu VCC feed from U2's
+  output no longer runs under U2's pad; it goes around the west side of the package. The
+  SW1/SW2 pad exits are 0.254 mm (the `5v` class width) instead of 0.16. GPIO21's F.Cu jog
+  past U1 pin 1 (LNA_IN) moved 0.75 mm west: 0.79 mm to the RF trace instead of 0.21. Two GND
+  stitching vias next to it moved out of the way. The B.Cu ground under U1 still reaches the
+  main pour through the same channel between the two GPIO21 vias (main B.Cu island 562 mm²,
+  as before).
 
 ## Ordering
 
