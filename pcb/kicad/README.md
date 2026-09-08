@@ -152,7 +152,8 @@ Outline unchanged from rev 1: **48 × 22 mm**, 2 mm corner radius, mounting hole
 - **U4 pads** are 1.6 mm on the unchanged 1.0 mm drill (rev 1: 1.7 mm) because the S4B-XH-A
   footprint from LCSC draws them so — annular ring 0.30 mm, above JLCPCB's 0.20 mm minimum.
 - The S1_DRV via next to U1 pin 9 moved 0.15 mm east (mask dam to the pad was 0.067 mm), and
-  `VDDA` joined the `3v` net class so its stub is 0.20 mm like the VCC copper it replaced.
+  `VDDA` joined the `3v` net class (0.20 mm); the seven existing stub segments were drawn at
+  0.16 mm and still are.
 - **J1 — 1×4 GPIO header, not populated (branch `gpio-header`, 2026-09-07).** Through-hole
   pads along the bottom edge, x = 34.4–42.0 mm, y = 20.6 mm (0.55 mm copper to edge), 2.54 mm
   pitch, for a benchtop header or wires soldered straight into the holes. Pin 1 (square) =
@@ -207,6 +208,33 @@ pads do fit, but the cell now occupies the bottom. Revisit it together with the 
   stitching vias next to it moved out of the way. The B.Cu ground under U1 still reaches the
   main pour through the same channel between the two GPIO21 vias (main B.Cu island 562 mm²,
   as before).
+
+- **Review fixes (2026-09-08, after the rev-2 order).** A full review against rev 1 found the
+  schematic sound and four layout items worth fixing before the next order; all are in
+  (coordinates in the board frame, aux origin at the top-left corner):
+  - C23 (the only 10 µF on SW_SYS) was 7 mm and two vias away from U2 pin 5 (VIN). It now
+    sits at (15.15, 10.5), rot 180: pad 2 is 1.2 mm of 0.254 F.Cu from pin 5, pad 1 has a
+    0.4 mm F.Cu strap into U2's exposed pad (PGND) and its own GND via at (15.85, 11.2).
+  - The B.Cu ground under U1 hung on a 0.12 mm neck at (20.4, 18.6) — below the zone's own
+    0.127 mm minimum, so a refill could have cut it. The VCC via at (20.32, 19.15) moved to
+    (20.33, 19.40) and the CHIP_EN via 0.16 mm north to (22.92, 17.78). The erosion test that
+    found the neck now gives ≥ 0.32 mm from U1 to every neighbouring pour region; the two
+    pre-existing 0.16–0.20 mm necks in the north-west corridor (BAT+ vs the VCC B.Cu run,
+    SW_SYS vs the VSYS via) were opened to ≥ 0.26 mm by nudging those runs 0.2–0.25 mm.
+  - GPIO21 is one B.Cu run from a single via at (18.0, 14.17) to (25.15, 19.0) instead of
+    four vias with two layer changes; the via is 0.25 mm from XTAL_N copper (was 0.16). The
+    crossing under the LNA_IN microstrip at (19.3, 18.2) remains — every route from U1's left
+    column to J1 has to cross the RF trace's line, so the slot (0.41 mm along the trace) can
+    only go away by moving TX off GPIO21 or J1 off the bottom edge. Note: the earlier "0.79 mm
+    to the RF trace" measured the F.Cu track; the via was 0.57 mm.
+  - U3's exposed pad had no vias and thermal spokes. It has two GND vias 0.45/0.25 at
+    (16.65, 3.7) and (17.35, 3.7), placed along x because the 0.4 mm-pitch pad rows leave only
+    0.125 mm above/below, and U3 connects solid to the pour like U2.
+  DRC after: 0 errors, 0 unconnected, the same 7 courtyard + 1 silk + 2 text warnings.
+  Still open from the review, not done here: paste windows on U2/U3 exposed pads (100 % vs
+  TI's 84–88 %), the F.Cu ground island under C26/C29/C6 with one via, the 68.7 mm² B.Cu
+  island south-east of U1 with one via, a return via next to C24, 0.16 mm power necks at the
+  U2/U3 pads, a `+` mark for BAT1 on F.SilkS, the 0.098 mm mask dam on U3.
 
 ## Ordering
 
