@@ -228,6 +228,10 @@ board came out right — sending the corrected angle just leaves them nothing to
 unchanged. After uploading, U1, U5 and U6 must look like `out/openrz67-top.png` in the preview; then
 check the DFM analysis in Order History (U1, U5, U6, X1, D3, D4) before approving production. Check pin 1 of U2, U3, U5, U6 and BAT1 in the fab's assembly preview before confirming:
 the dot on the body must sit where `out/openrz67-top.png` shows it.
+JLCPCB asked to confirm U3's polarity on the 2026-09-08 order: the WSON-10 footprint's pin-1 mark was a
+0.06 mm ring, below their 0.15 mm silk minimum, so their preview showed no mark to check against. The
+WSON-10 (U3) and QFN-32 (U1) footprints now carry a filled 0.4 mm pin-1 dot outside the body, like the
+VSON-10 (U2) and SO-4 (U5/U6) already did.
 No bottom-side component assembly is needed. BAT1, S3 and U4 are through-hole parts;
 confirm the assembler's through-hole service or hand-solder them after SMD assembly. J1
 (the GPIO header) is DNP and absent from both files; nothing to select for it.
