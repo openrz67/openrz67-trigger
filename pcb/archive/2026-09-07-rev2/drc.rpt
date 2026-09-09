@@ -1,0 +1,72 @@
+** Drc report for openrz67.kicad_pcb **
+** Created on 2026-09-07T20:25:22 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 14 DRC violations **
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(138.0000 mm, 99.8000 mm): Footprint C25
+    @(140.0440 mm, 99.1755 mm): Footprint R20
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(138.0000 mm, 99.8000 mm): Footprint C25
+    @(140.0675 mm, 100.3735 mm): Footprint R6
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(126.0720 mm, 96.5875 mm): Footprint C21
+    @(123.6070 mm, 103.2590 mm): Footprint USB1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(130.3010 mm, 97.8650 mm): Footprint L3
+    @(129.7790 mm, 92.2860 mm): Footprint C20
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(130.3010 mm, 97.8650 mm): Footprint L3
+    @(127.9565 mm, 102.5530 mm): Footprint R9
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(139.3000 mm, 96.5000 mm): Footprint C24
+    @(140.5000 mm, 94.0000 mm): Footprint D3
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(123.6070 mm, 103.2590 mm): Footprint USB1
+    @(122.0000 mm, 110.0000 mm): Footprint H1
+[text_thickness]: Text thickness out of range (board setup constraints silk text thickness min thickness 0.1500 mm; actual 0.1000 mm)
+    Rule: board setup constraints silk text thickness; warning
+    @(143.3000 mm, 96.3000 mm): PCB text 'BOOT EN ' on F.Silkscreen
+[text_height]: Text height out of range (board setup constraints silk text height min height 1.0000 mm; actual 0.5000 mm)
+    Rule: board setup constraints silk text height; warning
+    @(143.3000 mm, 96.3000 mm): PCB text 'BOOT EN ' on F.Silkscreen
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; warning
+    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
+    @(136.5600 mm, 98.9000 mm): Pad 7 [GND] of U2 on F.Cu
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; warning
+    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
+    @(136.5600 mm, 97.9000 mm): Pad 9 [GND] of U2 on F.Cu
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; warning
+    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
+    @(125.9820 mm, 100.0590 mm): Pad 1 [GND] of USB1 on F.Cu
+[starved_thermal]: Thermal relief connection to zone incomplete (layer F.Cu; zone min spoke count 2; actual 1)
+    Local override; warning
+    @(118.1710 mm, 88.6790 mm): Zone [GND] on F.Cu, priority 498
+    @(125.9820 mm, 106.4590 mm): Pad 12 [GND] of USB1 on F.Cu
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(133.6100 mm, 97.4000 mm): Circle of U2 on F.Silkscreen
+    @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

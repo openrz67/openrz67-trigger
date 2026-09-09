@@ -3,7 +3,7 @@
 KiCad 10 project for the OpenRZ67 trigger board (48 × 22 mm, 2 layers, ESP32-C3,
 two TLP172AM PhotoMOS relays, BQ25185 charger + TPS63031 buck-boost). This is now the **source**; the EasyEDA Pro
 project it was ported from is archived in `../archive/easyeda/` (v2 `.epro` and v3 `.epro2`);
-the fabricated 2025-09-23 revision (Gerber, BOM, PnP, STEP) is in `../archive/2025-09-23-rev1/`.
+each fabricated revision's upload package is in `../archive/<date>-rev<n>/` (rev 1 2025-09-23, rev 2 2026-09-07).
 
 | File | What |
 |---|---|
