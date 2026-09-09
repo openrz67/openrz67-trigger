@@ -37,7 +37,7 @@ pocket_w, pocket_h, pocket_d = 13.91, 3.57, 6.3   # depth is uncertain
 pin_pitch, pin_d = 2.54, 0.8
 pin_z = pocket_h / 2            # row centred: ~3.0 from the left wall, ~1.8 above the floor
 # --- Dupont sleeve + wire (measure yours: sleeves are often 2.50, not 2.54) ---------
-sleeve, sleeve_len, sleeve_clr = 2.54, 14.0, 0.05
+sleeve, sleeve_len, sleeve_clr, sleeve_clr_w = 2.54, 14.0, 0.05, 0.15   # height / width clearance per side
 wire_d = 1.5                    # notch for the jumper wire (~1.3 OD)
 # --- Fit / walls (tune after the first print) --------------------------------------
 nose_fit = 0.05        # per-side clearance of the nose in the pocket; go negative for press
@@ -45,13 +45,14 @@ cheek_len = pocket_d - 0.3
 wall, plate_t, rear_t = 3.2, 0.8, 1.5   # wall carries the pegs: (wall - peg_d) / 2 >= 0.8 each side
 pin_hole = 1.4
 mark = 2.0             # triangle side
-peg_d, peg_h, peg_clr, peg_ys = 1.6, 1.2, 0.2, [2.0, 8.0]   # pegs on the top half, holes in the bottom
+peg_d, peg_h, peg_clr, peg_ys = 1.6, 1.2, 0.3, [2.0, 8.0]   # pegs on the top half, holes in the bottom
 # hole = peg_d + peg_clr on paper; FDM shrinks small vertical holes ~0.2-0.3, which gives the press.
-# First print (peg_clr = -0.1) did not go together at all.
+# Prints: peg_clr -0.1 did not go together; 0.2 went on but very, very tight. sleeve_clr_w 0.05 -> 0.15
+# after the 0.2 print: four sleeves were hard to lay in the channel.
 
 z0, z1 = nose_fit, pocket_h - nose_fit               # whole plug lives inside the pocket height
 nose_w, body_w = pocket_w - 2 * nose_fit, pocket_w - 2 * nose_fit + 2 * wall
-ch_w, ch_h = 4 * sleeve + 2 * sleeve_clr, sleeve + 2 * sleeve_clr
+ch_w, ch_h = 4 * sleeve + 2 * sleeve_clr_w, sleeve + 2 * sleeve_clr
 y_plate = -cheek_len + plate_t                       # sleeve fronts
 y_rear = y_plate + sleeve_len + 0.2                  # rear wall starts here
 body_len = y_rear + rear_t
