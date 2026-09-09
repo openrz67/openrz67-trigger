@@ -14,10 +14,11 @@ sliding back on push-on — no glue on the sleeves. The body is as tall as the
 nose (only ~0.4 mm skins over and under the sleeves), so each half prints flat
 on its outer face with every cavity opening upward: no bridges, no supports.
 Assemble: lay the sleeves in the bottom half, wires out the back, press the top
-half on: four Ø1.6 pegs in its side walls press into Ø1.7 holes in the bottom
-(no glue; a real snap hook is not printable at 1.8 mm half height). Pin order facing the port, left to right: 6 V
-(do NOT connect), GND, S1, S2 — a triangle on top marks the 6 V side, like the
-camera's own mark.
+half on: four Ø1.6 pegs in its side walls press into Ø1.9 holes in the bottom
+(no glue; a real snap hook is not printable at 1.8 mm half height). Pin order facing
+the port, left to right: 6 V (do NOT connect), GND, S1, S2. Up is marked twice: a big
+triangle centred on top with its apex toward the camera, and rounded long top edges
+against a square bottom, so it can be felt.
 
 Coordinates: x along the pin row (+x = right when facing the port), z up
 (toward the sliding dust cover), -y = into the camera. z = 0 is the pocket
@@ -44,7 +45,8 @@ nose_fit = 0.05        # per-side clearance of the nose in the pocket; go negati
 cheek_len = pocket_d - 0.3
 wall, plate_t, rear_t = 3.2, 0.8, 1.5   # wall carries the pegs: (wall - peg_d) / 2 >= 0.8 each side
 pin_hole = 1.4
-mark = 2.0             # triangle side
+mark = 6.0             # triangle side; up = rounded top edges + triangle, apex toward the camera
+top_r = 1.0            # fillet on the two long top edges of the body: feel which side is up
 peg_d, peg_h, peg_clr, peg_ys = 1.6, 1.2, 0.3, [2.0, 8.0]   # pegs on the top half, holes in the bottom
 # hole = peg_d + peg_clr on paper; FDM shrinks small vertical holes ~0.2-0.3, which gives the press.
 # Prints: peg_clr -0.1 did not go together; 0.2 went on but very, very tight. sleeve_clr_w 0.05 -> 0.15
@@ -79,8 +81,10 @@ for h in yholes(pin_hole, y_plate - plate_t / 2, plate_t + 1):                  
     plug -= h
 for h in yholes(wire_d, y_rear + rear_t / 2, rear_t + 1):                             # wires through the rear wall
     plug -= h
-tri = Pos(-1.5 * pin_pitch, body_len / 2, z1) * Rot(0, 0, 180) * Triangle(a=mark, b=mark, c=mark)
-plug -= extrude(tri, -0.2)                                                            # 6 V mark, apex toward the camera
+top_edges = plug.edges().filter_by(Axis.Y).group_by(Axis.Z)[-1].filter_by(lambda e: abs(abs(e.center().X) - body_w / 2) < 1e-3)
+plug = fillet(top_edges, top_r)                                                       # rounded top, square bottom
+tri = Pos(0, body_len / 2, z1) * Rot(0, 0, 180) * Triangle(a=mark, b=mark, c=mark)
+plug -= extrude(tri, -0.2)                                                            # up mark, apex toward the camera
 
 cut = Plane.XY.offset(pin_z)
 bottom = split(plug, bisect_by=cut, keep=Keep.BOTTOM)
