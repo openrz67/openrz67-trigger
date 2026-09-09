@@ -45,7 +45,7 @@ cheek_len = pocket_d - 0.3
 wall, plate_t, rear_t = 3.2, 0.8, 1.5   # wall carries the pegs: (wall - peg_d) / 2 >= 0.8 each side
 pin_hole = 1.4
 mark = 2.0             # triangle side
-peg_d, peg_h, peg_clr, peg_ys = 1.6, 1.2, 0.1, [2.0, 8.0]   # pegs on the top half, holes in the bottom
+peg_d, peg_h, peg_clr, peg_ys = 1.6, 1.2, 0.2, [2.0, 8.0]   # pegs on the top half, holes in the bottom
 # hole = peg_d + peg_clr on paper; FDM shrinks small vertical holes ~0.2-0.3, which gives the press.
 # First print (peg_clr = -0.1) did not go together at all.
 
@@ -93,11 +93,12 @@ bottom_print = Pos(0, 0, -z0) * bottom                       # outer face on z =
 top_print = Pos(0, 0, z1) * Rot(180, 0, 0) * top             # flipped, outer face on z = 0
 
 if __name__ == "__main__":
-    try:  # preview in VS Code's OCP CAD Viewer when it is open (port 3939)
+    import socket
+    if socket.socket().connect_ex(("127.0.0.1", 3939)) == 0:  # VS Code OCP CAD Viewer open?
         from ocp_vscode import show
         show(bottom, top, names=["bottom", "top"])
-    except Exception as exc:
-        print(f"OCP-viewer utilgjengelig ({type(exc).__name__})")
+    else:
+        print("OCP-viewer ikke åpen, hopper over forhåndsvisning")
     out = Path(os.environ.get("OUTDIR", Path(__file__).parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
     export_stl(bottom_print, str(out / "openrz67-camera-plug-bottom.stl"), ascii_format=True)  # make_3mf.py parses ASCII

@@ -380,11 +380,12 @@ _open(base + lid, box(bx(38.23 - 5.08), by(1.4 - 1.27), pcb_top_z + eps, 10.16, 
 if __name__ == "__main__":
     # Assembled preview in VS Code's OCP CAD Viewer, when it is open (port 3939).
     # Toggle part visibility in the viewer tree; show() does nothing/raises without it.
-    try:
+    import socket
+    if socket.socket().connect_ex(("127.0.0.1", 3939)) == 0:  # VS Code OCP CAD Viewer open?
         from ocp_vscode import show
         show(base, lid, lightpipe, names=["base", "lid", "lightpipe"])
-    except Exception as exc:
-        print(f"OCP-viewer utilgjengelig ({type(exc).__name__})")
+    else:
+        print("OCP-viewer ikke åpen, hopper over forhåndsvisning")
     out = Path(os.environ.get("OUTDIR", Path(__file__).resolve().parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
     parts = [("openrz67-base", base), ("openrz67-lid", lid), ("openrz67-lightpipe", lightpipe)]
