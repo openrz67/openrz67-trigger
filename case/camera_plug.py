@@ -10,11 +10,12 @@ fills the port's rectangular pocket (measured 13.91 x 3.57 mm, ~6.3 deep,
 Ø0.8 round pins, 2.54 pitch, row centred); two side cheeks give the lateral
 location the loose/taped sleeves lack. A front plate with pin holes stops the
 sleeves sliding forward on pull-off, a rear wall with wire notches stops them
-sliding back on push-on — no glue on the sleeves. The body is as tall as the
-nose (only ~0.4 mm skins over and under the sleeves), so each half prints flat
+sliding back on push-on — no glue on the sleeves. The nose has only ~0.4 mm
+skins over and under the sleeves; the body behind it is 1 mm taller top and bottom
+for the pegs. Each half prints flat
 on its outer face with every cavity opening upward: no bridges, no supports.
 Assemble: lay the sleeves in the bottom half, wires out the back, press the top
-half on: four Ø1.6 pegs in its side walls press into Ø1.9 holes in the bottom
+half on: four Ø2.2 pegs in its side walls press into Ø2.5 holes in the bottom
 (no glue; a real snap hook is not printable at 1.8 mm half height). Pin order facing
 the port, left to right: 6 V (do NOT connect), GND, S1, S2. Up is marked twice: a big
 triangle centred on top with its apex toward the camera, and rounded long top edges
@@ -43,14 +44,16 @@ wire_d = 1.5                    # notch for the jumper wire (~1.3 OD)
 # --- Fit / walls (tune after the first print) --------------------------------------
 nose_fit = 0.05        # per-side clearance of the nose in the pocket; go negative for press
 cheek_len = pocket_d - 0.3
-wall, plate_t, rear_t = 3.2, 0.8, 1.5   # wall carries the pegs: (wall - peg_d) / 2 >= 0.8 each side
+wall, plate_t, rear_t = 4.2, 0.8, 1.5   # wall carries the pegs: >= 0.8 around the hole (peg_d + peg_clr)
+body_ext = 1.0         # body (outside the camera) is this much taller than the nose, top and bottom
 pin_hole = 1.4
 mark = 6.0             # triangle side; up = rounded top edges + triangle, apex toward the camera
 top_r = 1.0            # fillet on the two long top edges of the body: feel which side is up
-peg_d, peg_h, peg_clr, peg_ys = 1.6, 1.2, 0.3, [2.0, 8.0]   # pegs on the top half, holes in the bottom
+peg_d, peg_h, peg_clr, peg_ys = 2.2, 2.0, 0.3, [2.0, 8.0]   # pegs on the top half, holes in the bottom
 # hole = peg_d + peg_clr on paper; FDM shrinks small vertical holes ~0.2-0.3, which gives the press.
 # Prints: peg_clr -0.1 did not go together; 0.2 went on but very, very tight. sleeve_clr_w 0.05 -> 0.15
-# after the 0.2 print: four sleeves were hard to lay in the channel.
+# after the 0.2 print: four sleeves were hard to lay in the channel. Ø1.6 x 1.2 pegs sheared off
+# at the root on the first pull-apart -> Ø2.2 x 2.0 and body_ext 1.0 (2026-09-10).
 
 z0, z1 = nose_fit, pocket_h - nose_fit               # whole plug lives inside the pocket height
 nose_w, body_w = pocket_w - 2 * nose_fit, pocket_w - 2 * nose_fit + 2 * wall
@@ -62,8 +65,8 @@ skin = pin_z - ch_h / 2 - z0
 cheek = (nose_w - ch_w) / 2
 assert skin >= 0.4, f"skin {skin:.2f} < 0.4: measure the sleeve height, or lower sleeve_clr/nose_fit"
 assert cheek >= 1.2, f"cheek {cheek:.2f} too thin to print"
-assert (wall - peg_d) / 2 >= 0.8, "too little wall around the pegs"
-assert pin_z - z0 - peg_h - 0.1 >= 0.4, "peg holes would break through the bottom skin"
+assert (wall - peg_d - peg_clr) / 2 >= 0.8, "too little wall around the peg holes"
+assert pin_z - (z0 - body_ext) - peg_h - 0.1 >= 0.4, "peg holes would break through the bottom skin"
 assert pocket_d - 0.3 - plate_t >= 4.0, "too little pin engagement in the sleeves"
 
 
@@ -75,7 +78,7 @@ def yholes(d, y, length):
     return [Pos((i - 1.5) * pin_pitch, y, pin_z) * Rot(90, 0, 0) * Cylinder(d / 2, length) for i in range(4)]
 
 
-plug = box(-nose_w / 2, -cheek_len, z0, nose_w, cheek_len, z1 - z0) + box(-body_w / 2, 0, z0, body_w, body_len, z1 - z0)
+plug = box(-nose_w / 2, -cheek_len, z0, nose_w, cheek_len, z1 - z0) + box(-body_w / 2, 0, z0 - body_ext, body_w, body_len, z1 - z0 + 2 * body_ext)
 plug -= box(-ch_w / 2, y_plate, pin_z - ch_h / 2, ch_w, y_rear - y_plate, ch_h)      # sleeve channel
 for h in yholes(pin_hole, y_plate - plate_t / 2, plate_t + 1):                        # pins through the front plate
     plug -= h
@@ -83,7 +86,7 @@ for h in yholes(wire_d, y_rear + rear_t / 2, rear_t + 1):                       
     plug -= h
 top_edges = plug.edges().filter_by(Axis.Y).group_by(Axis.Z)[-1].filter_by(lambda e: abs(abs(e.center().X) - body_w / 2) < 1e-3)
 plug = fillet(top_edges, top_r)                                                       # rounded top, square bottom
-tri = Pos(0, body_len / 2, z1) * Rot(0, 0, 180) * Triangle(a=mark, b=mark, c=mark)
+tri = Pos(0, body_len / 2, z1 + body_ext) * Rot(0, 0, 180) * Triangle(a=mark, b=mark, c=mark)
 plug -= extrude(tri, -0.2)                                                            # up mark, apex toward the camera
 
 cut = Plane.XY.offset(pin_z)
@@ -94,8 +97,8 @@ for sx in (-1, 1):
     for py in peg_ys:
         top += Pos(sx * peg_x, py, pin_z - peg_h / 2) * Cylinder(peg_d / 2, peg_h)
         bottom -= Pos(sx * peg_x, py, pin_z - (peg_h + 0.1) / 2) * Cylinder((peg_d + peg_clr) / 2, peg_h + 0.1)
-bottom_print = Pos(0, 0, -z0) * bottom                       # outer face on z = 0
-top_print = Pos(0, 0, z1) * Rot(180, 0, 0) * top             # flipped, outer face on z = 0
+bottom_print = Pos(0, 0, body_ext - z0) * bottom                       # outer face on z = 0
+top_print = Pos(0, 0, z1 + body_ext) * Rot(180, 0, 0) * top             # flipped, outer face on z = 0
 
 if __name__ == "__main__":
     import socket
