@@ -34,7 +34,11 @@ constexpr int ledPin = 20; // GPIO20 (U0RXD)
 constexpr int LED_ON = LOW;
 constexpr int LED_OFF = HIGH;
 constexpr int shutterPinS2 = 3; // GPIO3, drives U6 (camera S2)
-constexpr int shutterPinS1 = 4; // GPIO4, drives U5 (camera S1); rev 1 used GPIO21 (U0TXD)
+// S1_PIN comes from platformio.ini: GPIO4 on rev 2 (default), GPIO21 (U0TXD) in the rev1 env.
+#ifndef S1_PIN
+#define S1_PIN 4
+#endif
+constexpr int shutterPinS1 = S1_PIN; // drives U5 (camera S1)
 
 int incoming;
 unsigned long now;
