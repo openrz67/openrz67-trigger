@@ -73,7 +73,7 @@ The device advertises as `OpenRZ67` with service UUID `c9239c9e-6fc9-4168-b3aa-5
 |-------|--------|
 | 11 | Trigger shutter with a 100 ms pulse |
 | 10 | Clear status LED; no shutter action |
-| 21 | Start bulb mode |
+| 21 | Start bulb mode: holds S1/S2 closed until 20 is sent. Camera dial must be on `B`, otherwise this is just one normal exposure |
 | 20 | End bulb mode |
 | 31 | Start countdown with the default duration of 10 s |
 | 30 | Cancel countdown |
