@@ -400,3 +400,9 @@ if __name__ == "__main__":
         print(f"{name}: {b.size.X:.2f} x {b.size.Y:.2f} x {b.size.Z:.2f} mm, "
               f"{p.volume / 1000:.2f} cm3")
     print(f"STLs in {out}")
+    if out.resolve() == Path(__file__).resolve().parent / "stl" and os.environ.get("MAKE_3MF", "true") == "true":
+        import subprocess, sys
+        here = Path(__file__).resolve().parent
+        if (here / "bambu-template.3mf").exists():   # slicer project: swap all fresh STLs into the template
+            subprocess.run([sys.executable, "make_3mf.py", "--stl-dir", str(out), "--out", "openrz67-case.3mf"], cwd=here, check=True)
+            print("openrz67-case.3mf oppdatert")

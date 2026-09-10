@@ -51,8 +51,9 @@ mark = 6.0             # triangle side; up = rounded top edges + triangle, apex 
 top_r = 1.0            # fillet on the two long top edges of the body: feel which side is up
 rib_w, rib_h, rib_clr, rib_end = 1.2, 1.5, 0.3, 1.0   # one rib per side wall on the top half, grooves in the bottom
 # groove = rib + rib_clr on paper (total, i.e. 0.15 per side); FDM prints slots undersize, which gives the press.
-# History: Ø1.6 pegs / Ø1.5 holes did not go together; Ø1.7 holes very tight; Ø1.9 fine but the pegs sheared
-# at the root on the first pull-apart (2026-09-10) -> long ribs instead. sleeve_clr_w 0.05 -> 0.15 (2026-09-09).
+# History: Ø1.6 pegs / Ø1.5 holes did not go together; Ø1.8 holes (clr 0.2) very tight and the pegs sheared
+# at the root on the first pull-apart -> long ribs instead (2026-09-10). Ribs, the 0.3 clearance and the
+# wider channel (sleeve_clr_w 0.05 -> 0.15) are untested: the 3mf was stale for three prints.
 
 z0, z1 = nose_fit, pocket_h - nose_fit               # whole plug lives inside the pocket height
 nose_w, body_w = pocket_w - 2 * nose_fit, pocket_w - 2 * nose_fit + 2 * wall
@@ -113,3 +114,9 @@ if __name__ == "__main__":
     bb = plug.bounding_box()
     print(f"plug {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm, skin {skin:.2f}, cheeks {cheek:.2f}, "
           f"halves z-min {bottom_print.bounding_box().min.Z:.2f}/{top_print.bounding_box().min.Z:.2f}")
+    if out.resolve() == Path(__file__).resolve().parent / "stl" and os.environ.get("MAKE_3MF", "true") == "true":
+        import subprocess, sys
+        here = Path(__file__).resolve().parent
+        if (here / "bambu-template.3mf").exists():   # slicer project: swap all fresh STLs into the template
+            subprocess.run([sys.executable, "make_3mf.py", "--stl-dir", str(out), "--out", "openrz67-case.3mf"], cwd=here, check=True)
+            print("openrz67-case.3mf oppdatert")

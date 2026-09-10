@@ -166,13 +166,18 @@ The parameters are plain Python constants at the top of `openrz67_case.py`. Requ
 [uv](https://docs.astral.sh/uv/) — the script carries its own dependency header, so there
 is no venv to manage.
 
-**Easiest export** – run the script, which builds all three parts and the slicer project:
+**Easiest export** – run the script, which builds the case parts and the camera plug
+and the slicer project:
 
 ```bash
 cd case
-./export.sh            # base, lid, lightpipe -> stl/  + openrz67-case.3mf
+./export.sh            # base, lid, lightpipe, camera plug -> stl/  + openrz67-case.3mf
 ./export.sh out        # custom output dir (skips the .3mf)
+uv run camera_plug.py  # just the plug; also rebuilds openrz67-case.3mf from the STLs in stl/
 ```
+
+Slice from `openrz67-case.3mf` (plate 1 case, plate 2 camera plug). Every script that writes
+to `stl/` rebuilds it, so the 3mf is never older than the STLs.
 
 **Overrides** – `openrz67_case.py` reads these from the environment (the in-file default
 applies when unset); anything else is a one-line edit of the constant:
