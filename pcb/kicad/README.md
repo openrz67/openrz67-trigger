@@ -56,7 +56,7 @@ out. No DRC or ERC exclusions are configured; the only custom rules are in `open
 
 | Check | Count | What |
 |---|---|---|
-| `courtyards_overlap` | 7 | Neighbours closer than 0.1 mm: C21/USB1, L3 against C20/R9, H1/USB1 (all as on the fabricated rev-1 layout), plus C25 against R20/R6 and C24/D3 in the rev-2 power corner (pad-to-pad ≥ 0.40 mm everywhere). |
+| `courtyards_overlap` | 10 | Neighbours closer than 0.1 mm: C21/USB1, L3 against C20/R9, H1/USB1 (all as on the fabricated rev-1 layout), plus C25 against R20/R6 and C24/D3 in the rev-2 power corner, and R23 against U1, C29 and C6 since 2026-09-10 (pad-to-pad ≥ 0.40 mm everywhere except R23: 0.16 mm to U1 pad 14, its own net, and 0.18 mm to C29 pad 2). |
 | `silk_overlap` | 1 | U2's pin-1 dot touches L3's silkscreen outline (0.02 mm). |
 | `text_height`, `text_thickness` | 2 | The `BOOT EN` label on F.SilkS is 0.5 mm / 0.10 mm, under JLCPCB's 1.0 mm / 0.15 mm. Enlarged in place it runs over the R18 pads and the S3 body, where the fab clips silkscreen against solder mask. Splitting it into separate `BOOT` and `EN` labels does not help: the free band above the S1 pads is 0.85 mm and the one below the switches is 0.7 mm, both under the 1.0 mm the text needs. Fixing it means moving parts. Every other silkscreen text is at or above 1.067 mm. |
 
@@ -235,6 +235,24 @@ pads do fit, but the cell now occupies the bottom. Revisit it together with the 
   TI's 84–88 %), the F.Cu ground island under C26/C29/C6 with one via, the 68.7 mm² B.Cu
   island south-east of U1 with one via, a return via next to C24, 0.16 mm power necks at the
   U2/U3 pads, a `+` mark for BAT1 on F.SilkS, the 0.098 mm mask dam on U3.
+
+- **GPIO8 pull-up R23 (2026-09-10).** GPIO8 (U1 pin 14) is a strapping pin with no internal
+  pull (ESP32-C3 datasheet table 3-1: default floating) and Joint Download Boot needs it high
+  (table 3-3), so the BOOT+EN recovery procedure depended on a floating QFN pad. Rev 1 and the
+  ordered rev 2 have it unconnected; the no-connect flag kept ERC quiet about it. R23 is a
+  10 kΩ 0402 (same UNI-ROYAL C25744 line as R6/R7/R8) from pin 14 to VCC, at (25.283, 13.669)
+  rot 180, pad 2 (GPIO8) 0.16 mm east of pin 14 through a 0.16 mm stub, pad 1 on the VCC copper.
+  To make room: C29 moved 0.55 mm east to (26.409, 14.395); the 0.635 mm VCC artery from C29
+  pad 2 to R8 now runs down x = 25.709 instead of x = 25.197; the C29→C6 VCC link is one 0.4 mm
+  diagonal (25.709, 14.395)→(25.76, 12.867); GPIO6's escape via moved from (24.65, 13.5) to
+  (24.62, 14.29) as a 0.4/0.2 via, leaving pad 12 with one 45° stub, and its B.Cu run to
+  (26.05, 12.3) starts there. DRC 0 errors, 0 unconnected, schematic parity clean; three new
+  courtyard warnings (R23 against U1/C29/C6). The review that found this, and its counter-read,
+  are in `notes/review-2026-09-10.md` and `notes/review-2026-09-10-verify.md`.
+  **Not done: the 1 µF on VDD_SPI (pin 18)** the hardware design guidelines recommend. Pin 18
+  can only leave north, into the 0.7 mm strip between the top pad row and S1's pad (the VCC stub
+  to R6 runs there), and an 0402 needs 0.79 mm; moving R6 does not help because both R6 pads
+  sit in the same strip. It needs S1 or GPIO9's route moved, or a part on the bottom side.
 
 ## Ordering
 

@@ -1,8 +1,12 @@
 ** Drc report for openrz67.kicad_pcb **
-** Created on 2026-09-08T23:38:57 **
+** Created on 2026-09-10T21:52:39 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 10 DRC violations **
+** Found 13 DRC violations **
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(146.4095 mm, 104.3950 mm): Footprint C29
+    @(145.2830 mm, 103.6690 mm): Footprint R23
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(138.0000 mm, 99.8000 mm): Footprint C25
@@ -27,6 +31,14 @@
     Rule: board setup constraints courtyard; warning
     @(139.3000 mm, 96.5000 mm): Footprint C24
     @(140.5000 mm, 94.0000 mm): Footprint D3
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(141.2570 mm, 104.4195 mm): Footprint U1
+    @(145.2830 mm, 103.6690 mm): Footprint R23
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(146.3050 mm, 102.8670 mm): Footprint C6
+    @(145.2830 mm, 103.6690 mm): Footprint R23
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(123.6070 mm, 103.2590 mm): Footprint USB1
