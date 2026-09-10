@@ -12,11 +12,11 @@ location the loose/taped sleeves lack. A front plate with pin holes stops the
 sleeves sliding forward on pull-off, a rear wall with wire notches stops them
 sliding back on push-on — no glue on the sleeves. The nose has only ~0.4 mm
 skins over and under the sleeves; the body behind it is 1 mm taller top and bottom
-for the pegs. Each half prints flat
+for the ribs. Each half prints flat
 on its outer face with every cavity opening upward: no bridges, no supports.
 Assemble: lay the sleeves in the bottom half, wires out the back, press the top
-half on: four Ø2.2 pegs in its side walls press into Ø2.5 holes in the bottom
-(no glue; a real snap hook is not printable at 1.8 mm half height). Pin order facing
+half on: a long rib under each side wall presses into a groove in the bottom (no
+glue; pegs sheared off, a snap hook is not printable this small). Pin order facing
 the port, left to right: 6 V (do NOT connect), GND, S1, S2. Up is marked twice: a big
 triangle centred on top with its apex toward the camera, and rounded long top edges
 against a square bottom, so it can be felt.
@@ -44,16 +44,15 @@ wire_d = 1.5                    # notch for the jumper wire (~1.3 OD)
 # --- Fit / walls (tune after the first print) --------------------------------------
 nose_fit = 0.05        # per-side clearance of the nose in the pocket; go negative for press
 cheek_len = pocket_d - 0.3
-wall, plate_t, rear_t = 4.2, 0.8, 1.5   # wall carries the pegs: >= 0.8 around the hole (peg_d + peg_clr)
+wall, plate_t, rear_t = 3.2, 0.8, 1.5   # wall carries the rib groove: >= 0.8 plastic each side of it
 body_ext = 1.0         # body (outside the camera) is this much taller than the nose, top and bottom
 pin_hole = 1.4
 mark = 6.0             # triangle side; up = rounded top edges + triangle, apex toward the camera
 top_r = 1.0            # fillet on the two long top edges of the body: feel which side is up
-peg_d, peg_h, peg_clr, peg_ys = 2.2, 2.0, 0.3, [2.0, 8.0]   # pegs on the top half, holes in the bottom
-# hole = peg_d + peg_clr on paper; FDM shrinks small vertical holes ~0.2-0.3, which gives the press.
-# Prints: peg_clr -0.1 did not go together; 0.2 went on but very, very tight. sleeve_clr_w 0.05 -> 0.15
-# after the 0.2 print: four sleeves were hard to lay in the channel. Ø1.6 x 1.2 pegs sheared off
-# at the root on the first pull-apart -> Ø2.2 x 2.0 and body_ext 1.0 (2026-09-10).
+rib_w, rib_h, rib_clr, rib_end = 1.2, 1.5, 0.3, 1.0   # one rib per side wall on the top half, grooves in the bottom
+# groove = rib + rib_clr on paper (total, i.e. 0.15 per side); FDM prints slots undersize, which gives the press.
+# History: Ø1.6 pegs / Ø1.5 holes did not go together; Ø1.7 holes very tight; Ø1.9 fine but the pegs sheared
+# at the root on the first pull-apart (2026-09-10) -> long ribs instead. sleeve_clr_w 0.05 -> 0.15 (2026-09-09).
 
 z0, z1 = nose_fit, pocket_h - nose_fit               # whole plug lives inside the pocket height
 nose_w, body_w = pocket_w - 2 * nose_fit, pocket_w - 2 * nose_fit + 2 * wall
@@ -65,8 +64,8 @@ skin = pin_z - ch_h / 2 - z0
 cheek = (nose_w - ch_w) / 2
 assert skin >= 0.4, f"skin {skin:.2f} < 0.4: measure the sleeve height, or lower sleeve_clr/nose_fit"
 assert cheek >= 1.2, f"cheek {cheek:.2f} too thin to print"
-assert (wall - peg_d - peg_clr) / 2 >= 0.8, "too little wall around the peg holes"
-assert pin_z - (z0 - body_ext) - peg_h - 0.1 >= 0.4, "peg holes would break through the bottom skin"
+assert (wall - rib_w - rib_clr) / 2 >= 0.8, "too little wall beside the grooves"
+assert pin_z - (z0 - body_ext) - rib_h - 0.1 >= 0.4, "grooves would break through the bottom skin"
 assert pocket_d - 0.3 - plate_t >= 4.0, "too little pin engagement in the sleeves"
 
 
@@ -92,11 +91,11 @@ plug -= extrude(tri, -0.2)                                                      
 cut = Plane.XY.offset(pin_z)
 bottom = split(plug, bisect_by=cut, keep=Keep.BOTTOM)
 top = split(plug, bisect_by=cut, keep=Keep.TOP)
-peg_x = nose_w / 2 + wall / 2
+rib_x, rib_len = nose_w / 2 + wall / 2, body_len - 2 * rib_end
 for sx in (-1, 1):
-    for py in peg_ys:
-        top += Pos(sx * peg_x, py, pin_z - peg_h / 2) * Cylinder(peg_d / 2, peg_h)
-        bottom -= Pos(sx * peg_x, py, pin_z - (peg_h + 0.1) / 2) * Cylinder((peg_d + peg_clr) / 2, peg_h + 0.1)
+    top += box(sx * rib_x - rib_w / 2, rib_end, pin_z - rib_h, rib_w, rib_len, rib_h)
+    bottom -= box(sx * rib_x - (rib_w + rib_clr) / 2, rib_end - rib_clr / 2, pin_z - rib_h - 0.1,
+                  rib_w + rib_clr, rib_len + rib_clr, rib_h + 0.1)
 bottom_print = Pos(0, 0, body_ext - z0) * bottom                       # outer face on z = 0
 top_print = Pos(0, 0, z1 + body_ext) * Rot(180, 0, 0) * top             # flipped, outer face on z = 0
 
