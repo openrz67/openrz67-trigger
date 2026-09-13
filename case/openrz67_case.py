@@ -4,9 +4,10 @@
 # ///
 """openrz67-trigger enclosure (build123d).
 
-Two-part snap-fit box for the OpenRZ67 trigger PCB rev 2 (../pcb/kicad/), with
-the battery in its own bay beside the PCB. Dimensions come from the KiCad board
-and its footprints — see README.md for the full design rationale.
+Two-part snap-fit box for the OpenRZ67 trigger PCB rev 2 (../pcb/kicad/), stacked:
+the LiPo cell lies flat under the PCB (foam between), the PCB sits on tall posts,
+and open pockets in front of and behind the board take the battery lead and
+fingers. Dimensions come from the KiCad board and its footprints — see README.md.
 
 Parts: base (tub), lid (telescoping ship-lap edge), lightpipe (clear filament).
 Print orientation: base floor-down; lid upside-down (the debossed top text
@@ -22,10 +23,15 @@ board_y_here = 22 - kicad_y (the two mounting holes are (2,2) and (46,20)).
 Run (exports STLs to stl/ and checks the assertions):
     uv run openrz67_case.py
 
-Closure: snap-fit — a perimeter bead on the lid tongue clicks into a groove in
-the base lip, holding the whole rim down (no screws, no heat-set inserts). The
-PCB is located by two Ø1.7 pins in its real mounting holes and pressed down by
-the lid bosses. Open the lid with a coin in the pry slot on the back wall.
+Closure: snap-fit — four cantilever fingers cut free in the lid tongue (two per
+long wall) carry a bead that clicks into a pocket in the base lip; the walls
+themselves stay rigid (no screws, no heat-set inserts). The PCB is located by two
+Ø1.7 pins in its real mounting holes and pressed down by the lid bosses. Open the
+lid with a coin in the pry slot on the back wall.
+
+U4 camera cable: the side-entry XH header and its plug stay INSIDE the box; only
+the (heat-shrunk) cable leaves through a keyhole slot in the lid's right wall, open
+down to the seam, so the cable drops in as the lid closes.
 
 Env overrides: PCB_T, LID_TEXT_SHOW (default true), and
 SNAP_TEST=true to also export a cropped corner pair for tuning snap_bead /
@@ -46,34 +52,38 @@ pcb_supports = [(2, 20), (46, 2)]    # solid posts in the screwless corners
 pcb_overhang_left = 2.0              # USB-C shell protrudes past the board edge
 # U4 camera connector: side-entry S4B-XH-A on the right edge, mouth facing out. Its
 # body reaches xh_mouth past the pin row (F.Fab outline), i.e. 5.5 mm past the board
-# edge, so the cavity grows on the right and the body passes through the lid wall.
+# edge; the mated XHP-4 plug sticks xh_plug_proud further. Both stay inside the box.
 xh_x, xh_y, xh_mouth = 44.3, 22 - 11.0, 9.2         # pin row (board), pins -> mouth face
 xh_w, xh_h, xh_back, xh_clr = 12.4, 6.1, 2.3, 0.4   # body width, height, pins -> rear face
-xh_recess = 0.3                      # mouth face this far inside the outer wall face
+xh_plug_proud, xh_slack = 2.5, 1.5   # plug rear past the mouth (estimate, measure!); air to the wall
+cable_d, cable_clr = 5.0, 0.5        # heat-shrunk 4-wire bundle; slot = cable_d + 2 * cable_clr
 # TH solder tails below the PCB: [board_x, board_y, relief_dia] (BAT1 pins)
 th_keepouts = [(3.275, 16.189, 3.2), (3.275, 18.189, 3.2)]
 th_keepout_depth = 3.5                # PH tails are 3.5 mm (CONN-TH_PH2.00-LI-2P.wrl); pocket reaches the floor
 # Component bodies above the PCB the lid bosses must clear: (x0, y0, x1, y1)
 comp_keepouts = [(0.0, 4.0, 8.0, 14.5),   # USB-C connector body
-                 (xh_x - xh_back - xh_clr, xh_y - xh_w / 2 - xh_clr, 49.0, xh_y + xh_w / 2 + xh_clr)]
-#                ^ U4 body vs the (46,20) hold-down boss (0.3 mm apart nominally)
+                 (xh_x - xh_back - xh_clr, xh_y - xh_w / 2 - xh_clr,
+                  xh_x + xh_mouth + xh_plug_proud, xh_y + xh_w / 2 + xh_clr)]
+#                ^ U4 body + plug vs the (46,20) hold-down boss (0.3 mm apart nominally)
 
-# --- PCB frame (guide fins, front edge; the bay divider guides the back) ----
+# --- PCB frame (guide fins on both long edges, reaching across the pockets) ---
 frame_clr, frame_proud, frame_cham = 0.2, 0.6, 0.4
 frame_rib_l, frame_notch_clr = 8.0, 0.3
-frame_ribs_front = [10, 38]          # fin centres in board-X
+frame_ribs_front, frame_ribs_back = [20, 32], [20, 32]  # fin centres in board-X
+#   mid-edge, clear of the snap fingers (near the corners) and the lead pocket (back-left)
 
 # --- Fit and walls ----------------------------------------------------------
-clr, wall, floor_t, lid_top_t = 0.4, 2.4, 2.0, 2.0   # wall 2.4: the lap halves must slice as real perimeters
+clr, wall, floor_t, lid_top_t = 0.4, 3.2, 2.0, 2.0   # wall 3.2: lap halves 1.6 (rigid; the fingers flex)
+pocket_front, pocket_back = 3.0, 5.0  # open air beside the board's long edges: fingers / battery lead
 
 # --- Vertical stack ---------------------------------------------------------
-standoff_h = 3.5                     # >= th_keepout_depth + margin (no battery underneath)
+standoff_h = 11.0                    # cell 6 + foam 1.5 + THT tails 3.5 (th_keepout_depth)
 h_usbc, h_ph_plug = 3.3, 8.0         # USB-C shell; PHR-2 plug + wire bend in the top-entry
 #                                      PH headers (BAT1, S3) — the tallest thing on rev 2
 
-# --- Battery bay (beside the PCB, behind its back edge) ---------------------
+# --- Battery: cell flat under the PCB, lengthwise, fixed with foam tape ------
 batt_w, batt_l, batt_t = 31, 20, 6.0
-batt_clr, batt_dx, divider_t, rib_h = 0.5, 0, 1.6, 2.5
+batt_x0, batt_foam = 6.0, 1.5        # board-X of the cell's left end (between the posts); foam under the tails
 
 # --- Openings ---------------------------------------------------------------
 usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # outer lip (stops the cable body)
@@ -91,48 +101,51 @@ sw_screw_pitch, sw_screw_d = 15.0, 2.4
 sw_boss_d, sw_boss_h, sw_boss_pilot, sw_boss_gap = 5.0, 5.0, 1.5, 1.5
 sw_plate_w, sw_plate_h, sw_plate_t, sw_plate_clr = 19.45, 5.75, 0.4, 0.3
 
-# --- Snap closure --------------------------------------------------------------
-snap_bead = 0.5    # how far the bead on the lid tongue sticks out
-bead_h = 1.4       # bead height; the base groove is 0.5 taller and 0.25 deeper (lead-in)
+# --- Snap closure: cantilever fingers in the lid tongue -------------------------
+snap_bead = 0.45   # how far the bead on a finger sticks out
+bead_h = 1.4       # bead height; the base pocket is 0.5 taller and 0.25 deeper (lead-in)
+finger_l, finger_t, finger_slot = 12.0, 1.0, 0.8   # finger length, thickness (thinned from inside), relief slot
+snap_fingers_x = [13.0, 51.0]        # finger centres (case-X), front AND back wall, near the corners
 holddown_d = 5.0   # lid bosses that press the PCB onto the posts
 pin_proud = 0.8    # locating pins stand this far above the PCB top
 pry_w, pry_d, pry_h = 12.0, 1.0, 1.2   # coin slot in the lid's lower edge, back wall
 
 # --- Ship-lap edge / orientation mark / lid text -----------------------------
-lap, lap_gap = 4.0, 0.15             # lap <= split_z - floor_t (lip must end above the floor)
+lap, lap_gap = 7.0, 0.15             # lap <= split_z - floor_t; 7 mm fingers, bead near the tip -> ~2 % strain
 orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 8.0, 2.5, 0.8, 9.0
 # Debossed (pocket) text in the lid top, per the FDM rules: prints upside-down
 # against the bed (crisp), and one filament change at Z = lid_text_depth colours
 # the letters. Badge layout around the LED window: "OpenRZ67" above it, "Trigger"
 # below, both centred on the light pipe's X. (text, cap size, Y offset from LED row)
 lid_text_show = os.environ.get("LID_TEXT_SHOW", "true") == "true"
-lid_texts = [("OpenRZ67", 9.0, +11.5), ("Trigger", 7.0, -11.0)]
+lid_texts = [("OpenRZ67", 8.0, -10.0), ("Trigger", 6.5, -18.5)]
 lid_text_depth = 0.6              # pocket depth = the colour-change height (3 x 0.2 layers)
 eps = 0.01
 
 # --- Derived ------------------------------------------------------------------
-off = wall + clr
-pcb_overhang_right = xh_x + xh_mouth + xh_recess - board_w - clr - wall
+pcb_overhang_right = xh_x + xh_mouth + xh_plug_proud + xh_slack - board_w - clr
 inner_w = board_w + 2 * clr + pcb_overhang_left + pcb_overhang_right
-bay_d = batt_l + 2 * batt_clr
-inner_h = clr + board_h + frame_clr + divider_t + bay_d
+inner_h = pocket_front + clr + board_h + clr + pocket_back
+off_y = wall + pocket_front + clr
 inner_r = board_r + clr
 outer_w, outer_h, outer_r = inner_w + 2 * wall, inner_h + 2 * wall, inner_r + wall
 standoff_d = 4.0
-comp_clr = max(h_ph_plug, xh_h) + 1.0
+comp_clr = max(h_ph_plug, xh_h) + 2.0   # +2: room for the battery lead's loop into BAT1
 pcb_z = floor_t + standoff_h
 pcb_top_z = pcb_z + pcb_t
 split_z = pcb_top_z
 lid_h = comp_clr + lid_top_t
 total_h = split_z + lid_h
-bead_z = split_z - lap + 2.2            # bead centre height on the tongue
+bead_z = split_z - lap + 1.1            # bead centre: near the finger tip (long lever, low strain)
 assert lap <= split_z - floor_t, "lid lip would reach the floor"
-assert split_z - lap < bead_z - (bead_h + 0.5) / 2 and bead_z + (bead_h + 0.5) / 2 < split_z, \
-    "snap bead/groove outside the lap zone"
+assert split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + 0.5) / 2 < split_z, \
+    "snap bead/pocket outside the lap zone"
 # Printability: the lap halves must slice as real perimeters (0.4 mm nozzle:
-# one line 0.42 mm, a two-line freestanding wall 0.87 mm)
-assert wall / 2 - (snap_bead + 0.25) >= 0.42, "base lip behind the snap groove under one line"
+# a two-line freestanding wall 0.87 mm)
+assert wall / 2 - (snap_bead + 0.25) >= 0.87, "base lip behind the snap pocket under two lines"
 assert wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines"
+assert 0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness"
+assert standoff_h - th_keepout_depth - batt_t >= batt_foam - 1e-6, "no foam room between cell and THT tails"
 
 
 def bx(x):
@@ -140,7 +153,7 @@ def bx(x):
 
 
 def by(y):
-    return off + y
+    return off_y + y
 
 
 led_cx = (bx(led_pos[0][0]) + bx(led_pos[1][0])) / 2
@@ -191,22 +204,33 @@ cut_usb = xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_open_w, usb_open_h, 
 cut_usb += xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_recess_w, usb_recess_h, usb_recess_r),
                   wall - usb_recess_d, usb_recess_d + 1)
 
-# U4 opening (right wall): the side-entry XH body sits in a rectangular through-cut
-# in the lid wall, mouth xh_recess inside the outer face; the XHP plug goes in from
-# outside. The body is above the split, but the lid's tongue (and its snap bead)
-# hang `lap` below the split and would have to pass through the body while the lid
-# is lowered, so the cut runs the full lap depth too: no tongue in the U4 band.
+# Camera cable slot (right wall): header + plug stay inside; the cable leaves at its
+# natural height (header centre, xh_h/2 above the PCB) through a keyhole in the lid
+# wall — round top of slot_w, open straight down through the tongue to the seam, so
+# the cable drops in as the lid closes and the lid lifts off untethered.
 xh_cy = by(xh_y)
-cut_xh = box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - lap - eps,
-             wall + 2, xh_w + 2 * xh_clr, xh_h + xh_clr + lap + eps)
+cable_zc = split_z + xh_h / 2
+slot_w = cable_d + 2 * cable_clr
+cut_cable = xprism(Pos(xh_cy, cable_zc) * Circle(slot_w / 2), outer_w - wall - 1, wall + 2)
+cut_cable += box(outer_w - wall - 1, xh_cy - slot_w / 2, split_z - lap - eps,
+                 wall + 2, slot_w, cable_zc - (split_z - lap) + eps)
 
 # Frame-fin tongue notches (cut from the lid tongue where the base fins stand)
-fin_ycap = off - frame_clr
+fin_ycap = off_y - frame_clr
 cut_fin_notches = Part() + [
-    box(bx(cx) - frame_rib_l / 2 - frame_notch_clr, -frame_notch_clr, split_z - lap - eps,
+    box(bx(cx) - frame_rib_l / 2 - frame_notch_clr, y0, split_z - lap - eps,
         frame_rib_l + 2 * frame_notch_clr, fin_ycap + 2 * frame_notch_clr, lap + 2 * eps)
-    for cx in frame_ribs_front
+    for cxs, y0 in ((frame_ribs_front, -frame_notch_clr),
+                    (frame_ribs_back, outer_h - fin_ycap - frame_notch_clr))
+    for cx in cxs
 ]
+
+# Snap finger bands (case-X range of each finger) on the front (y = 0) and back wall
+finger_bands = [(fx - finger_l / 2, fx + finger_l / 2) for fx in snap_fingers_x]
+for fx0, fx1 in finger_bands:
+    for cx in frame_ribs_front + frame_ribs_back:
+        n0, n1 = bx(cx) - frame_rib_l / 2 - frame_notch_clr, bx(cx) + frame_rib_l / 2 + frame_notch_clr
+        assert fx1 + finger_slot <= n0 or fx0 - finger_slot >= n1, "snap finger overlaps a fin notch"
 
 
 def orient_mark_rib(z0):
@@ -229,53 +253,57 @@ for hx, hy in mount_holes:
 for px, py in pcb_supports:
     base += cyl(bx(px), by(py), floor_t, standoff_d, standoff_h)
 
-# Battery bay: full-width divider (front face guides the PCB's back edge, top flush
-# with the split) + two low ribs that stop the cell sliding in X.
-bay_y0 = off + board_h + frame_clr
-bay_x0 = wall + (inner_w - batt_w) / 2 - batt_clr + batt_dx
-base += box(wall, bay_y0, floor_t, inner_w, divider_t, split_z - floor_t)
-for x in (bay_x0 - 1.6, bay_x0 + batt_w + 2 * batt_clr):
-    base += box(x, bay_y0 + divider_t, floor_t, 1.6, bay_d, rib_h)
+# Guide fins on both long edges: thick wall-backed fin reaching across the pocket to
+# the board edge + thin chamfered lead-in lip above the board top. One YZ profile
+# extruded along X. (build123d: keep the polygon CCW, or it extrudes toward -X.)
+def fin_profile(yw, s):
+    pts = [(yw, floor_t), (yw + s * fin_ycap, floor_t),
+           (yw + s * fin_ycap, split_z + frame_proud - frame_cham),
+           (yw + s * wall, split_z + frame_proud), (yw + s * wall, split_z), (yw, split_z)]
+    return Polygon(*(pts if s > 0 else pts[::-1]), align=None)
 
-# Front guide fins: thick wall-backed fin beside the board edge + thin chamfered
-# lead-in lip above the board top. One YZ profile extruded along X.
-fin_profile = Polygon(
-    (0, floor_t), (fin_ycap, floor_t),
-    (fin_ycap, split_z + frame_proud - frame_cham),
-    (wall, split_z + frame_proud), (wall, split_z), (0, split_z),
-    align=None,
-)
-for cx in frame_ribs_front:
-    base += xprism(fin_profile, bx(cx) - frame_rib_l / 2, frame_rib_l)
+for cxs, yw, s in ((frame_ribs_front, 0.0, 1), (frame_ribs_back, outer_h, -1)):
+    for cx in cxs:
+        base += xprism(fin_profile(yw, s), bx(cx) - frame_rib_l / 2, frame_rib_l)
 
 base += orient_mark_rib(split_z - orient_mark_h / 2)
 
-# Snap groove in the base lip: slightly taller and deeper than the bead (lead-in).
-# The cut's top edges are chamfered so the groove ceiling prints as a ~45° ramp
-# instead of an unsupported 0.75 mm overhang (base prints floor-down).
+# Snap pockets in the base lip, only where the lid fingers are: slightly longer,
+# taller and deeper than the bead (lead-in). The top edges are chamfered so the
+# pocket ceiling prints as a ~45° ramp, not a 0.7 mm overhang (base prints floor-down).
+def finger_boxes(margin, z0, h):
+    return Part() + [box(fx0 - margin, -1, z0, fx1 - fx0 + 2 * margin, outer_h + 2, h)
+                     for fx0, fx1 in finger_bands]
+
 groove = prism(offset(mid_sk, snap_bead + 0.25) - offset(mid_sk, -lap_gap - 0.25),
-               bead_z - (bead_h + 0.5) / 2, bead_h + 0.5)
-base -= chamfer(groove.edges().group_by(Axis.Z)[-1], 0.55)
+               split_z - lap - eps, bead_z + (bead_h + 0.5) / 2 - (split_z - lap) + eps) & finger_boxes(0.5, 0, total_h)
+base -= chamfer(groove.edges().group_by(Axis.Z)[-1].filter_by(Axis.X), 0.5)
 # TH solder-tail pockets in the post tops (BAT1 pins beside the (2,20) post)
 for kx, ky, kd in th_keepouts:
     base -= cyl(bx(kx), by(ky), pcb_z - th_keepout_depth, kd, th_keepout_depth + eps)
 base -= cut_usb
-# U4's body underside sits exactly at the split; take 0.25 mm off the base's outer
-# wall half in that band so a proud print does not lift the PCB off its posts.
-base -= box(outer_w - wall - 1, xh_cy - xh_w / 2 - xh_clr, split_z - 0.25,
-            wall + 2, xh_w + 2 * xh_clr, 1)
 
 # --- LID ----------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)                        # top + walls
 lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap)   # tongue
-# Snap bead on the tongue, chamfered top and bottom: the lid prints upside-down,
-# so an unchamfered bead starts as a 0.5 mm ledge in mid-air; the ramps also ease
+# Snap beads on the fingers only, chamfered top and bottom: the lid prints upside-
+# down, so an unchamfered bead starts as a ledge in mid-air; the ramps also ease
 # click-in and coin-open. (The inner edges' chamfers end up buried in the tongue.)
 bead = prism(offset(mid_sk, -lap_gap + snap_bead) - offset(mid_sk, -lap_gap - 0.4),
-             bead_z - bead_h / 2, bead_h)
+             bead_z - bead_h / 2, bead_h) & finger_boxes(0, 0, total_h)
 bead_ends = bead.edges().group_by(Axis.Z)
 lid += chamfer(bead_ends[0] + bead_ends[-1], 0.4)
 lid -= prism(inner_sk, split_z - lap - eps, comp_clr + lap + eps)       # cavity
+# Cut the fingers free: a relief slot through the tongue at each end, and thin the
+# finger from the cavity side to finger_t so it flexes instead of the wall.
+for fx0, fx1 in finger_bands:
+    for yin, yout in ((wall, wall / 2), (outer_h - wall, outer_h - wall / 2)):
+        ya, yb = min(yin, yout), max(yin, yout)
+        for x in (fx0 - finger_slot, fx1):
+            lid -= box(x, ya - 0.5, split_z - lap - eps, finger_slot, yb - ya + 1, lap + eps)
+        thin = wall / 2 - lap_gap - finger_t
+        y0 = yin - thin if yin < yout else yin
+        lid -= box(fx0, y0, split_z - lap - eps, fx1 - fx0, thin, lap + eps)
 
 # Switch screw bosses: rectangular pillars from sw_boss_gap above the PCB (clears
 # Q1/C15 beneath) up into the ceiling; front face at the inner wall plane so the
@@ -289,7 +317,7 @@ for hx, hy in mount_holes:
 lid += orient_mark_rib(split_z)
 
 lid -= cut_usb
-lid -= cut_xh
+lid -= cut_cable
 # LED light-pipe hole: stem window through the top plate + head recess (flush top)
 lid -= prism(Pos(led_cx, led_cy) * RectangleRounded(
     led_win_l + led_pipe_clr, led_win_w + led_pipe_clr, led_win_r),
@@ -314,7 +342,7 @@ lid -= box(sx - sw_body_l / 2 - sw_body_clr, wall, swz - sw_body_h / 2 - sw_body
 for hx, hy in mount_holes:
     lid -= cyl(bx(hx), by(hy), pcb_top_z - eps, 2.6, pin_proud + 0.7 + eps)
 # Coin/fingernail pry slot in the lid's lower edge, back wall centre (over the
-# battery bay — nothing behind it). 1mm deep leaves 0.35 skin before the tongue.
+# back pocket — nothing behind it).
 lid -= box(outer_w / 2 - pry_w / 2, outer_h - pry_d, split_z - eps,
            pry_w, pry_d + eps, pry_h + eps)
 # Component keepouts (USB-C body vs the (2,2) hold-down boss)
@@ -360,8 +388,13 @@ def _open(solid, probe, what):
 
 _open(base + lid, box(-0.5, usb_cy - 4, usb_zc - 2.5, wall + 1, 8, 5), "USB opening")
 _open(base + lid, box(bx(xh_x - xh_back), xh_cy - xh_w / 2, split_z + eps,
-                      xh_mouth + xh_back, xh_w, xh_h), "U4 body envelope through the right wall")
-assert bx(xh_x + xh_mouth) <= outer_w - xh_recess + 1e-6, "U4 mouth sticks out of the wall"
+                      xh_mouth + xh_back + xh_plug_proud, xh_w, xh_h), "U4 body + plug inside the box")
+_open(base + lid, xprism(Pos(xh_cy, cable_zc) * Circle(cable_d / 2), bx(xh_x + xh_mouth + xh_plug_proud),
+                         outer_w), "camera cable out through the right wall")
+assert bx(xh_x + xh_mouth + xh_plug_proud) <= outer_w - wall - xh_slack + 1e-6, "U4 plug hits the wall"
+# Cell under the PCB: between the posts, under the THT tails (foam on top)
+_open(base, box(bx(batt_x0), by((board_h - batt_l) / 2), floor_t + eps, batt_w, batt_l, batt_t),
+      "cell under the PCB")
 _open(lid, box(led_cx - 2, led_cy - 1, total_h - lid_top_t + eps, 4, 2, lid_top_t), "LED window")
 for hx, hy in mount_holes:
     _open(lid, cyl(bx(hx), by(hy), pcb_top_z + eps, 2.0, pin_proud), "locating-pin recess")
@@ -390,9 +423,9 @@ if __name__ == "__main__":
     out.mkdir(parents=True, exist_ok=True)
     parts = [("openrz67-base", base), ("openrz67-lid", lid), ("openrz67-lightpipe", lightpipe)]
     if os.environ.get("SNAP_TEST", "false") == "true":
-        # Front-left corner crop of base + lid: one snap corner, a guide fin, a
+        # Front-left corner crop of base + lid: one snap finger, a
         # locating pin and its boss. Print these first to tune snap_bead / lap_gap.
-        crop = box(-2, -2, -1, 24, 24, total_h + 2)
+        crop = box(-2, -2, -1, 34, 24, total_h + 2)
         parts += [("openrz67-snaptest-base", base & crop), ("openrz67-snaptest-lid", lid & crop)]
     for name, p in parts:
         export_stl(p, str(out / f"{name}.stl"), ascii_format=True)  # make_3mf.py parses ASCII

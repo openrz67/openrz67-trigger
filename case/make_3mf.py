@@ -252,9 +252,21 @@ def main():
                     rf'(<object id="{oid}">.*?source_offset_{axis}" value=")[-0-9.eE]+(")',
                     rf"\g<1>{val:.8g}\g<2>", model_settings, count=1, flags=re.S,
                 )
+            # Sit the part ON the bed: the build item's translation was stored for the
+            # template's mesh height, so a taller part sinks below the plate and the
+            # slicer clips its floor (2026-09-13: the 15.4 mm base lost its 2 mm floor).
+            # Apply the item's rotation to the recentred mesh and lift it by -min(z).
+            m = re.search(rf'<item objectid="{oid}"[^>]*transform="([^"]+)"', dmodel)
+            if m:
+                t = [float(v) for v in m.group(1).split()]
+                zmin = min(t[2] * (x - offset[0]) + t[5] * (y - offset[1]) + t[8] * (z - offset[2])
+                           for x, y, z in verts)
+                t[11] = -zmin
+                dmodel = dmodel.replace(m.group(0), m.group(0).replace(
+                    m.group(1), " ".join(f"{v:.8g}" for v in t)))
             cx, cy, cz = offset
             print(f"  {info['name']:30} {len(verts)} verts / {fc} tris "
-                  f"@ ({cx:.3f},{cy:.3f},{cz:.3f})  -> {info['model_path']}")
+                  f"@ ({cx:.3f},{cy:.3f},{cz:.3f}) bed z {-zmin if m else float('nan'):.2f} -> {info['model_path']}")
 
         dmodel, model_settings = add_extra_objects(work, args, names, dmodel, model_settings)
         open(ms_path, "w").write(model_settings)
