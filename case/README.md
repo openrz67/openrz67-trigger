@@ -40,8 +40,7 @@ height. Check them against your own parts.
 The script carries **module-level assertions**: outer dimensions, plus probe checks that
 every opening actually breaks through (USB, camera cable slot, LED window, locating-pin
 recesses, switch screws) and that the fit-critical keepouts (switch body envelope, USB-C
-body, the U4 body + mated plug inside the box, the cell under the PCB, a fitted 8.5 mm
-vertical header on J1) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
+body, the U4 body + mated plug inside the box, the cell under the PCB) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
 a known collision fails loudly instead of surfacing in the print.
 
 ## Construction
@@ -141,8 +140,8 @@ seam). Delete the two `orient_mark_rib` lines to remove it.
 
 ## Lid text — second colour (`lid_texts`)
 **Debossed badge layout** in front of the LED window (the LEDs sit near the back edge):
-**"OpenRZ67"** (8 mm caps) and **"Trigger"** (6.5 mm) below it, centred on the light
-pipe's X, cut `lid_text_depth`
+**"OpenRZ67"** (8 mm caps) and **"Trigger"** (6.5 mm) below it, centred on the lid's X
+(the LED window is off-centre), cut `lid_text_depth`
 (0.6 mm) into the top face. Per the FDM rules: pockets, not raised letters, and well above
 the 4.4 mm legibility minimum for a 0.4 nozzle. Placement is enforced by assertions (each
 line must clear the LED recess, the walls and the face edges — an over-long string fails
@@ -247,12 +246,14 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
 - `batt_w/l/t` / `batt_x0` / `batt_foam` – your cell and where it lies under the board;
   `standoff_h` must stay ≥ cell + foam + 3.5 (asserted). `pocket_front/back` – hand and
   lead room beside the board.
-- `sw_x` / `sw_z` / `sw_wall` – position of the slide switch. The **front wall**
+- `sx` / `sw_z` – position of the slide switch. The **front wall**
   (`"front"`, low Y) is chosen deliberately: the back wall carries the S3 connector
   (board-X 28.7), the LEDs and the battery-lead pocket, so there's no room there for a
-  centred switch with 15 mm boss spacing. `sw_x = 22` is near the board centre (the
-  bosses at board-X 14.5 and 29.5 sit over low 0402/0603 parts only). `sw_z = 4.8`
-  puts the body underside 1.3 mm above the PCB, 0.4 mm over U1 (the body sits partly over it).
+  centred switch with 15 mm boss spacing. The switch is centred on the lid (`sx =
+  outer_w / 2`, board-X ≈ 27.5); the bosses land at board-X ≈ 20 and 35 over 0402 parts
+  and the DNP `J1` header footprint — populating `J1` with pins is not possible with the
+  switch centred. `sw_z = 4.8` puts the body underside 1.3 mm above the PCB, 0.4 mm over
+  U1 (the body sits partly over it, with X2 and C26 beneath as well).
   The wire from S3 runs across the board to the switch. Verify against your own components.
 - **Switch screw mount**: the switch's flat bracket mounts on the **outside** of the case;
   screws go from outside → through the bracket and wall → thread into two **rectangular
@@ -269,7 +270,7 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
     inner faces over the body's Y/Z extent only — the screw region (±7.5) and the pillar
     above the body stay full. Verify `sw_body_l/h/w` against your switch.
   - **Actuator opening** (`sw_slot_l × sw_slot_h`): **10.65 × 6.3 mm** through the wall,
-    centred on `sw_x`/`sw_z`.
+    centred on `sx`/`sw_z`.
   - **Screw**: **M2 self-tapping**, ~**8 mm** long (M2×6 also fine). From outside through the
     bracket (0.4) + wall (1.6 behind the recess), threading `sw_boss_pilot` (1.5) into the
     pillar (up to `sw_boss_h` 5 mm engagement). The head sits on the external bracket, so the

@@ -94,7 +94,7 @@ led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 s
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 1.0, 1.0, 0.2, 1.5
 
 # --- Slide switch SS12F15 (front wall, wired to S3) --------------------------
-sw_x, sw_z = 22, 4.8                 # body underside 1.3 mm over the PCB: clears U1 (0.9) by 0.4
+sw_z = 4.8                           # body underside 1.3 mm over the PCB: clears U1 (0.9) by 0.4
 sw_slot_l, sw_slot_h = 10.65, 6.3
 sw_body_l, sw_body_h, sw_body_w, sw_body_clr = 11.0, 7.0, 8.0, 0.4
 sw_screw_pitch, sw_screw_d = 15.0, 2.4
@@ -115,8 +115,8 @@ lap, lap_gap = 7.0, 0.15             # lap <= split_z - floor_t; 7 mm fingers, b
 orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 8.0, 2.5, 0.8, 9.0
 # Debossed (pocket) text in the lid top, per the FDM rules: prints upside-down
 # against the bed (crisp), and one filament change at Z = lid_text_depth colours
-# the letters. Badge layout around the LED window: "OpenRZ67" above it, "Trigger"
-# below, both centred on the light pipe's X. (text, cap size, Y offset from LED row)
+# the letters. Badge layout below the LED window: "OpenRZ67", then "Trigger", both
+# centred on the lid's X (the LED is off-centre). (text, cap size, Y offset from LED row)
 lid_text_show = os.environ.get("LID_TEXT_SHOW", "true") == "true"
 lid_texts = [("OpenRZ67", 8.0, -10.0), ("Trigger", 6.5, -18.5)]
 lid_text_depth = 0.6              # pocket depth = the colour-change height (3 x 0.2 layers)
@@ -158,7 +158,7 @@ def by(y):
 
 led_cx = (bx(led_pos[0][0]) + bx(led_pos[1][0])) / 2
 led_cy = (by(led_pos[0][1]) + by(led_pos[1][1])) / 2
-sx = bx(sw_x)                        # switch centre, case-X
+sx = outer_w / 2                     # switch centred on the lid (board-X ~27.5)
 swz = split_z + sw_z                 # switch centre, case-Z
 
 # --- Helpers -------------------------------------------------------------------
@@ -355,7 +355,7 @@ if lid_text_show:
     # Each line must stay on its own side of the LED head recess (half-height 2.6 in Y)
     recess_half = (led_win_w + 2 * led_head_lip + led_pipe_clr) / 2
     for txt, size, dy in lid_texts:
-        sk = Pos(led_cx, led_cy + dy) * Text(txt, font_size=size, font_style=FontStyle.BOLD)
+        sk = Pos(outer_w / 2, led_cy + dy) * Text(txt, font_size=size, font_style=FontStyle.BOLD)
         tb = sk.bounding_box()
         assert tb.min.X > 3 and tb.max.X < outer_w - 3, f"'{txt}' too wide ({tb.size.X:.1f}mm)"
         assert (tb.min.Y > led_cy + recess_half + 1 if dy > 0
@@ -404,10 +404,8 @@ for s in (-1, 1):
 _open(lid, box(sx - sw_body_l / 2, wall + eps, swz - sw_body_h / 2,
                sw_body_l, sw_body_w - 2 * eps, sw_body_h), "switch body envelope")
 _open(lid, box(bx(0.5), by(4.5), pcb_top_z + eps, 7, 9.5, 2), "USB-C body keepout")
-# J1 (1x4 2.54 mm header, DNP): pads at board x 34.4-42.0, y 1.4; a fitted vertical
-# header (10.16 x 2.54 insulator, 8.5 mm tall) must clear the lid and the front fin.
-_open(base + lid, box(bx(38.23 - 5.08), by(1.4 - 1.27), pcb_top_z + eps, 10.16, 2.54, 8.5),
-      "J1 header envelope")
+# J1 (1x4 2.54 mm header, DNP, pads at board x 34.4-42.0, y 1.4): no header envelope —
+# the centred switch's right boss sits over it (2026-09-13). Solder flying leads instead.
 
 # --- Export -------------------------------------------------------------------------------
 if __name__ == "__main__":
