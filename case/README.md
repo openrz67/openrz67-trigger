@@ -75,11 +75,15 @@ a known collision fails loudly instead of surfacing in the print.
     threading nor a vertical detour.
   - **LED light pipe** (`led_*`, separate part): D3 (red) and D4 (blue) are top-emitting
     SMD LEDs ~8 mm below the lid. A separate **clear light pipe** is inserted from above
-    as a top hat: a wide head in a top counterbore (flush with the top face) + a rod that
+    as a top hat: a **tapered** head (funnel seat, ~flush with the top face) + a rod that
     goes down to ~1.5 mm above the LEDs and channels the light into two sharp dots. The
     lid is printed opaque; **only the light pipe is printed in clear filament**. It rests
-    in the counterbore (gravity + optionally a drop of glue to seal). Parameters:
-    `led_win_l/w/r` (window size), `led_head_lip/t` (head/counterbore), `led_pipe_gap`
+    in the seat (gravity + optionally a drop of glue to seal). Why a funnel and not a
+    stepped counterbore: the lid prints upside-down, and a step is a 1 mm ledge hanging
+    over the bed-side opening — the slicer filled it with support and the edge came out
+    ragged (first stacked print, 2026-09-14). The funnel wall is 26.6° from vertical, under
+    the slicer's 30° support threshold, so nothing is supported and nothing sags. Parameters:
+    `led_win_l/w/r` (window size), `led_head_lip/t` (head oversize / height -> taper), `led_pipe_gap`
     (air gap to the LED), `led_pipe_clr` (fit in the hole). `led_pos` are the LED
     positions from pick&place.
   - **Component clearance** (`comp_keepouts`): rectangles `[board_x0, board_y0, board_x1,
@@ -103,9 +107,13 @@ a known collision fails loudly instead of surfacing in the print.
 ## Closure — snap fingers
 **No hardware at all**, and the walls do not flex: four **cantilever fingers** cut free in
 the lid tongue (two per long wall, `snap_fingers_x`, near the corners) carry a **bead**
-(`snap_bead` 0.45, `bead_h` 1.4, chamfered top and bottom for click-in/pry-out ramps and a
-printable first layer) that clicks into a matching **pocket** in the base lip (0.5 longer
-each side, 0.25 deeper, ceiling chamfered so it prints floor-down without an overhang).
+(`snap_bead` 0.55, `bead_h` 1.4; a 0.4 click-in chamfer below, only 0.15 above so most of
+the bead is a flat retention face) that clicks into a matching **pocket** in the base lip
+(0.5 longer each side, `pocket_extra_d` 0.15 deeper, `pocket_extra_h` 0.3 taller; ceiling
+edge chamfered `pocket_ch` 0.2). The first stacked print (2026-09-14, bead 0.45 with 45°
+ramps on both retention faces) closed but held loosely — hence the bigger bead and the
+steeper faces. The small ledges (0.4 on the bead, 0.5 on the pocket ceiling) print as a
+single overhanging line without support.
 Each finger is `finger_l` (12 mm) long, `finger_t` (1.0 mm) thick — thinned from the
 cavity side, with a `finger_slot` (0.8) relief at each end — and the bead sits 1.1 mm
 above the finger tip, so the flexing lever is ~6 mm: about 2 % strain at full deflection,
@@ -139,13 +147,22 @@ wall. Parameters: `orient_mark_x` (board-X of the mark, near the USB side), `ori
 seam). Delete the two `orient_mark_rib` lines to remove it.
 
 ## Lid text — second colour (`lid_texts`)
-**Debossed badge layout** in front of the LED window (the LEDs sit near the back edge):
-**"OpenRZ67"** (8 mm caps) and **"Trigger"** (6.5 mm) below it, centred on the lid's X
-(the LED window is off-centre), cut `lid_text_depth`
-(0.6 mm) into the top face. Per the FDM rules: pockets, not raised letters, and well above
-the 4.4 mm legibility minimum for a 0.4 nozzle. Placement is enforced by assertions (each
-line must clear the LED recess, the walls and the face edges — an over-long string fails
-the export instead of the print).
+**Debossed nameplate lockup** in front of the LED window (the LEDs sit near the back edge):
+**"OpenRZ67"** (9.5 mm) with a small tracked all-caps **"TRIGGER"** (5 mm, +1.0 mm letter
+spacing) under it, in **Futura Bold** (macOS system font; OCCT warns and falls back to
+Arial if it is missing). Both lines are centred on the lid's X and the block is centred
+between the LED seat and the front edge. A thin debossed **rail** (`lid_rail_*`, 0.9 wide,
+6 mm in from the side walls) runs across the LED row and breaks 1.5 mm around the
+light-pipe seat — the off-centre LED then reads as an indicator sitting on a line instead
+of a hole that missed the middle (the LED position is fixed by the PCB). All pockets are
+`lid_text_depth` (0.6 mm) deep. Restyled 2026-09-14 — the old Arial "OpenRZ67" / "Trigger"
+pair had uneven weights, a wide gap and sat near the edge; DIN Alternate was tried and
+dropped for Futura.
+Per the FDM rules: pockets, not raised letters. Assertions enforce placement (each line
+clears the LED seat, the walls and the face edges) and **printability**: every glyph
+stroke is at least `lid_text_min_stroke` (0.6 mm), measured by shrinking each glyph
+outline — a narrower pocket smears. Tracking keeps the font's own advances and adds a
+fixed gap per glyph (all-caps only: one face per letter).
 
 Colour it in the slicer with a **height range modifier on the lid**: select the lid,
 add a height range **0.6–1.4 mm** and assign it the letter-colour filament. The lid prints
@@ -160,7 +177,7 @@ lid alone).
 (`ObjectList::add_settings_item` dereferences the not-yet-created model tab during
 startup load). Add the range fresh after opening the project instead.
 
-Edit the `lid_texts` constant to change strings/sizes/offsets; `LID_TEXT_SHOW=false`
+Edit `lid_texts` (text, size, tracking), `lid_font`, `lid_text_gap` and `lid_rail_*` to restyle; `LID_TEXT_SHOW=false`
 disables the text (on by default).
 
 
@@ -222,7 +239,9 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
 ## Print orientation
 - **Base**: print as-is (floor down). No supports needed.
 - **Lid**: print **upside down** (top plate against the bed). That way the bosses/lip
-  point upward with no overhang and the LED window/counterbore gets a clean top surface.
+  point upward with no overhang and the LED funnel is widest at the bed (no ledge, no
+  support). Turn **elephant-foot compensation** on (~0.15) so the first-layer squish does
+  not close in on the funnel rim; keep the support threshold angle at 30° or lower.
 - **Light pipe** (`openrz67-lightpipe.stl`): **clear filament**. Print upright (head down
   against the bed) for the fewest layer lines across the light path, or lying down for
   smoother walls – both work for an indicator. For the clearest light: print at a fine
