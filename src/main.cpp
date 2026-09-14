@@ -9,6 +9,12 @@
 #define DELAY 2000
 #define BLINK_SPEED 500
 #define COUNTDOWN_DURATION 10000  // 10 seconds in milliseconds
+// Idle status LED: dim steady while a phone is connected, a slow soft pulse while
+// advertising. PWM via LEDC so the pulse can dim.
+#define PULSE_PERIOD 4000
+#define PULSE_MAX 120   // of 255; the LED is current-starved already, keep it soft
+#define CONNECTED_LEVEL 25  // dim steady when connected, so trigger/bulb (255) still show
+#define LED_PWM_CH 0
 
 // VERBOSE comes from platformio.ini: 0 in the production env (every Serial call
 // compiles to a no-op), 1 in the debug env, where Serial is USB CDC.
@@ -31,8 +37,12 @@ constexpr int ledPin = 20; // GPIO20 (U0RXD)
 // D4's anode is on VCC and its cathode reaches GPIO20 through R20, so the LED is
 // active-low: driving the pin LOW lights it. Flip these two if a board is wired the
 // other way round.
-constexpr int LED_ON = LOW;
-constexpr int LED_OFF = HIGH;
+uint8_t ledLevel = 0; // 0 = off, 255 = full
+
+void ledWrite(uint8_t level) {
+    ledLevel = level;
+    ledcWrite(LED_PWM_CH, 255 - level); // active-low
+}
 constexpr int shutterPinS2 = 3; // GPIO3, drives U6 (camera S2)
 // S1_PIN comes from platformio.ini: GPIO4 on rev 2 (default), GPIO21 (U0TXD) in the rev1 env.
 #ifndef S1_PIN
@@ -101,7 +111,7 @@ void startCountdown(unsigned long durationMs) {
     countdownStartTime = millis();
     lastCountdownPrint = 0;
     countdownActive = true;
-    digitalWrite(ledPin, LED_ON);
+    ledWrite(255);
     Serial.print("Starting ");
     Serial.print(durationMs / 1000);
     Serial.println("-second countdown...");
@@ -110,7 +120,7 @@ void startCountdown(unsigned long durationMs) {
 void cancelCountdown() {
     countdownActive = false;
     countdownStartTime = 0;
-    digitalWrite(ledPin, LED_OFF);
+    ledWrite(0);
     Serial.println("Countdown cancelled");
 }
 
@@ -155,12 +165,12 @@ class BLECharacteristicCallback : public BLECharacteristicCallbacks {
                         // A pending countdown would keep blinking the LED and
                         // fire the shutter a second time, so cancel it first
                         cancelCountdown();
-                        digitalWrite(ledPin, LED_ON);
+                        ledWrite(255);
                         timestampButton = now;
                         triggerShutter();
                     } else {
                         // Button 1 RELEASE - just turn off LED, don't trigger again
-                        digitalWrite(ledPin, LED_OFF);
+                        ledWrite(0);
                     }
                     break;
                 case 2:
@@ -171,11 +181,11 @@ class BLECharacteristicCallback : public BLECharacteristicCallbacks {
                         // A pending countdown would end the bulb exposure when
                         // it expires, so cancel it first
                         cancelCountdown();
-                        digitalWrite(ledPin, LED_ON);
+                        ledWrite(255);
                         startBulbMode();
                     } else {
                         // End bulb mode
-                        digitalWrite(ledPin, LED_OFF);
+                        ledWrite(0);
                         endBulbMode();
                     }
                     break;
@@ -279,6 +289,18 @@ void setupBLE() {
     Serial.println("*** BLE ADVERTISING STARTED - Device visible as 'OpenRZ67' ***");
 }
 
+// Runs only when nothing else owns the LED (trigger hold, bulb, countdown).
+void idleLed(unsigned long t) {
+    if (deviceConnected) {
+        ledWrite(CONNECTED_LEVEL);
+        return;
+    }
+    // triangle 0..1..0 over PULSE_PERIOD, squared so the fade looks even
+    float x = (t % PULSE_PERIOD) / (float)PULSE_PERIOD * 2;
+    if (x > 1) x = 2 - x;
+    ledWrite((uint8_t)(PULSE_MAX * x * x));
+}
+
 void checkToReconnect() //added
 {
     if (deviceConnected && !oldDeviceConnected) {
@@ -338,8 +360,9 @@ void setup() {
     Serial.println(" bytes");
 
     Serial.println("Configuring GPIO pins...");
-    pinMode(ledPin, OUTPUT);
-    digitalWrite(ledPin, LED_OFF);
+    ledcSetup(LED_PWM_CH, 5000, 8);
+    ledcAttachPin(ledPin, LED_PWM_CH);
+    ledWrite(0);
     pinMode(shutterPinS1, OUTPUT);
     pinMode(shutterPinS2, OUTPUT);
     Serial.print("LED pin configured: GPIO");
@@ -364,9 +387,9 @@ void loop() {
     if (deviceConnected) {
         now = millis(); // Store current time
 
-        if (incoming == 11 and digitalRead(ledPin) == LED_ON and now > timestampButton + DELAY) {
+        if (incoming == 11 and ledLevel > 0 and now > timestampButton + DELAY) {
             // Shutter has fired, disable LED
-            digitalWrite(ledPin, LED_OFF);
+            ledWrite(0);
             Serial.println("Button 1 timeout reached");
         }
     }
@@ -390,21 +413,28 @@ void loop() {
             countdownActive = false;
             countdownStartTime = 0;
             triggerShutter();
-            digitalWrite(ledPin, LED_OFF);
+            ledWrite(0);
             Serial.println("Countdown complete - shutter triggered!");
         } else {
             // Blink LED during countdown (faster blink than button 2)
             if (elapsed % 250 < 125) {  // 250ms cycle, on for first 125ms
-                digitalWrite(ledPin, LED_ON);
+                ledWrite(255);
             } else {
-                digitalWrite(ledPin, LED_OFF);
+                ledWrite(0);
             }
         }
     }
 
     // Handle bulb mode LED indication - steady light when active
     if (bulbModeActive) {
-        digitalWrite(ledPin, LED_ON);
+        ledWrite(255);
+    }
+
+    // Idle: steady = phone connected, soft pulse = on and waiting
+    unsigned long t = millis();
+    bool triggerHold = incoming == 11 && t <= timestampButton + DELAY;
+    if (!countdownActive && !bulbModeActive && !triggerHold) {
+        idleLed(t);
     }
 
     delay(10);
