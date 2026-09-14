@@ -94,9 +94,14 @@ batt_clr, batt_rib_t, batt_rib_h = 0.5, 1.6, 2.5   # pocket fit; rib ring on the
 #   crosses the rib at the left end — the pockets beside the board give it room.
 
 # --- Openings ---------------------------------------------------------------
-usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # outer lip (stops the cable body)
-usb_recess_w, usb_recess_h, usb_recess_r = 13.0, 9.0, 3.0
-usb_recess_d = wall - 0.5            # keep a 0.5 lip so the plug still seats fully
+usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # lip the cable body stops against
+usb_recess_w, usb_recess_h, usb_recess_r = 13.0, 9.0, 3.0   # inner: room for the receptacle shell
+usb_recess_d = 1.0                   # the mouth sits 0.4 inside the wall's inner face; this is slack
+# Outer pocket the plug's overmold sinks into (protects the port, guides the plug in, and
+# brings the overmold 1.2 closer to the mouth — the old Fusion case had one, 2026-09-14).
+# Fits overmolds up to 13 x 8.5; a 45° bevel of usb_pocket_ch on its outer edge.
+usb_pocket_w, usb_pocket_h, usb_pocket_r, usb_pocket_d, usb_pocket_ch = 14.0, 9.5, 3.0, 1.2, 0.6
+assert wall - usb_pocket_d - usb_recess_d >= 0.8, "USB lip between the outer pocket and the inner recess too thin"
 led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
 led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 1.5
@@ -233,6 +238,12 @@ cut_usb = xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_open_w, usb_open_h, 
                  -1, wall + 2)
 cut_usb += xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_recess_w, usb_recess_h, usb_recess_r),
                   wall - usb_recess_d, usb_recess_d + 1)
+cut_usb += xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_pocket_w, usb_pocket_h, usb_pocket_r),
+                  -1, usb_pocket_d + 1)
+# Bevelled lead-in: a frustum that is pocket + 2*ch at the outer face, shrinking at 45° inward
+cut_usb += extrude(Plane.YZ.offset(-1) * Pos(usb_cy, usb_zc) * RectangleRounded(
+    usb_pocket_w + 2 * (usb_pocket_ch + 1), usb_pocket_h + 2 * (usb_pocket_ch + 1), usb_pocket_r + usb_pocket_ch + 1),
+    amount=usb_pocket_ch + 1, taper=45)
 
 # Camera cable slot (right wall): header + plug stay inside; the cable leaves at its
 # natural height (header centre, xh_h/2 above the PCB) through a keyhole in the lid
@@ -453,6 +464,11 @@ def _open(solid, probe, what):
     assert v < 1e-6, f"{what} blocked (probe volume {v:.3f})"
 
 _open(base + lid, box(-0.5, usb_cy - 4, usb_zc - 2.5, wall + 1, 8, 5), "USB opening")
+_open(base + lid, box(-0.5, usb_cy - usb_pocket_w / 2 + usb_pocket_r / 2, usb_zc - usb_pocket_h / 2 + usb_pocket_r / 2,
+                      usb_pocket_d + 0.5, usb_pocket_w - usb_pocket_r, usb_pocket_h - usb_pocket_r), "USB plug pocket")
+assert (base + lid & box(usb_pocket_d + 0.05, usb_cy - usb_pocket_w / 2, usb_zc - usb_pocket_h / 2, 0.5,
+                         usb_pocket_w, usb_pocket_h)).volume > 0.5 * 0.5 * (usb_pocket_w * usb_pocket_h - usb_open_w * usb_open_h), \
+    "USB lip behind the plug pocket missing"
 _open(base + lid, box(bx(xh_x - xh_back), xh_cy - xh_w / 2, split_z + eps,
                       xh_mouth + xh_back + xh_plug_proud, xh_w, xh_h), "U4 body + plug inside the box")
 _open(base + lid, xprism(Pos(xh_cy, cable_zc) * Circle(cable_d / 2), bx(xh_x + xh_mouth + xh_plug_proud),
@@ -494,11 +510,12 @@ if __name__ == "__main__":
     # Assembled preview in VS Code's OCP CAD Viewer, when it is open (port 3939).
     # Toggle part visibility in the viewer tree; show() does nothing/raises without it.
     import socket
-    if socket.socket().connect_ex(("127.0.0.1", 3939)) == 0:  # VS Code OCP CAD Viewer open?
-        from ocp_vscode import show
+    try:
+        assert socket.socket().connect_ex(("127.0.0.1", 3939)) == 0  # VS Code OCP CAD Viewer open?
+        from ocp_vscode import show   # uv run --with ocp_vscode openrz67_case.py
         show(base, lid, lightpipe, names=["base", "lid", "lightpipe"])
-    else:
-        print("OCP-viewer ikke åpen, hopper over forhåndsvisning")
+    except (AssertionError, ImportError):
+        print("OCP-viewer ikke åpen (eller ocp_vscode mangler: uv run --with ocp_vscode), hopper over forhåndsvisning")
     out = Path(os.environ.get("OUTDIR", Path(__file__).resolve().parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
     parts = [("openrz67-base", base), ("openrz67-lid", lid), ("openrz67-lightpipe", lightpipe)]

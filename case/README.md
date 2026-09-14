@@ -298,14 +298,17 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   body rear, tab length and pitch, and the panel thickness the latches accept.
 
 ## USB-C opening
-Two layers in the wall (outside in):
-- `usb_open_w/h` = **11 × 7 mm**, R2 (`usb_open_r`) – pass-through through the whole wall.
-  This outer edge IS the **lip** that stops the cable body/overmold (anything > 11 × 7)
-  from coming in; the metal plug itself (~8.34 × 2.56) passes through easily.
-- `usb_recess` (**on**) – an **inner recess** `usb_recess_w/h/d` = **13 × 9 × 1.5 mm**,
-  R3 (`usb_recess_r`), on the cavity side of the wall. It eats away the last 1.5 mm of
-  the wall so the USB-C receptacle's body/shell can poke slightly into the wall and bring
-  the connector mouth close to the outer face.
+Three layers in the wall (outside in):
+- **Plug pocket** `usb_pocket_w/h/r/d` = **14 × 9.5 mm**, R3, **1.2 deep**, with a 45° bevel
+  of `usb_pocket_ch` (0.6) on its outer edge. The cable's overmold sinks into it: the port
+  is protected, the plug is guided in, and the overmold ends 1.2 mm closer to the receptacle
+  mouth (which sits ~0.4 mm inside the wall's inner face). Fits overmolds up to 13 × 8.5.
+  The user's old Fusion case had one (added here 2026-09-14).
+- `usb_open_w/h` = **11 × 7 mm**, R2 (`usb_open_r`) – the pass-through. Its edge is the
+  **lip** (1.0 mm thick between pocket and recess, asserted ≥ 0.8) that stops the overmold;
+  the metal plug (~8.34 × 2.56) passes easily.
+- **Inner recess** `usb_recess_w/h/d` = **13 × 9 × 1.0 mm**, R3 (`usb_recess_r`), on the
+  cavity side: slack for the receptacle shell if the board sits further left than measured.
 
 The opening's centre sits ~1.65 mm **above** the base/lid split, so the lower ~1.85 mm of
 the 7 mm-tall window falls below the seam. `cut_usb()` therefore runs in **both** `base()`
