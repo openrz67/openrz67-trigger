@@ -24,7 +24,7 @@ The current source is **rev 2**, ordered 2026-09-07 and **verified working 2026-
 * Supporting components per the [BOM](pcb/kicad/out/openrz67-bom.csv)
 * 2.4 GHz antenna with U.FL connector
 * 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`); charged at 111 mA by a TI BQ25185 (the cell is rated for 120 mA), with a TPS63031 buck-boost holding 3.3 V from USB or battery
-* SS12F15 slide switch
+* KCD11 mini rocker switch (snap-in, 2.8 mm tabs)
 * Unpopulated 1×4 header `J1` (3V3, GND, GPIO21/TX, GPIO6) along the bottom edge for bench logging and experiments
 
 The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO ESP32C3 and two isolated switch channels work too. Assign two output-capable GPIOs in `src/main.cpp`. On the PCB each channel is a TLP172AM PhotoMOS relay whose LED is driven from the GPIO through 150 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep ESP32 ground and camera ground separate.
