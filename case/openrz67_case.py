@@ -6,8 +6,8 @@
 
 Two-part snap-fit box for the OpenRZ67 trigger PCB rev 2 (../pcb/kicad/), stacked:
 the LiPo cell lies flat under the PCB (foam between), the PCB sits on tall posts,
-and open pockets in front of and behind the board take the battery lead and
-fingers. Dimensions come from the KiCad board and its footprints — see README.md.
+in a low rib pocket on the floor, and open pockets in front of and behind the board
+take the battery lead and fingers. Dimensions come from the KiCad board and its footprints — see README.md.
 
 Parts: base (tub), lid (telescoping ship-lap edge), lightpipe (clear filament).
 Print orientation: base floor-down; lid upside-down (the debossed top text
@@ -74,16 +74,24 @@ frame_ribs_front, frame_ribs_back = [20, 32], [20, 32]  # fin centres in board-X
 
 # --- Fit and walls ----------------------------------------------------------
 clr, wall, floor_t, lid_top_t = 0.4, 3.2, 2.0, 2.0   # wall 3.2: lap halves 1.6 (rigid; the fingers flex)
-pocket_front, pocket_back = 3.0, 5.0  # open air beside the board's long edges: fingers / battery lead
+lid_top_r = 2.0                      # 45° chamfer round the lid's top edge (softens the box). Bed-side
+#   edge when the lid prints upside-down: a chamfer prints clean, a fillet's first layers overhang > 45°.
+pocket_front, pocket_back = 2.0, 4.0  # open air beside the board's long edges: fingers / battery lead
+#   (3 / 5 until 2026-09-14; the lead now just crosses the low battery rib)
 
 # --- Vertical stack ---------------------------------------------------------
-standoff_h = 11.0                    # cell 6 + foam 1.5 + THT tails 3.5 (th_keepout_depth)
+standoff_h = 8.0                     # cell 6 + foam 1.5 + 0.5 solder/vias under the bare PCB bottom.
+#   The BAT1 tails (th_keepouts, board-X ~3.3) lie LEFT of the cell (batt_x0 = 6), so they
+#   need no room over it — asserted below. Was 11 (tails counted over the cell) until 2026-09-14.
 h_usbc, h_ph_plug = 3.3, 8.0         # USB-C shell; PHR-2 plug + wire bend in the top-entry
 #                                      PH headers (BAT1, S3) — the tallest thing on rev 2
 
-# --- Battery: cell flat under the PCB, lengthwise, fixed with foam tape ------
+# --- Battery: cell flat under the PCB, lengthwise, in a low rib pocket + foam tape ---
 batt_w, batt_l, batt_t = 31, 20, 6.0
 batt_x0, batt_foam = 6.0, 1.5        # board-X of the cell's left end (between the posts); foam under the tails
+batt_clr, batt_rib_t, batt_rib_h = 0.5, 1.6, 2.5   # pocket fit; rib ring on the floor around the cell
+#   (as the old battery-beside bay had). Low: the cell may still swell; the lead simply
+#   crosses the rib at the left end — the pockets beside the board give it room.
 
 # --- Openings ---------------------------------------------------------------
 usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # outer lip (stops the cable body)
@@ -153,6 +161,7 @@ lid_h = comp_clr + lid_top_t
 total_h = split_z + lid_h
 bead_z = split_z - lap + 1.1            # bead centre: near the finger tip (long lever, low strain)
 assert lap <= split_z - floor_t, "lid lip would reach the floor"
+assert lid_top_r <= min(wall, lid_top_t) and lid_top_r < inner_r + wall, "lid top chamfer too big"
 assert split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_h) / 2 < split_z, \
     "snap bead/pocket outside the lap zone"
 # Printability: the lap halves must slice as real perimeters (0.4 mm nozzle:
@@ -160,7 +169,10 @@ assert split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_
 assert wall / 2 - (snap_bead + pocket_extra_d) >= 0.87, "base lip behind the snap pocket under two lines"
 assert wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines"
 assert 0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness"
-assert standoff_h - th_keepout_depth - batt_t >= batt_foam - 1e-6, "no foam room between cell and THT tails"
+assert standoff_h >= batt_t + batt_foam - 1e-6, "no foam room over the cell"
+for _kx, _ky, _kd in th_keepouts:   # tails beside the cell, not over it (else add th_keepout_depth)
+    assert _kx + _kd / 2 <= batt_x0 - batt_clr or _kx - _kd / 2 >= batt_x0 + batt_w + batt_clr, \
+        "THT tails over the cell: standoff_h must include th_keepout_depth"
 
 
 def bx(x):
@@ -293,6 +305,14 @@ def finger_boxes(margin, z0, h):
 groove = prism(offset(mid_sk, snap_bead + pocket_extra_d) - offset(mid_sk, -lap_gap - 0.25),
                split_z - lap - eps, bead_z + (bead_h + pocket_extra_h) / 2 - (split_z - lap) + eps) & finger_boxes(0.5, 0, total_h)
 base -= chamfer(groove.edges().group_by(Axis.Z)[-1].filter_by(Axis.X), pocket_ch)
+# Battery pocket: a low rib ring on the floor around the cell (merges with the posts
+# and fins it touches). Locates the cell so the foam tape is not the only thing.
+batt_ring = box(bx(batt_x0) - batt_clr - batt_rib_t, by((board_h - batt_l) / 2) - batt_clr - batt_rib_t,
+                floor_t - eps, batt_w + 2 * (batt_clr + batt_rib_t), batt_l + 2 * (batt_clr + batt_rib_t),
+                batt_rib_h + eps)
+batt_ring -= box(bx(batt_x0) - batt_clr, by((board_h - batt_l) / 2) - batt_clr, floor_t - 2 * eps,
+                 batt_w + 2 * batt_clr, batt_l + 2 * batt_clr, batt_rib_h + 3 * eps)
+base += batt_ring
 # TH solder-tail pockets in the post tops (BAT1 pins beside the (2,20) post)
 for kx, ky, kd in th_keepouts:
     base -= cyl(bx(kx), by(ky), pcb_z - th_keepout_depth, kd, th_keepout_depth + eps)
@@ -300,6 +320,7 @@ base -= cut_usb
 
 # --- LID ----------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)                        # top + walls
+lid = chamfer(lid.edges().group_by(Axis.Z)[-1], lid_top_r)   # chamfered top edge, before any cut
 lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap)   # tongue
 # Snap beads on the fingers only. Bottom: a big click-in ramp. Top: a small chamfer so
 # most of the bead is a flat retention face (a 45° top let the lid pull open too easily);
@@ -394,9 +415,9 @@ if lid_text_show:
         tb = sk.bounding_box()
         sk = Pos(outer_w / 2 - (tb.min.X + tb.max.X) / 2, y - h - tb.min.Y) * sk   # centre X, top at y
         tb = sk.bounding_box()
-        assert tb.min.X > 3 and tb.max.X < outer_w - 3, f"'{txt}' too wide ({tb.size.X:.1f}mm)"
+        assert tb.min.X > lid_top_r + 1 and tb.max.X < outer_w - lid_top_r - 1, f"'{txt}' too wide ({tb.size.X:.1f}mm)"
         assert tb.max.Y < led_cy - recess_half - 1, f"'{txt}' hits the LED seat"
-        assert tb.min.Y > 2, f"'{txt}' off the top face"
+        assert tb.min.Y > lid_top_r + 0.5, f"'{txt}' runs into the top-edge chamfer"
         # Printability: every stroke >= lid_text_min_stroke (shrinking a glyph by half of
         # it must neither split nor drop it). build123d 0.11's offset() crashes on glyphs
         # with holes, so shrink outer/inner wires by hand.
@@ -445,9 +466,12 @@ _open(base + lid, box(bx(xh_x - xh_back), xh_cy - xh_w / 2, split_z + eps,
 _open(base + lid, xprism(Pos(xh_cy, cable_zc) * Circle(cable_d / 2), bx(xh_x + xh_mouth + xh_plug_proud),
                          outer_w), "camera cable out through the right wall")
 assert bx(xh_x + xh_mouth + xh_plug_proud) <= outer_w - wall - xh_slack + 1e-6, "U4 plug hits the wall"
-# Cell under the PCB: between the posts, under the THT tails (foam on top)
-_open(base, box(bx(batt_x0), by((board_h - batt_l) / 2), floor_t + eps, batt_w, batt_l, batt_t),
-      "cell under the PCB")
+# Cell under the PCB (+ pocket fit): inside the rib ring, between the posts, under the THT tails
+_open(base, box(bx(batt_x0) - batt_clr, by((board_h - batt_l) / 2) - batt_clr, floor_t + eps,
+                batt_w + 2 * batt_clr, batt_l + 2 * batt_clr, batt_t), "cell under the PCB")
+assert (base & box(bx(batt_x0) - batt_clr - batt_rib_t, by((board_h - batt_l) / 2) - batt_clr - batt_rib_t,
+                   floor_t + eps, batt_w + 2 * (batt_clr + batt_rib_t), batt_l + 2 * (batt_clr + batt_rib_t),
+                   batt_rib_h - eps)).volume > 0.9 * batt_ring.volume, "battery rib ring missing"
 _open(lid, box(led_cx - 2, led_cy - 1, total_h - lid_top_t + eps, 4, 2, lid_top_t), "LED window")
 for hx, hy in mount_holes:
     _open(lid, cyl(bx(hx), by(hy), pcb_top_z + eps, 2.0, pin_proud), "locating-pin recess")

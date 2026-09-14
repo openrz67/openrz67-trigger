@@ -6,8 +6,8 @@
 file and its footprints, not from eyeballed measurements.
 
 > **Stacked layout (2026-09-12):** the LiPo cell lies flat **under the PCB** (foam
-> between), the PCB sits on 11 mm posts, and open **pockets** in front of (3 mm) and
-> behind (5 mm) the board take fingers and the battery lead. `U4` (side-entry
+> between) in a low rib pocket, the PCB sits on 8 mm posts, and open **pockets** in front of (2 mm) and
+> behind (4 mm) the board take fingers and the battery lead. The lid's top edge has a 2 mm 45° chamfer. `U4` (side-entry
 > S4B-XH-A, body 5.5 mm past the board edge) and its plug stay **inside**; only the
 > heat-shrunk camera cable leaves through a keyhole slot in the right wall. Roomier on
 > purpose — the previous stacked attempt was too tight to work in. Replaces the
@@ -44,11 +44,18 @@ body, the U4 body + mated plug inside the box, the cell under the PCB) stay open
 a known collision fails loudly instead of surfacing in the print.
 
 ## Construction
-- **Base** (tub): floor, **11 mm posts** (`standoff_h` = cell 6 + foam 1.5 + THT tails
-  3.5) in all four corners (`pcb_supports = [[2,20],[46,2]]` plus the two posts at the
-  mounting holes), and two **Ø1.7 locating pins** up into the real Ø2 mounting holes. The
-  cell lies on the floor between the posts, lengthwise from board-X `batt_x0` (6), with
-  foam tape on top so the solder tails never touch it; nothing else holds it (glue/foam).
+- **Lid top edge**: `lid_top_r` (2 mm) 45° chamfer, applied to the shell before any cut. The
+  lid prints upside-down, so this is the bed-side edge — a chamfer prints clean there, a fillet
+  would overhang in its first layers. The base's bottom edge stays square. Text asserts keep
+  `lid_top_r` + margin clear.
+- **Base** (tub): floor, **8 mm posts** (`standoff_h` = cell 6 + foam 1.5 + 0.5 for the
+  solder/vias on the bare PCB bottom; was 11 until 2026-09-14 — the BAT1 tails lie *beside*
+  the cell in X, not over it, which is asserted) in all four corners (`pcb_supports =
+  [[2,20],[46,2]]` plus the two posts at the mounting holes), and two **Ø1.7 locating
+  pins** up into the real Ø2 mounting holes. The cell lies on the floor between the posts,
+  lengthwise from board-X `batt_x0` (6), inside a **low rib ring** (`batt_rib_t` 1.6 ×
+  `batt_rib_h` 2.5, `batt_clr` 0.5 around the cell — like the old battery-beside bay) that
+  locates it; foam tape on top holds it down.
   - **Through-hole solder relief** (`th_keepouts`): a small pocket in the top of a
     pillar where a through-hole component's pin tails/solder stick down (the pillar at
     (2,20) sits next to BAT1). The list is `[board_x, board_y, relief_diameter]`;
@@ -97,12 +104,13 @@ a known collision fails loudly instead of surfacing in the print.
   derived from the U4 reach + plug + slack) makes room for the camera plug. The outer case
   width thus becomes ~**66.3 mm**.
 - **The battery** (31 × 20 × 6 LiPo) lies flat **under the PCB**, lengthwise between the
-  posts, `batt_foam` (1.5 mm) under the solder tails. Its lead comes out at the left end,
-  goes back into the **5 mm pocket behind the board**, up past the board edge and down
+  posts in the rib pocket, `batt_foam` (1.5 mm) under the PCB. Its lead comes out at the
+  left end over the low rib (the pockets beside the board give it room), goes back into
+  the **4 mm pocket behind the board**, up past the board edge and down
   into BAT1 at board ≈ (3.3, 17) on top; `comp_clr` has 2 mm extra for that loop. Nothing
   is threaded: cell in, board down onto the pins, lead over the edge, lid on. Fix the
   cell with foam tape or a dab of glue. Parameters: `batt_w/l/t`, `batt_x0`, `batt_foam`,
-  `pocket_front/back`.
+  `batt_clr`, `batt_rib_t/h`, `pocket_front/back`.
 
 ## Closure — snap fingers
 **No hardware at all**, and the walls do not flex: four **cantilever fingers** cut free in
@@ -132,9 +140,9 @@ plastic stripped; heat-set inserts made assembly slow). **Tune before the full p
 `snap_bead` (click strength), `finger_t` (stiffness) and `lap_gap` (sliding fit) until the
 corner snaps shut and pries open with reasonable force.
 
-Finished size with default values: ~**66.3 × 38.0 × 26.6 mm** (X incl. the 2 mm USB-C
+Finished size with default values: ~**66.3 × 36.0 × 23.6 mm** (X incl. the 2 mm USB-C
 overhang and the 9.1 mm U4 + plug overhang, Y incl. the two pockets, Z = floor 2 + posts
-11 + PCB + 10 clearance + top 2; depends on `pcb_t`).
+8 + PCB + 10 clearance + top 2; depends on `pcb_t`).
 
 ## Orientation mark — `orient_mark`
 A small **raised rib** on the front wall (low Y) near the left corner, split across the
@@ -262,9 +270,10 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   `pcb_overhang_right`. `cable_d` – the heat-shrunk bundle's diameter (5.0) sets the slot.
 - `snap_bead` / `finger_t` / `lap_gap` – snap click strength, finger stiffness and sliding
   fit. Tune with the `SNAP_TEST=true` corner pieces before printing the whole box.
-- `batt_w/l/t` / `batt_x0` / `batt_foam` – your cell and where it lies under the board;
-  `standoff_h` must stay ≥ cell + foam + 3.5 (asserted). `pocket_front/back` – hand and
-  lead room beside the board.
+- `batt_w/l/t` / `batt_x0` / `batt_foam` / `batt_clr` / `batt_rib_t/h` – your cell, where it
+  lies under the board and the rib pocket around it; `standoff_h` must stay ≥ cell + foam
+  (asserted), and the THT tails must stay beside the cell in X (asserted — otherwise add
+  `th_keepout_depth`). `pocket_front/back` – hand and lead room beside the board.
 - `sx` / `sw_z` – position of the slide switch. The **front wall**
   (`"front"`, low Y) is chosen deliberately: the back wall carries the S3 connector
   (board-X 28.7), the LEDs and the battery-lead pocket, so there's no room there for a
