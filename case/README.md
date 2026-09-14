@@ -29,7 +29,7 @@ negative numbers — drop the sign).
 | U4 camera connector | side-entry S4B-XH-A, pin row at (44.3, 11), mouth facing +X; body 12.4 wide × 6.1 tall, 9.2 mm from pin row to mouth face and 2.3 to the rear face, i.e. the mouth sits 5.5 mm past the board edge | `CONN-TH_S4B-XH-A-LF-SN.kicad_mod` F.Fab + `.wrl` |
 | USB-C connector | body 8.95 × 3.2 mm on the PCB, left edge 4.8 mm in from the PCB's left edge; the shell protrudes ~2 mm past the board edge | measured physically |
 | Total HW length | ~50 mm (PCB 48 + USB-C shell 2) | `pcb_overhang_left` |
-| Slide switch (SS12F15) | actuator opening 10.65×6.3; flat bracket 19.45×5.75×0.4; screw holes Ø2.2 at 15.0 mm spacing; body ~19.5×20×12.9 | `SS12F15.stp` + measured |
+| Rocker switch (KCD11) | snap-in body 13.5×8.5 (= panel cutout, nominal), flange 15×10, 10 deep behind the flange, two 2.8 mm tabs ~5 long at ~7 mm pitch; vendor drawings differ by ~0.5 mm | vendor data — measure your switch |
 | LEDs | D3 red (20.5, 18.0), D4 blue (24.2, 20.2) – 0603 SMD, top-emitting; D3 moved next to the BQ25185 charger 2026-09-07, so the 6 × 4.4 light-pipe window is centred between them | `out/openrz67-pos.csv` |
 
 Component **heights** are editable constants (`h_usbc`, `h_ph_plug`, `xh_h`) from the
@@ -39,7 +39,7 @@ height. Check them against your own parts.
 
 The script carries **module-level assertions**: outer dimensions, plus probe checks that
 every opening actually breaks through (USB, camera cable slot, LED window, locating-pin
-recesses, switch screws) and that the fit-critical keepouts (switch body envelope, USB-C
+recesses, switch hole and latch pocket) and that the fit-critical keepouts (switch body + tabs + receptacles, USB-C
 body, the U4 body + mated plug inside the box, the cell under the PCB) stay open. They run on every export, so a parameter tweak that closes a hole or re-introduces
 a known collision fails loudly instead of surfacing in the print.
 
@@ -69,7 +69,7 @@ a known collision fails loudly instead of surfacing in the print.
     The lid tongue is notched where the fins stand (`frame_notch_clr`).
 - **Lid**: telescopes down into the base via a perimeter tongue (lap joint, `lap` 7 mm)
   for alignment. Carries the USB-C opening (left), the camera cable slot (right), the
-  LED light-pipe window (top), and the slot + screw pillars for the SS12F15 slide switch.
+  LED light-pipe window (top), and the snap-in hole for the KCD11 rocker switch (front).
   - **Camera cable slot** (`cut_cable`): the U4 header body (mouth 5.5 mm past the board
     edge) and the mated XHP-4 plug (`xh_plug_proud` 2.5 past the mouth — an estimate,
     measure yours) stay inside; `xh_slack` (1.5) air to the wall sets
@@ -140,9 +140,10 @@ plastic stripped; heat-set inserts made assembly slow). **Tune before the full p
 `snap_bead` (click strength), `finger_t` (stiffness) and `lap_gap` (sliding fit) until the
 corner snaps shut and pries open with reasonable force.
 
-Finished size with default values: ~**66.3 × 36.0 × 23.6 mm** (X incl. the 2 mm USB-C
+Finished size with default values: ~**66.3 × 36.0 × 25.5 mm** (X incl. the 2 mm USB-C
 overhang and the 9.1 mm U4 + plug overhang, Y incl. the two pockets, Z = floor 2 + posts
-8 + PCB + 10 clearance + top 2; depends on `pcb_t`).
+8 + PCB + 11.9 clearance + top 2; depends on `pcb_t`). The clearance is set by the rocker
+switch (body 8.5 + 1.6 over the PCB + latch room), not by the PH plugs any more (10).
 
 ## Orientation mark — `orient_mark`
 A small **raised rib** on the front wall (low Y) near the left corner, split across the
@@ -274,41 +275,27 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   lies under the board and the rib pocket around it; `standoff_h` must stay ≥ cell + foam
   (asserted), and the THT tails must stay beside the cell in X (asserted — otherwise add
   `th_keepout_depth`). `pocket_front/back` – hand and lead room beside the board.
-- `sx` / `sw_z` – position of the slide switch. The **front wall**
-  (`"front"`, low Y) is chosen deliberately: the back wall carries the S3 connector
-  (board-X 28.7), the LEDs and the battery-lead pocket, so there's no room there for a
-  centred switch with 15 mm boss spacing. The switch is centred on the lid (`sx =
-  outer_w / 2`, board-X ≈ 27.5); the bosses land at board-X ≈ 20 and 35 over 0402 parts
-  and the DNP `J1` header footprint — populating `J1` with pins is not possible with the
-  switch centred. `sw_z = 4.8` puts the body underside 1.3 mm above the PCB, 0.4 mm over
-  U1 (the body sits partly over it, with X2 and C26 beneath as well).
-  The wire from S3 runs across the board to the switch. Verify against your own components.
-- **Switch screw mount**: the switch's flat bracket mounts on the **outside** of the case;
-  screws go from outside → through the bracket and wall → thread into two **rectangular
-  pillars** that hang from the lid ceiling down to `sw_boss_gap` (1.5 mm) above the PCB. The
-  pillars are anchored in the top plate and their front sits at the inner wall plane against
-  the (now solid) inner wall, so tightening clamps **bracket → wall → boss** in compression —
-  no free-standing cantilever. The `sw_boss_gap` air gap keeps the pillars clear of the
-  densely packed front components under their footprint (Q1 SOT-23 ~1.1 mm, C15/C26 0603
-  ~0.9 mm). `sw_screw_pitch` = 15.0 (centre spacing, ±7.5), `sw_screw_d` = 2.4
-  (M2 clearance), `sw_boss_d/h/pilot` set the pillar cross-section and pilot hole.
-  - **Body keepout** (`sw_body_l × sw_body_h × sw_body_w` = **11 × 7 × 8 mm**, + `sw_body_clr`
-    0.4/side): the switch body that protrudes inside is wider than the gap between the
-    bosses, so a keepout carves the body envelope out of the cavity, relieving the boss
-    inner faces over the body's Y/Z extent only — the screw region (±7.5) and the pillar
-    above the body stay full. Verify `sw_body_l/h/w` against your switch.
-  - **Actuator opening** (`sw_slot_l × sw_slot_h`): **10.65 × 6.3 mm** through the wall,
-    centred on `sx`/`sw_z`.
-  - **Screw**: **M2 self-tapping**, ~**8 mm** long (M2×6 also fine). From outside through the
-    bracket (0.4) + wall (1.6 behind the recess), threading `sw_boss_pilot` (1.5) into the
-    pillar (up to `sw_boss_h` 5 mm engagement). The head sits on the external bracket, so the
-    case has no head counterbore.
-  - **Bracket recess** (`sw_plate_recess`, default on): the flat bracket (`sw_plate_w ×
-    sw_plate_h × sw_plate_t` = **19.45 × 5.75 × 0.4 mm**) mounts on the **outside**, sitting
-    in a pocket `sw_plate_t` deep cut into the **outer** wall so it is **flush** with the
-    outside. The inner wall behind it stays solid, which is what the bosses bear against.
-    `sw_plate_clr` (0.3) adds fit clearance around the bracket. Verify `sw_plate_w/h/t`
-    against your switch; set `sw_plate_recess = false` to drop the pocket.
+- `sx` – position of the rocker switch (KCD11, `kcd_*`). The **front wall** (low Y) is
+  chosen deliberately: the back wall carries the S3 connector (board-X 28.7), the LEDs and
+  the battery-lead pocket. Centred on the lid (`sx = outer_w / 2`, board-X ≈ 27.5); the body
+  ends at the first `J1` pad and its tabs run over that row, so `J1` cannot take a pin header.
+  `kcd_gap` = 1.6 puts the body underside 1.6 mm above the PCB (U1 0.9, X2 and 0603s beneath)
+  and leaves a 1.6 mm wall strip between the hole and the seam.
+- **Snap-in mount** (replaced the SS12F15 slide switch + M2 screw pillars 2026-09-14): the
+  hole is `kcd_body_l/h` + 2 × `kcd_hole_clr` (0.3) through the wall; the flange sits proud on
+  the outside. The latches on the body's long sides grip a panel of `kcd_panel_t` (2.0), so
+  the wall is pocketed from the **inside** down to that thickness, `kcd_latch_clr` (1.2) past
+  the hole on every side — the pocket top is the lid ceiling, which is what raises the lid.
+  Asserted: pocket clear of the tongue and the ceiling, flange clear of the seam and the top
+  chamfer.
+- **Wiring**: two 2.8 mm receptacles on the tabs, 4–6 cm of 26 AWG to the PH plug in S3.
+  Use **flag (90°) receptacles** or solder to the tab with the wire leaving sideways:
+  `kcd_depth + kcd_tab_l + kcd_conn_l` is asserted to end in front of the light pipe and the
+  S3 plug (~21.7 / 23.3 mm from the outer face), and a straight insulated FDFN 1.25-110 is
+  ~12 mm past the tab tip — it does not fit. PH wire (26–28 AWG) is thin for a 2.8 mm crimp:
+  fold the end double.
+- **Measure before printing**: body L × H behind the flange, flange L × H, depth flange →
+  body rear, tab length and pitch, and the panel thickness the latches accept.
 
 ## USB-C opening
 Two layers in the wall (outside in):
