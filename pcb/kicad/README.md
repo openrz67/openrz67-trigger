@@ -266,7 +266,7 @@ source here is rev 3: the review fixes and R23 above, plus:
   S2 relay drive to **GPIO6** (pin 12, MTCK): every other spare pin (GPIO5, GPIO7, GPIO10) is
   boxed in by the VCC artery, the S1_DRV/CHIP_EN/GPIO6 diagonals or the GPIO9 stub, while GPIO6
   already had a route to J1 that passes R22 — the relay is fed from that track at (150.55, 99.3)
-  and `J1` pin 4 (silk `IO6`) now carries `S2_DRV` instead of a free GPIO. The divider measures
+  and `J1` lost its 4th pin: a 1×3 header (3V3, GND, TX) with a new `PinHeader_1x03_P2.54mm_Vertical` footprint and `Conn_01x03` symbol, the GPIO6 track to the old pin 4 and the `IO6` silk removed (user 2026-09-15: S1 is not exposed either, the relay output can be probed on `U4`). The divider measures
   **`SW_SYS`** (the switched side of S3), not `BAT+`: BAT+ lives at the far left and every path
   from there to U1 is closed by the VCC trunk, the SW_SYS/VSYS wall and the S1_DRV bridge, while
   SW_SYS is on S3 pad 2 right next to the old S2_DRV copper. On battery SW_SYS is the cell

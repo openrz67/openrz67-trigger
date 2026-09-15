@@ -25,7 +25,7 @@ The built boards are **rev 2**, ordered 2026-09-07 and **verified working 2026-0
 * 2.4 GHz antenna with U.FL connector
 * 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`); charged at 111 mA by a TI BQ25185 (the cell is rated for 120 mA), with a TPS63031 buck-boost holding 3.3 V from USB or battery
 * SS12F15 slide switch
-* Unpopulated 1×4 header `J1` (3V3, GND, GPIO21/TX, GPIO6) along the bottom edge for bench logging; in rev 3 GPIO6 drives the S2 relay, so that pin is a probe point rather than a free GPIO
+* Unpopulated header `J1` along the bottom edge for bench logging and experiments: 1×4 (3V3, GND, GPIO21/TX, GPIO6) on rev 2, 1×3 (3V3, GND, GPIO21/TX) in rev 3 since GPIO6 drives the S2 relay there
 
 The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO ESP32C3 and two isolated switch channels work too. Assign two output-capable GPIOs in `src/main.cpp`. On the PCB each channel is a TLP172AM PhotoMOS relay whose LED is driven from the GPIO through 150 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep ESP32 ground and camera ground separate.
 
@@ -37,7 +37,7 @@ The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO E
 |------|---------------|-----------------------------|
 | 3    | Shutter output S2 (U6), net `S2_DRV` | Battery sense, net `VBAT_SENSE`: `SW_SYS` through 1 MΩ / 1 MΩ (R24/R25) + 100 nF (C32), ×2 = cell voltage on battery, BQ25185 SYS voltage (> 4.3 V) on USB |
 | 4    | Shutter output S1 (U5), net `S1_DRV` | same |
-| 6    | `J1` pin 4, spare | Shutter output S2 (U6), net `S2_DRV`; also on `J1` pin 4 |
+| 6    | `J1` pin 4, spare | Shutter output S2 (U6), net `S2_DRV` (`J1` shrinks to 1×3) |
 | 20   | Status LED (`D4`, blue) | same |
 
 The firmware in `src/` is for rev 2. Rev 3 needs `shutterPinS2` = 6 and the ADC read on GPIO3; the list is in [`pcb/kicad/README.md`](pcb/kicad/README.md) under "Rev 3".
