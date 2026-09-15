@@ -40,7 +40,7 @@ The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO E
 | 6    | `J1` pin 4, spare | Shutter output S2 (U6), net `S2_DRV` (`J1` shrinks to 1×3) |
 | 20   | Status LED (`D4`, blue) | same |
 
-The firmware in `src/` is for rev 2. Rev 3 needs `shutterPinS2` = 6 and the ADC read on GPIO3; the list is in [`pcb/kicad/README.md`](pcb/kicad/README.md) under "Rev 3".
+The firmware covers every revision through build flags: `S1_PIN` (rev 1), `S2_PIN` and `VBAT_ADC_PIN` (rev 3); see the `rev1` and `rev3` envs in `platformio.ini`.
 
 ### LEDs
 
@@ -82,6 +82,8 @@ To trigger the shutter release, the PhotoMOS outputs short S1/S2 to camera GND. 
 
 The device advertises as `OpenRZ67` with service UUID `c9239c9e-6fc9-4168-b3aa-53105eb990b0` and characteristic `458d4dc9-349f-401d-b092-a2b1c55f5319`. Send commands using Write Without Response.
 
+On rev 3 boards there is a second characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage in millivolts as a little-endian `uint16`, refreshed every 10 s. On battery this is the cell voltage (about 4200 full, 3500 low); on USB it is the BQ25185 SYS regulation voltage, so a value above about 4300 means USB is connected.
+
 **Single-byte commands** (value = button × 10 + state):
 
 | Value | Action |
@@ -113,7 +115,7 @@ pio run -t upload
 
 If uploading does not start, hold `BOOT`, press and release `EN`, then release `BOOT` and retry.
 
-For a rev 1 board (S1 on GPIO 21 instead of GPIO 4), flash the `rev1` env: `pio run -e rev1 -t upload`.
+For a rev 1 board (S1 on GPIO 21 instead of GPIO 4), flash the `rev1` env: `pio run -e rev1 -t upload`. For a rev 3 board (S2 on GPIO 6, battery sense on GPIO 3), flash `rev3` or `rev3-debug`: `pio run -e rev3 -t upload`. The default env is rev 2; the board revision is only a set of `-D` pin flags in `platformio.ini`.
 
 The production build has no serial output. For logging, flash the `debug` env (`pio run -e debug -t upload`): it enables USB CDC on the USB-C connector and `VERBOSE=1`. UART0 is not used for logging because its RX pin (GPIO 20) drives the status LED; GPIO 21 (UART0 TX) is free since rev 2 and is on the `J1` header for a TX-only dongle if ever needed.
 

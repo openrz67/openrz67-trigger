@@ -279,12 +279,10 @@ source here is rev 3: the review fixes and R23 above, plus:
   GND vias at (150.4, 94.9) and (148.5, 99.05). DRC 0 errors, 0 unconnected, two new courtyard
   warnings (C32 against R24/R25 — S3's courtyard above and the GPIO6 track below leave no
   slack); ERC unchanged. Title block rev 3.
-  **Firmware todo before rev 3 boards are flashed** (rev 2 boards keep GPIO3 = S2):
-  - `shutterPinS2` 3 → 6, ideally as an `S2_PIN` build flag per env like `S1_PIN`.
-  - read GPIO3 with `analogReadMilliVolts` (11 dB attenuation), ×2 for the divider, average a
-    few samples; the 100 nF makes the 500 kΩ source fine for one-shot reads.
-  - expose the voltage over BLE (new characteristic or a status byte) and warn on the blue LED
-    below ~3.5 V; treat > 4.3 V as USB present.
+  **Firmware (done 2026-09-15):** `rev3` / `rev3-debug` envs in `platformio.ini` set `S2_PIN=6` and
+  `VBAT_ADC_PIN=3`; the default env stays rev 2. With `VBAT_ADC_PIN` the firmware averages 8
+  `analogReadMilliVolts` samples ×2 every 10 s and exposes them as a uint16 mV BLE characteristic
+  (read + notify, UUID in the root README). Not done: a low-battery LED warning.
 - Still open from the 2026-09-08 review and 2026-09-10 (see above): paste windows on U2/U3,
   one-via ground islands, return via at C24, 0.16 mm power necks, BAT1 `+` silk, U3 mask dam,
   the 1 µF on VDD_SPI.

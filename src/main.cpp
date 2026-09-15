@@ -1,10 +1,14 @@
 #include <Arduino.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
+#include <BLE2902.h>
 #include <esp_pm.h>
 
 #define SERVICE_UUID        "c9239c9e-6fc9-4168-b3aa-53105eb990b0"
 #define CHARACTERISTIC_UUID "458d4dc9-349f-401d-b092-a2b1c55f5319"
+// Rev 3: SW_SYS (battery on battery power, BQ25185 SYS voltage on USB) in mV, uint16 LE, read + notify.
+#define BATTERY_UUID        "cda71ce6-4af9-4aa2-8d34-329c2acdae09"
+#define VBAT_PERIOD 10000
 
 #define DELAY 2000
 #define BLINK_SPEED 500
@@ -43,7 +47,11 @@ void ledWrite(uint8_t level) {
     ledLevel = level;
     ledcWrite(LED_PWM_CH, 255 - level); // active-low
 }
-constexpr int shutterPinS2 = 3; // GPIO3, drives U6 (camera S2) on rev 2. Rev 3: GPIO6, and GPIO3 becomes the battery ADC (see pcb/kicad/README.md, "Rev 3")
+// S2_PIN comes from platformio.ini: GPIO3 on rev 1/2 (default), GPIO6 in the rev3 envs.
+#ifndef S2_PIN
+#define S2_PIN 3
+#endif
+constexpr int shutterPinS2 = S2_PIN; // drives U6 (camera S2)
 // S1_PIN comes from platformio.ini: GPIO4 on rev 2 (default), GPIO21 (U0TXD) in the rev1 env.
 #ifndef S1_PIN
 #define S1_PIN 4
@@ -235,6 +243,28 @@ class BLECharacteristicCallback : public BLECharacteristicCallbacks {
     }
 };
 
+#ifdef VBAT_ADC_PIN
+BLECharacteristic *pBattery = nullptr;
+unsigned long lastVbat = 0;
+
+// 1 MΩ / 1 MΩ divider on SW_SYS into an ADC1 pin; the 100 nF at the pin makes the 500 kΩ source fine.
+uint16_t readVbatMillivolts() {
+    uint32_t sum = 0;
+    for (int i = 0; i < 8; i++) sum += analogReadMilliVolts(VBAT_ADC_PIN);
+    return sum / 8 * 2;
+}
+
+void updateVbat(unsigned long t) {
+    if (lastVbat && t - lastVbat < VBAT_PERIOD) return;
+    lastVbat = t;
+    uint16_t mv = readVbatMillivolts();
+    pBattery->setValue((uint8_t *)&mv, 2);
+    if (deviceConnected) pBattery->notify();
+    Serial.print("SW_SYS mV: ");
+    Serial.println(mv);
+}
+#endif
+
 void setupBLE() {
     Serial.println("Initializing BLE...");
 
@@ -251,6 +281,14 @@ void setupBLE() {
     );
     pCharacteristic->setCallbacks(new BLECharacteristicCallback());
     pCharacteristic->setValue("Hello from OpenRZ67!");
+#ifdef VBAT_ADC_PIN
+    pBattery = pService->createCharacteristic(
+            BATTERY_UUID,
+            BLECharacteristic::PROPERTY_READ |
+            BLECharacteristic::PROPERTY_NOTIFY
+    );
+    pBattery->addDescriptor(new BLE2902());
+#endif
 
     pService->start();
     Serial.println("BLE service and characteristic configured");
@@ -436,6 +474,9 @@ void loop() {
     if (!countdownActive && !bulbModeActive && !triggerHold) {
         idleLed(t);
     }
+#ifdef VBAT_ADC_PIN
+    updateVbat(t);
+#endif
 
     delay(10);
 
