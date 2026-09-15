@@ -35,7 +35,7 @@ The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO E
 
 | GPIO | Rev 2 (built) | Rev 3 (source, not ordered) |
 |------|---------------|-----------------------------|
-| 3    | Shutter output S2 (U6), net `S2_DRV` | Battery sense, net `VBAT_SENSE`: `SW_SYS` through 1 MΩ / 1 MΩ (R24/R25) + 100 nF (C32), ×2 = cell voltage on battery, BQ25185 SYS voltage (> 4.3 V) on USB |
+| 3    | Shutter output S2 (U6), net `S2_DRV` | Battery sense, net `VBAT_SENSE`: `SW_SYS` through 1 MΩ / 1 MΩ (R24/R25) + 100 nF (C32), ×2 = cell voltage on battery, BQ25185 SYS voltage on USB |
 | 4    | Shutter output S1 (U5), net `S1_DRV` | same |
 | 6    | `J1` pin 4, spare | Shutter output S2 (U6), net `S2_DRV` (`J1` shrinks to 1×3) |
 | 20   | Status LED (`D4`, blue) | same |
@@ -82,7 +82,7 @@ To trigger the shutter release, the PhotoMOS outputs short S1/S2 to camera GND. 
 
 The device advertises as `OpenRZ67` with service UUID `c9239c9e-6fc9-4168-b3aa-53105eb990b0` and characteristic `458d4dc9-349f-401d-b092-a2b1c55f5319`. Send commands using Write Without Response.
 
-On rev 3 boards there is a second characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage in millivolts as a little-endian `uint16`, refreshed every 10 s. On battery this is the cell voltage (about 4200 full, 3500 low); on USB it is the BQ25185 SYS regulation voltage, so a value above about 4300 means USB is connected.
+On rev 3 boards there is a second characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage in millivolts as a little-endian `uint16`, refreshed every 10 s. On battery this is the cell voltage (about 4200 full, 3500 low); on USB it is the BQ25185 SYS regulation voltage, which is higher. It is a system voltage, not a USB-present flag: a full cell (4200 nominal) and a USB-powered SYS rail overlap once charger tolerance, the 1 % divider and the ADC's ±70 mV are added up, and DPPM or supplement mode can pull SYS down with USB still plugged in. A high reading suggests USB; treat roughly 4250–4350 as undecided, and use hysteresis if a client acts on it. Certain USB status needs a separate signal.
 
 **Single-byte commands** (value = button × 10 + state):
 

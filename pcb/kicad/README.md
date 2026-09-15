@@ -270,8 +270,13 @@ source here is rev 3: the review fixes and R23 above, plus:
   **`SW_SYS`** (the switched side of S3), not `BAT+`: BAT+ lives at the far left and every path
   from there to U1 is closed by the VCC trunk, the SW_SYS/VSYS wall and the S1_DRV bridge, while
   SW_SYS is on S3 pad 2 right next to the old S2_DRV copper. On battery SW_SYS is the cell
-  voltage; on USB it sits at the BQ25185 SYS regulation voltage, so a reading above ~4.3 V also
-  means "USB present". It draws nothing with the switch off. Parts: R24 + R25 1 MΩ 0402
+  voltage; on USB it sits at the higher BQ25185 SYS regulation voltage. That is a hint, not a
+  USB-present flag: worst-case tolerances (charger, 1 % divider, ±70 mV ADC) let a full cell and a
+  USB-powered SYS rail both land near 4.3 V, and DPPM/supplement mode can drop SYS with USB
+  connected. Source impedance is 500 kΩ, so ADC leakage can add tens of mV of DC error on top —
+  bench-measure against a multimeter (low/mid/full cell, BLE active, USB in and out) before
+  trusting absolute values; 100 kΩ/100 kΩ is the fallback if the error drifts. It draws nothing
+  with the switch off. Parts: R24 + R25 1 MΩ 0402
   (UNI-ROYAL 0402WGF1004TCE, C26083, basic) at (149.05, 96.0) and (150.15, 96.0) rot 90 under
   S3, C32 100 nF (same C77020 as C25) at (149.6, 98.0) rot 90; tap 1.5–2.3 V into GPIO3
   (ADC1_CH3) through the old S2_DRV copper (pad-8 stub, via at (143.86, 107.46), B.Cu diagonal
