@@ -254,6 +254,41 @@ pads do fit, but the cell now occupies the bottom. Revisit it together with the 
   to R6 runs there), and an 0402 needs 0.79 mm; moving R6 does not help because both R6 pads
   sit in the same strip. It needs S1 or GPIO9's route moved, or a part on the bottom side.
 
+## Rev 3 (in source since 2026-09-15, not ordered)
+
+Rev 2 as ordered is frozen in [`../archive/2026-09-07-rev2/`](../archive/2026-09-07-rev2/). The
+source here is rev 3: the review fixes and R23 above, plus:
+
+- **Battery voltage sense (2026-09-15).** Rev 2 cannot read the cell: BQ25185 has no I2C, its
+  STAT pins only say charging/not charging, and no ADC1 pin (GPIO0–4) was free — GPIO0/1 carry
+  X2, GPIO2 is a strapping pin with R8, GPIO3/4 drive the shutter relays; GPIO5 is ADC2, which
+  Espressif does not support on the C3 alongside the radio. Rev 3 frees **GPIO3** by moving the
+  S2 relay drive to **GPIO6** (pin 12, MTCK): every other spare pin (GPIO5, GPIO7, GPIO10) is
+  boxed in by the VCC artery, the S1_DRV/CHIP_EN/GPIO6 diagonals or the GPIO9 stub, while GPIO6
+  already had a route to J1 that passes R22 — the relay is fed from that track at (150.55, 99.3)
+  and `J1` pin 4 (silk `IO6`) now carries `S2_DRV` instead of a free GPIO. The divider measures
+  **`SW_SYS`** (the switched side of S3), not `BAT+`: BAT+ lives at the far left and every path
+  from there to U1 is closed by the VCC trunk, the SW_SYS/VSYS wall and the S1_DRV bridge, while
+  SW_SYS is on S3 pad 2 right next to the old S2_DRV copper. On battery SW_SYS is the cell
+  voltage; on USB it sits at the BQ25185 SYS regulation voltage, so a reading above ~4.3 V also
+  means "USB present". It draws nothing with the switch off. Parts: R24 + R25 1 MΩ 0402
+  (UNI-ROYAL 0402WGF1004TCE, C26083, basic) at (149.05, 96.0) and (150.15, 96.0) rot 90 under
+  S3, C32 100 nF (same C77020 as C25) at (149.6, 98.0) rot 90; tap 1.5–2.3 V into GPIO3
+  (ADC1_CH3) through the old S2_DRV copper (pad-8 stub, via at (143.86, 107.46), B.Cu diagonal
+  and the x = 149.007 slot through the S1_DRV bridge), joined at a new via (148.75, 98.2).
+  GND vias at (150.4, 94.9) and (148.5, 99.05). DRC 0 errors, 0 unconnected, two new courtyard
+  warnings (C32 against R24/R25 — S3's courtyard above and the GPIO6 track below leave no
+  slack); ERC unchanged. Title block rev 3.
+  **Firmware todo before rev 3 boards are flashed** (rev 2 boards keep GPIO3 = S2):
+  - `shutterPinS2` 3 → 6, ideally as an `S2_PIN` build flag per env like `S1_PIN`.
+  - read GPIO3 with `analogReadMilliVolts` (11 dB attenuation), ×2 for the divider, average a
+    few samples; the 100 nF makes the 500 kΩ source fine for one-shot reads.
+  - expose the voltage over BLE (new characteristic or a status byte) and warn on the blue LED
+    below ~3.5 V; treat > 4.3 V as USB present.
+- Still open from the 2026-09-08 review and 2026-09-10 (see above): paste windows on U2/U3,
+  one-via ground islands, return via at C24, 0.16 mm power necks, BAT1 `+` silk, U3 mask dam,
+  the 1 µF on VDD_SPI.
+
 ## Ordering
 
 `out/gerber/` is tracked unpacked, so a revision's copper is diffable in git.

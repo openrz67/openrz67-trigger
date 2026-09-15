@@ -43,7 +43,7 @@ void ledWrite(uint8_t level) {
     ledLevel = level;
     ledcWrite(LED_PWM_CH, 255 - level); // active-low
 }
-constexpr int shutterPinS2 = 3; // GPIO3, drives U6 (camera S2)
+constexpr int shutterPinS2 = 3; // GPIO3, drives U6 (camera S2) on rev 2. Rev 3: GPIO6, and GPIO3 becomes the battery ADC (see pcb/kicad/README.md, "Rev 3")
 // S1_PIN comes from platformio.ini: GPIO4 on rev 2 (default), GPIO21 (U0TXD) in the rev1 env.
 #ifndef S1_PIN
 #define S1_PIN 4

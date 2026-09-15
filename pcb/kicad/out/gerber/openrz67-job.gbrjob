@@ -5,13 +5,13 @@
       "Application": "Pcbnew",
       "Version": "10.0.6"
     },
-    "CreationDate": "2026-09-10T21:52:26+02:00"
+    "CreationDate": "2026-09-15T16:53:57+02:00"
   },
   "GeneralSpecs": {
     "ProjectId": {
       "Name": "openrz67",
       "GUID": "6f70656e-727a-4363-972e-6b696361645f",
-      "Revision": "2"
+      "Revision": "3"
     },
     "Size": {
       "X": 48.254,
