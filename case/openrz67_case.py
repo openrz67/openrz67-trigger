@@ -94,7 +94,9 @@ batt_clr, batt_rib_t, batt_rib_h = 0.5, 1.6, 2.5   # pocket fit; rib ring on the
 #   crosses the rib at the left end — the pockets beside the board give it room.
 
 # --- Openings ---------------------------------------------------------------
-usb_open_w, usb_open_h, usb_open_r = 11.0, 7.0, 2.0     # lip the cable body stops against
+usb_open_w, usb_open_h, usb_open_r = 10.0, 4.6, 1.8     # lip the cable body stops against; clears the
+#   plug's metal shell (8.34 x 2.56) by ~0.8 / 1.0 with the PCB located on pins. Was 11 x 7 R2
+#   until 2026-09-15 (a lot of dead room around the receptacle mouth).
 usb_recess_w, usb_recess_h, usb_recess_r = 13.0, 9.0, 3.0   # inner: room for the receptacle shell
 usb_recess_d = 1.0                   # the mouth sits 0.4 inside the wall's inner face; this is slack
 # Outer pocket the plug's overmold sinks into (protects the port, guides the plug in, and
@@ -102,6 +104,11 @@ usb_recess_d = 1.0                   # the mouth sits 0.4 inside the wall's inne
 # Fits overmolds up to 13 x 8.5; a 45° bevel of usb_pocket_ch on its outer edge.
 usb_pocket_w, usb_pocket_h, usb_pocket_r, usb_pocket_d, usb_pocket_ch = 14.0, 9.5, 3.0, 1.2, 0.6
 assert wall - usb_pocket_d - usb_recess_d >= 0.8, "USB lip between the outer pocket and the inner recess too thin"
+# The pocket straddles the seam. Below it the base wall is normally only the outer lap half
+# (wall/2 = 1.6), so the pocket left a 0.4 skin there and the lip looked thin/ragged on the base
+# side (first print, 2026-09-15). Around the USB the base keeps its FULL wall down through the
+# lap zone and the lid tongue is notched to match -> the lip is wall - pocket - recess on both sides.
+usb_solid_w = usb_pocket_w + 2 * 1.5   # width of that full-wall zone (case-Y)
 led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
 led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 1.5
@@ -227,9 +234,9 @@ inner_sk = rrect(inner_w, inner_h, inner_r, wall, wall)
 mid_sk = rrect(inner_w + wall, inner_h + wall, inner_r + wall / 2, wall / 2, wall / 2)
 
 # --- Shared cuts -----------------------------------------------------------------
-# USB-C (left wall): 11x7 R2 through-cut whose outer edge is the cable-body lip,
-# plus a 13x9x1.5 inner recess so the receptacle shell pokes into the wall and the
-# mouth reaches the outer face. Straddles the split -> cut from BOTH base and lid.
+# USB-C (left wall): 10x4.6 R1.8 through-cut (plug shell only) whose outer edge is the
+# cable-body lip, plus a 13x9x1 inner recess so the receptacle shell pokes into the wall
+# and the mouth reaches the lip. Straddles the split -> cut from BOTH base and lid.
 usb_cy, usb_zc = by(22 - 13.259), pcb_top_z + h_usbc / 2
 cut_usb = xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_open_w, usb_open_h, usb_open_r),
                  -1, wall + 2)
@@ -281,7 +288,8 @@ def orient_mark_rib(z0):
 # --- BASE ---------------------------------------------------------------------------
 base = prism(outer_sk, 0, split_z)
 base -= prism(inner_sk, floor_t, total_h)                    # cavity
-base -= prism(mid_sk, split_z - lap, lap + 1)                # rabbet: outer wall half only
+usb_zone = box(-1, usb_cy - usb_solid_w / 2, split_z - lap - 1, wall + 2, usb_solid_w, lap + 1)
+base -= prism(mid_sk, split_z - lap, lap + 1) - usb_zone     # rabbet: outer wall half only, full wall at the USB
 
 # Posts at the mount holes with Ø1.7 locating pins into the real PCB holes, plus
 # solid posts in the other corners
@@ -332,7 +340,8 @@ base -= cut_usb
 # --- LID ----------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)                        # top + walls
 lid = chamfer(lid.edges().group_by(Axis.Z)[-1], lid_top_r)   # chamfered top edge, before any cut
-lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap)   # tongue
+lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap) - box(   # tongue, notched at the USB
+    -1, usb_cy - usb_solid_w / 2 - lap_gap, split_z - lap - 1, wall + 2, usb_solid_w + 2 * lap_gap, lap + 1)
 # Snap beads on the fingers only. Bottom: a big click-in ramp. Top: a small chamfer so
 # most of the bead is a flat retention face (a 45° top let the lid pull open too easily);
 # the lid prints upside-down, so that face is a 0.4 mm ledge in mid-air — one line, fine.
@@ -471,7 +480,7 @@ def _open(solid, probe, what):
     v = (solid & probe).volume
     assert v < 1e-6, f"{what} blocked (probe volume {v:.3f})"
 
-_open(base + lid, box(-0.5, usb_cy - 4, usb_zc - 2.5, wall + 1, 8, 5), "USB opening")
+_open(base + lid, box(-0.5, usb_cy - 4.3, usb_zc - 1.5, wall + 1, 8.6, 3.0), "USB opening")   # plug shell + 0.25/0.2 slop
 _open(base + lid, box(-0.5, usb_cy - usb_pocket_w / 2 + usb_pocket_r / 2, usb_zc - usb_pocket_h / 2 + usb_pocket_r / 2,
                       usb_pocket_d + 0.5, usb_pocket_w - usb_pocket_r, usb_pocket_h - usb_pocket_r), "USB plug pocket")
 assert (base + lid & box(usb_pocket_d + 0.05, usb_cy - usb_pocket_w / 2, usb_zc - usb_pocket_h / 2, 0.5,
