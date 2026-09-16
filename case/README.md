@@ -164,7 +164,9 @@ between the LED seat and the front edge. A thin debossed **rail** (`lid_rail_*`,
 6 mm in from the side walls) runs across the LED row and breaks 1.5 mm around the
 light-pipe seat — the off-centre LED then reads as an indicator sitting on a line instead
 of a hole that missed the middle (the LED position is fixed by the PCB). All pockets are
-`lid_text_depth` (0.6 mm) deep. Restyled 2026-09-14 — the old Arial "OpenRZ67" / "Trigger"
+`lid_text_depth` (0.6 mm, 3 layers) deep, and an **inlay** solid (`lid_text`, exported as
+`openrz67-lid-text.stl`) fills them exactly — it is the pocket volume clipped by the lid,
+so it inherits the top-edge chamfer and cannot fight the lid for the same space (asserted). Restyled 2026-09-14 — the old Arial "OpenRZ67" / "Trigger"
 pair had uneven weights, a wide gap and sat near the edge; DIN Alternate was tried and
 dropped for Futura.
 Per the FDM rules: pockets, not raised letters. Assertions enforce placement (each line
@@ -173,18 +175,24 @@ stroke is at least `lid_text_min_stroke` (0.6 mm), measured by shrinking each gl
 outline — a narrower pocket smears. Tracking keeps the font's own advances and adds a
 fixed gap per glyph (all-caps only: one face per letter).
 
-Colour it in the slicer with a **height range modifier on the lid**: select the lid,
-add a height range **0.6–1.4 mm** and assign it the letter-colour filament. The lid prints
-**upside down** (the pockets face the bed and come out crisp), so those four layers form
-the pocket floors — the letters show in the contrast colour, recessed in the face colour,
-with only a thin accent band at the lid's top edge. On a single-filament printer, do a
-manual filament change at Z = 0.6 instead (recolours everything above 0.6, so slice the
-lid alone).
+Colour it by **part, not by slicer paint**: `make_3mf.py` adds the inlay to the lid object
+as a second part on **filament 2** (`SUB_PARTS`), the same mechanism the light pipe already
+uses for its clear filament. Open `openrz67-case.3mf`, set filament 2 to the letter colour,
+print — nothing to select per slice. The colour lives on the part, so every re-export keeps it.
 
-**Do not save the height range into the project/template**: QIDI Studio (≤ v2.x)
-**segfaults on opening** a .3mf that carries `Metadata/layer_config_ranges.xml`
-(`ObjectList::add_settings_item` dereferences the not-yet-created model tab during
-startup load). Add the range fresh after opening the project instead.
+Why not the two older routes:
+
+- **Slicer colour painting** stores the colour per mesh triangle. `make_3mf.py` replaces the
+  mesh on every export, so the painting is wiped and has to be redone each time.
+- **Height range modifier** cannot be saved: QIDI Studio (≤ v2.x) **segfaults on opening** a
+  .3mf that carries `Metadata/layer_config_ranges.xml` (`ObjectList::add_settings_item`
+  dereferences the not-yet-created model tab during startup load).
+
+The inlay also fixes the print quality. The lid prints **upside down**, so an empty pocket's
+floor is a bridge over open air — at 0.6 mm deep it sagged and the letters read fuzzy
+(2026-09-16). As a part, the letters print **first, flat against the bed**, and come out
+smooth. On a single-filament printer, delete the inlay part and do a manual filament change
+at Z = 0.6 instead (recolours everything above 0.6, so slice the lid alone).
 
 Edit `lid_texts` (text, size, tracking), `lid_font`, `lid_text_gap` and `lid_rail_*` to restyle; `LID_TEXT_SHOW=false`
 disables the text (on by default).

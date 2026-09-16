@@ -2,7 +2,8 @@
 # Export base + lid + light pipe + camera plug to STL and rebuild the slicer project .3mf.
 # The light pipe (openrz67-lightpipe.stl) prints in CLEAR/transparent filament; base and
 # lid in normal opaque filament. The lid text (on by default) is a debossed pocket in the
-# top face; colour it with a filament change at Z = 0.6mm (lid printed upside-down).
+# top face plus an inlay (openrz67-lid-text.stl) that fills it; make_3mf.py adds the inlay to
+# the lid object as a part on FILAMENT 2, so the letter colour is baked into the .3mf.
 #
 # Usage:
 #   ./export.sh              # -> stl/ + openrz67-case.3mf

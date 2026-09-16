@@ -9,9 +9,11 @@ the LiPo cell lies flat under the PCB (foam between), the PCB sits on tall posts
 in a low rib pocket on the floor, and open pockets in front of and behind the board
 take the battery lead and fingers. Dimensions come from the KiCad board and its footprints — see README.md.
 
-Parts: base (tub), lid (telescoping ship-lap edge), lightpipe (clear filament).
+Parts: base (tub), lid (telescoping ship-lap edge), lid_text (colour-2 inlay),
+lightpipe (clear filament).
 Print orientation: base floor-down; lid upside-down (the debossed top text
-faces the bed — filament change at Z = lid_text_depth colours the letters);
+faces the bed — the lid_text inlay is a separate part on filament 2, so the
+letters print flat on the bed in the contrast colour, no bridge, no slicer paint);
 lightpipe head-down. No supports.
 
 Coordinate system: case coords, origin at the outer box's front-left-bottom
@@ -172,7 +174,10 @@ lid_font = "Futura"
 lid_texts = [("OpenRZ67", 9.5, 0.0), ("TRIGGER", 5.0, 1.0)]
 lid_text_gap, lid_text_min_stroke = 1.6, 0.6   # between lines; pockets narrower than this smear
 lid_rail_w, lid_rail_end, lid_rail_gap = 0.9, 6.0, 1.5   # rail width, inset from the side walls, air to the LED seat
-lid_text_depth = 0.6              # pocket depth = the colour-change height (3 x 0.2 layers)
+lid_text_depth = 0.6              # pocket depth = the inlay thickness (3 x 0.2 layers).
+                                  # Three layers so the second colour is opaque: the inlay prints
+                                  # FIRST, flat against the bed, and the body colour would ghost
+                                  # through a single layer.
 eps = 0.01
 
 # --- Derived ------------------------------------------------------------------
@@ -447,7 +452,9 @@ def tracked_text(txt, size, tracking):
     faces = sorted(sk.faces(), key=lambda f: f.center().X)
     return Sketch([Pos(i * tracking, 0) * f for i, f in enumerate(faces)])
 
+lid_text = None            # the inlay solid: exactly the pocket volume, printed in colour 2
 if lid_text_show:
+    text_cut = None
     recess_half = (led_win_w + 2 * led_head_lip + led_pipe_clr) / 2
     lines = [tracked_text(*t) for t in lid_texts]
     heights = [l.bounding_box().size.Y for l in lines]
@@ -472,12 +479,22 @@ if lid_text_show:
             except Exception:   # the wire collapsed: stroke thinner than the offset
                 n = 0
             assert n == 1, f"'{txt}' has strokes under {lid_text_min_stroke} mm (a glyph -> {n} faces)"
-        lid -= prism(sk, total_h - lid_text_depth, lid_text_depth + eps)
+        c = prism(sk, total_h - lid_text_depth, lid_text_depth + eps)
+        text_cut = c if text_cut is None else text_cut + c
         y -= h + lid_text_gap
     seat_half_l = (led_win_l + 2 * led_head_lip + led_pipe_clr) / 2
     for x0, x1 in ((lid_rail_end, led_cx - seat_half_l - lid_rail_gap),
                    (led_cx + seat_half_l + lid_rail_gap, outer_w - lid_rail_end)):
-        lid -= box(x0, led_cy - lid_rail_w / 2, total_h - lid_text_depth, x1 - x0, lid_rail_w, lid_text_depth + eps)
+        c = box(x0, led_cy - lid_rail_w / 2, total_h - lid_text_depth, x1 - x0, lid_rail_w, lid_text_depth + eps)
+        text_cut = c if text_cut is None else text_cut + c
+    # The inlay is the pocket volume clipped BY the lid, so it fills the pockets exactly and
+    # inherits the top-edge chamfer instead of standing proud of it. Slicing it as a second
+    # part of the lid object (make_3mf.py) puts the colour on the PART, so it survives every
+    # re-export -- unlike slicer colour painting, which the fresh mesh wipes, and unlike a
+    # height-range modifier, which QIDI Studio cannot store. It also removes the bridge: the
+    # letters now print flat on the bed instead of sagging over an open pocket (2026-09-16).
+    lid_text = lid & text_cut
+    lid -= text_cut
 
 # --- LIGHT PIPE (clear filament, inserted from above as a top hat; the tapered head
 # self-centres in the funnel and sits ~0.2 below flush with led_pipe_clr) --------------
@@ -496,6 +513,12 @@ assert abs(bb.max.Z - (pcb_z + pcb_t + pin_proud)) < 1e-3, f"base Z {bb.max.Z}" 
 assert abs(lightpipe.bounding_box().max.Z - total_h) < 1e-3, "light pipe not flush with the top"
 lb = lid.bounding_box()
 assert abs(lb.min.Z - (split_z - lap)) < 1e-3 and abs(lb.max.Z - total_h) < 1e-3, "lid Z"
+if lid_text is not None:
+    assert lid_text.is_valid and lid_text.volume > 1e-3, "lid text inlay: empty or invalid"
+    tb = lid_text.bounding_box()
+    assert abs(tb.max.Z - total_h) < 1e-3, "inlay not flush with the lid top"
+    assert tb.min.Z > total_h - lid_text_depth - 1e-3, "inlay deeper than the pocket"
+    assert (lid & lid_text).volume < 1e-6, "inlay overlaps the lid (the two parts must not fight)"
 
 # Holes must actually break through (a wrong axis gives the same volume):
 def _open(solid, probe, what):
@@ -562,6 +585,11 @@ if __name__ == "__main__":
     out = Path(os.environ.get("OUTDIR", Path(__file__).resolve().parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
     parts = [("openrz67-base", base), ("openrz67-lid", lid), ("openrz67-lightpipe", lightpipe)]
+    if lid_text is not None:
+        parts.append(("openrz67-lid-text", lid_text))
+    else:
+        (out / "openrz67-lid-text.stl").unlink(missing_ok=True)   # LID_TEXT_SHOW=false: a stale
+        # inlay would otherwise be sliced into a lid that no longer has pockets for it
     if os.environ.get("SNAP_TEST", "false") == "true":
         # Front-left corner crop of base + lid: one snap finger, a
         # locating pin and its boss. Print these first to tune snap_bead / lap_gap.

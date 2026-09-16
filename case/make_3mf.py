@@ -3,7 +3,8 @@
 Build a Bambu Studio / OrcaSlicer project .3mf by swapping fresh STL geometry
 into a hand-made template project, keeping ALL slicer settings intact:
 print profile, plate layout, and the per-part filament assignment (the light
-pipe stays on its clear filament). Only the three mesh blocks are replaced.
+pipe stays on its clear filament). Only the mesh blocks are replaced, plus the
+SUB_PARTS meshes added inside an existing object (the lid text on filament 2).
 
 The template was made once by hand in the slicer (import the STLs, arrange,
 assign the light pipe to the clear filament, save project). After that, run
@@ -42,6 +43,12 @@ import zipfile
 
 # plate id -> STLs added as new objects (row at the plate centre, resting on the bed)
 EXTRA_PLATES = {2: ["openrz67-camera-plug-bottom.stl", "openrz67-camera-plug-top.stl"]}
+# parent STL -> [(sub-part STL, extruder)]: meshes added INSIDE an existing object as extra
+# parts, sharing its frame and plate spot. This is how the lid text gets its own filament:
+# the colour lives on the part, so it survives every re-export. Slicer colour painting does
+# not (it is stored per triangle, and we replace the mesh), and QIDI Studio segfaults on a
+# saved height-range modifier. Missing sub-part STLs are skipped (LID_TEXT_SHOW=false).
+SUB_PARTS = {"openrz67-lid.stl": [("openrz67-lid-text.stl", 2)]}
 BED = 256.0            # Bambu P2S; plates sit in a row, stride = 1.2 * bed (LOGICAL_PART_PLATE_GAP)
 GAP = 8.0              # between the extra objects
 
@@ -130,9 +137,68 @@ def build_mapping(model_settings, dmodel):
     return objs
 
 
+def add_sub_parts(work, args, names, dmodel, model_settings, oid, parent, offset, next_id):
+    """Add SUB_PARTS[parent] inside object `oid` as extra parts on their own extruder.
+
+    The sub-mesh is recentred on the PARENT's bbox centre, not its own, so the two meshes
+    stay in the same object frame and the text lands in its pockets. Returns the edited XML
+    and the next free id.
+    """
+    rels_path = os.path.join(work, "3D", "_rels", "3dmodel.model.rels")
+    for stl, extruder in SUB_PARTS.get(parent, []):
+        path = os.path.join(args.stl_dir, stl)
+        if not os.path.isfile(path):
+            print(f"  {stl:30} not exported, skipping sub-part")
+            continue
+        verts, tris = parse_ascii_stl(path)
+        mid = next_id
+        next_id += 1
+        fname = f"3D/Objects/object_{mid}.model"
+        open(os.path.join(work, fname), "w").write(
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" '
+            'xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" '
+            'xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p">\n'
+            ' <metadata name="BambuStudio:3mfVersion">1</metadata>\n <resources>\n'
+            f'  <object id="{mid}" p:UUID="{uuid.uuid4()}" type="model">\n{mesh_xml(verts, tris, offset)}\n'
+            '  </object>\n </resources>\n <build/>\n</model>\n')
+        names.append(fname)
+        rels = open(rels_path).read().replace(
+            "</Relationships>",
+            f' <Relationship Target="/{fname}" Id="rel-{mid}" '
+            'Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n</Relationships>')
+        open(rels_path, "w").write(rels)
+
+        comp = (f'    <component p:path="/{fname}" objectid="{mid}" p:UUID="{uuid.uuid4()}" '
+                'transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n')
+        m = re.search(rf'(<object id="{oid}"[^>]*>\s*<components>.*?)(   </components>)', dmodel, re.S)
+        if not m:
+            sys.exit(f"could not find <components> of object {oid} to add {stl}")
+        dmodel = dmodel[:m.end(1)] + comp + dmodel[m.end(1):]
+
+        part = (f'    <part id="{mid}" subtype="normal_part">\n'
+                f'      <metadata key="name" value="{stl}"/>\n'
+                f'      <metadata key="extruder" value="{extruder}"/>\n'
+                '      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n'
+                f'      <metadata key="source_file" value="{stl}"/>\n'
+                '      <metadata key="source_object_id" value="0"/>\n'
+                '      <metadata key="source_volume_id" value="0"/>\n'
+                + "".join(f'      <metadata key="source_offset_{a}" value="{v:.8g}"/>\n'
+                          for a, v in zip("xyz", offset))
+                + f'      <mesh_stat face_count="{len(tris)}" edges_fixed="0" degenerate_facets="0" '
+                'facets_removed="0" facets_reversed="0" backwards_edges="0"/>\n    </part>\n')
+        m = re.search(rf'(<object id="{oid}">.*?</part>\n)(  </object>)', model_settings, re.S)
+        if not m:
+            sys.exit(f"could not find object {oid} in model_settings to add {stl}")
+        model_settings = model_settings[:m.end(1)] + part + model_settings[m.end(1):]
+        print(f"  {stl:30} {len(verts)} verts / {len(tris)} tris  -> part of {parent}, extruder {extruder}")
+    return dmodel, model_settings, next_id
+
+
 def add_extra_objects(work, args, names, dmodel, model_settings):
     """Append EXTRA_PLATES objects (new ids after the template's) and return the edited XML."""
-    next_id = max(int(i) for i in re.findall(r'<object id="(\d+)"', dmodel)) + 1
+    next_id = max(int(i) for i in re.findall(r'<object id="(\d+)"', dmodel)
+                  + re.findall(r'<part id="(\d+)"', model_settings)) + 1
     ident = max([int(i) for i in re.findall(r'identify_id" value="(\d+)"', model_settings)] + [0]) + 1
     rels_path = os.path.join(work, "3D", "_rels", "3dmodel.model.rels")
     rels = open(rels_path).read()
@@ -218,6 +284,8 @@ def main():
         model_settings = open(ms_path).read()
         dmodel = open(dm_path).read()
         mapping = build_mapping(model_settings, dmodel)
+        next_id = max(int(i) for i in re.findall(r'<object id="(\d+)"', dmodel)
+                      + re.findall(r'<part id="(\d+)"', model_settings)) + 1
 
         for oid, info in mapping.items():
             stl = os.path.join(args.stl_dir, info["name"])
@@ -267,6 +335,9 @@ def main():
             cx, cy, cz = offset
             print(f"  {info['name']:30} {len(verts)} verts / {fc} tris "
                   f"@ ({cx:.3f},{cy:.3f},{cz:.3f}) bed z {-zmin if m else float('nan'):.2f} -> {info['model_path']}")
+
+            dmodel, model_settings, next_id = add_sub_parts(
+                work, args, names, dmodel, model_settings, oid, info["name"], offset, next_id)
 
         dmodel, model_settings = add_extra_objects(work, args, names, dmodel, model_settings)
         open(ms_path, "w").write(model_settings)
