@@ -83,7 +83,7 @@ a known collision fails loudly instead of surfacing in the print.
   - **LED light pipe** (`led_*`, separate part): D3 (red) and D4 (blue) are top-emitting
     SMD LEDs ~8 mm below the lid. A separate **clear light pipe** is inserted from above
     as a top hat: a **tapered** head (funnel seat, ~flush with the top face) + a rod that
-    goes down to ~1.5 mm above the LEDs and channels the light into two sharp dots. The
+    goes down to ~0.8 mm above the LEDs and channels the light into two sharp dots. The
     lid is printed opaque; **only the light pipe is printed in clear filament**. It rests
     in the seat (gravity + optionally a drop of glue to seal). Why a funnel and not a
     stepped counterbore: the lid prints upside-down, and a step is a 1 mm ledge hanging

@@ -111,7 +111,7 @@ assert wall - usb_pocket_d - usb_recess_d >= 0.8, "USB lip between the outer poc
 usb_solid_w = usb_pocket_w + 2 * 1.5   # width of that full-wall zone (case-Y)
 led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
 led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
-led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 1.5
+led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # gap 0.8: 0603 LED is ~0.5 tall; closer stem = less light lost sideways (2026-09-16)
 # The head seat is a TAPER (funnel), not a step: lid prints upside-down, so a stepped
 # counterbore hangs a 1 mm ledge over the bed-side opening -> support crud, ragged edge
 # (first stacked print, 2026-09-14). A wall 0.7 out over 1.4 up is 26.6° from vertical:
