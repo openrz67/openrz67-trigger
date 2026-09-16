@@ -127,7 +127,7 @@ cavity side, with a `finger_slot` (0.8) relief at each end — and the bead sits
 above the finger tip, so the flexing lever is ~6 mm: about 2 % strain at full deflection,
 fine for PLA and comfortable in PETG. The rest of the tongue (1.45 mm) and the base lip
 (1.6 mm, 0.9 behind the pockets) stay rigid; `wall` is 3.2 for that. The PCB is located by
-two **Ø1.7 pins** in its real Ø2 mounting holes and pressed onto the posts by the lid's
+two **Ø1.85 pins** (light friction fit, coned lead-in) in its real Ø2 mounting holes and pressed onto the posts by the lid's
 hold-down bosses (blind pin recesses inside — no holes through the top). Open with a coin
 or fingernail in the **pry slot** (`pry_w/d/h`) on the back wall's lower lid edge; the back
 fingers release first, then the front.

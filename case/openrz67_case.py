@@ -26,7 +26,7 @@ Run (exports STLs to stl/ and checks the assertions):
 Closure: snap-fit — four cantilever fingers cut free in the lid tongue (two per
 long wall) carry a bead that clicks into a pocket in the base lip; the walls
 themselves stay rigid (no screws, no heat-set inserts). The PCB is located by two
-Ø1.7 pins in its real mounting holes and pressed down by the lid bosses. Open the
+Ø1.85 pins in its real mounting holes and pressed down by the lid bosses. Open the
 lid with a coin in the pry slot on the back wall.
 
 U4 camera cable: the side-entry XH header and its plug stay INSIDE the box; only
@@ -47,7 +47,9 @@ from build123d import *
 board_w, board_h, board_r = 48.0, 22.0, 2.0
 pcb_t = float(os.environ.get("PCB_T", 1.6))
 mount_holes = [(2, 2), (46, 20)]     # the real Ø2 holes (board coords)
-hole_d = 2.0                         # their diameter (locating pins are hole_d - 0.3)
+hole_d = 2.0                         # their diameter
+pin_d = hole_d - 0.15                # locating pins: light friction fit in the FR4 holes (was -0.3:
+                                     # the PCB rattled during install; a printed pin comes out ~+0.05)
 pcb_supports = [(2, 20), (46, 2)]    # solid posts in the screwless corners
 pcb_overhang_left = 2.0              # USB-C shell protrudes past the board edge
 # U4 camera connector: side-entry S4B-XH-A on the right edge, mouth facing out. Its
@@ -291,11 +293,16 @@ base -= prism(inner_sk, floor_t, total_h)                    # cavity
 usb_zone = box(-1, usb_cy - usb_solid_w / 2, split_z - lap - 1, wall + 2, usb_solid_w, lap + 1)
 base -= prism(mid_sk, split_z - lap, lap + 1) - usb_zone     # rabbet: outer wall half only, full wall at the USB
 
-# Posts at the mount holes with Ø1.7 locating pins into the real PCB holes, plus
-# solid posts in the other corners
+# Posts at the mount holes with Ø1.85 locating pins into the real PCB holes (straight
+# through the board, then a cone down to Ø1.4 above it as lead-in), plus solid posts
+# in the other corners
+import math as _m
+pin_taper = _m.degrees(_m.atan((pin_d - 1.4) / 2 / pin_proud))
 for hx, hy in mount_holes:
     base += cyl(bx(hx), by(hy), floor_t, standoff_d, standoff_h)
-    base += cyl(bx(hx), by(hy), pcb_z - eps, hole_d - 0.3, pcb_t + pin_proud + eps)
+    base += cyl(bx(hx), by(hy), pcb_z - eps, pin_d, pcb_t + eps)
+    base += extrude(Plane.XY.offset(pcb_top_z) * Pos(bx(hx), by(hy)) * Circle(pin_d / 2),
+                    amount=pin_proud, taper=pin_taper)
 for px, py in pcb_supports:
     base += cyl(bx(px), by(py), floor_t, standoff_d, standoff_h)
 
