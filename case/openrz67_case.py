@@ -127,13 +127,21 @@ led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # ga
 ant_l, ant_w, ant_clr, ant_depth = 25.0, 9.0, 0.3, 0.3
 ant_cx_frac = 0.25   # along the free band (0 = left boss end, 1 = right wall): nearer A1, short cable run
 
-# --- Slide switch SS12F15 (front wall, wired to S3) --------------------------
-sw_z = 4.8                           # body underside 1.3 mm over the PCB: clears U1 (0.9) by 0.4
-sw_slot_l, sw_slot_h = 10.65, 6.3
-sw_body_l, sw_body_h, sw_body_w, sw_body_clr = 11.0, 7.0, 8.0, 0.4
-sw_screw_pitch, sw_screw_d = 15.0, 2.4
-sw_boss_d, sw_boss_h, sw_boss_pilot, sw_boss_gap = 5.0, 5.0, 1.5, 1.5
-sw_plate_w, sw_plate_h, sw_plate_t, sw_plate_clr = 19.45, 5.75, 0.4, 0.3
+# --- Rocker switch KCD11 (front wall, snap-in, 2.8 mm tabs wired to S3) ----------------
+# Replaced the SS12F15 slide switch + screw pillars 2026-09-14: nothing soldered on the
+# switch (crimped 2.8 mm receptacles), no screws (spring latches on the body's long sides).
+# Vendor drawings disagree by ~0.5 mm — MEASURE the switch at hand before printing.
+kcd_body_l, kcd_body_h = 13.5, 8.5   # body behind the flange (X, Z) = the panel cutout, nominal
+kcd_hole_clr = 0.3                   # per side; snap-in wants a snug hole
+kcd_flange_l, kcd_flange_h = 15.0, 10.0   # bezel, sits proud on the OUTSIDE of the wall
+kcd_depth = 10.0                     # flange underside -> body rear (Y)
+kcd_tab_l, kcd_tab_pitch = 5.0, 7.0  # 2.8 mm tabs past the body rear; tab centre spacing (X)
+kcd_conn_l, kcd_conn_w = 3.0, 4.0    # receptacle past the tab tip: flag (90°) type. A straight
+#   insulated FDFN 1.25-110 reaches ~12 past the tip and runs into the S3 plug / light pipe.
+kcd_panel_t = 2.0                    # panel the latches grip: the wall is pocketed from INSIDE to this
+kcd_gap = 1.6                        # body underside over the PCB (U1 0.9 beneath); also the wall
+#   strip left between the hole and the seam
+kcd_latch_clr = 1.2                  # free inner wall past the hole edges, where the latches spring out
 
 # --- Snap closure: cantilever fingers in the lid tongue -------------------------
 snap_bead = 0.55   # how far the bead on a finger sticks out (0.45 held too loosely, 2026-09-14)
@@ -175,7 +183,8 @@ off_y = wall + pocket_front + clr
 inner_r = board_r + clr
 outer_w, outer_h, outer_r = inner_w + 2 * wall, inner_h + 2 * wall, inner_r + wall
 standoff_d = 4.0
-comp_clr = max(h_ph_plug, xh_h) + 2.0   # +2: room for the battery lead's loop into BAT1
+comp_clr = max(max(h_ph_plug, xh_h) + 2.0,   # +2: room for the battery lead's loop into BAT1
+               kcd_gap + kcd_body_h + 2 * kcd_hole_clr + kcd_latch_clr)   # rocker + latch room under the ceiling
 pcb_z = floor_t + standoff_h
 pcb_top_z = pcb_z + pcb_t
 split_z = pcb_top_z
@@ -208,7 +217,7 @@ def by(y):
 led_cx = (bx(led_pos[0][0]) + bx(led_pos[1][0])) / 2
 led_cy = (by(led_pos[0][1]) + by(led_pos[1][1])) / 2
 sx = outer_w / 2                     # switch centred on the lid (board-X ~27.5)
-swz = split_z + sw_z                 # switch centre, case-Z
+swz = split_z + kcd_gap + kcd_body_h / 2 + kcd_hole_clr   # switch body centre, case-Z
 
 # --- Helpers -------------------------------------------------------------------
 def rrect(w, h, r, x0=0.0, y0=0.0):
@@ -231,12 +240,6 @@ def box(x0, y0, z0, dx, dy, dz):
 
 def cyl(x, y, z0, d, h):
     return Pos(x, y, z0) * Cylinder(d / 2, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
-
-
-def ycyl(x, y0, z, d, length):
-    """Cylinder along +Y (for the switch screws)."""
-    return Pos(x, y0, z) * Rot(-90, 0, 0) * Cylinder(
-        d / 2, length, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
 
 outer_sk = rrect(outer_w, outer_h, outer_r)
@@ -377,12 +380,6 @@ for fx0, fx1 in finger_bands:
         y0 = yin - thin if yin < yout else yin
         lid -= box(fx0, y0, split_z - lap - eps, fx1 - fx0, thin, lap + eps)
 
-# Switch screw bosses: rectangular pillars from sw_boss_gap above the PCB (clears
-# Q1/C15 beneath) up into the ceiling; front face at the inner wall plane so the
-# screw clamps bracket -> wall -> boss in compression.
-for s in (-1, 1):
-    lid += box(sx + s * sw_screw_pitch / 2 - sw_boss_d / 2, wall, split_z + sw_boss_gap,
-               sw_boss_d, sw_boss_h, (total_h - lid_top_t + 1) - (split_z + sw_boss_gap))
 # Hold-down bosses over the mount holes (press the PCB onto the posts)
 for hx, hy in mount_holes:
     lid += cyl(bx(hx), by(hy), pcb_top_z, holddown_d, (total_h - lid_top_t) - pcb_top_z)
@@ -407,11 +404,12 @@ lid -= prism(Pos(led_cx, led_cy) * RectangleRounded(
     total_h - lid_top_t - eps, lid_top_t + 2 * eps)
 lid -= led_head(led_pipe_clr, eps)
 # Antenna recess in the ceiling (band: right of the (2,2) boss, in front of the LED stem,
-# behind the switch body)
+# behind the rocker body). The foil is flush with the ceiling; the rocker top is
+# kcd_latch_clr + kcd_hole_clr under it, so only its plan footprint is kept clear.
 ceiling_z = total_h - lid_top_t
 band_x0 = bx(mount_holes[0][0]) + holddown_d / 2 + 0.5
 band_x1 = outer_w - wall - 0.5
-band_y0 = wall + sw_body_w + sw_body_clr + 0.5
+band_y0 = kcd_depth + 0.5   # behind the rocker body's rear face (tabs + receptacles sit lower)
 band_y1 = led_cy - (led_win_w + led_pipe_clr) / 2 - 0.5
 ant_L, ant_W = ant_l + 2 * ant_clr, ant_w + 2 * ant_clr
 assert ant_L <= band_x1 - band_x0 and ant_W <= band_y1 - band_y0, \
@@ -420,17 +418,12 @@ assert ant_depth <= lid_top_t - lid_text_depth - 0.8, "antenna recess + lid text
 ant_x0 = band_x0 + (band_x1 - band_x0 - ant_L) * ant_cx_frac
 ant_y0 = (band_y0 + band_y1 - ant_W) / 2
 lid -= box(ant_x0, ant_y0, ceiling_z - eps, ant_L, ant_W, ant_depth + eps)
-# Switch: actuator slot, flush bracket recess in the outer wall, screw holes,
-# and the body-envelope keepout (the bosses give way over the body only)
-lid -= box(sx - sw_slot_l / 2, -1, swz - sw_slot_h / 2, sw_slot_l, wall + 2, sw_slot_h)
-lid -= box(sx - (sw_plate_w + sw_plate_clr) / 2, -0.5, swz - (sw_plate_h + sw_plate_clr) / 2,
-           sw_plate_w + sw_plate_clr, sw_plate_t + 0.5, sw_plate_h + sw_plate_clr)
-for s in (-1, 1):
-    x = sx + s * sw_screw_pitch / 2
-    lid -= ycyl(x, -1, swz, sw_screw_d, wall + 1)            # clearance through wall
-    lid -= ycyl(x, wall - eps, swz, sw_boss_pilot, sw_boss_h + eps)  # pilot into boss
-lid -= box(sx - sw_body_l / 2 - sw_body_clr, wall, swz - sw_body_h / 2 - sw_body_clr,
-           sw_body_l + 2 * sw_body_clr, sw_body_w + eps, sw_body_h + 2 * sw_body_clr)
+# Rocker switch: snap-in hole through the front wall + an inner pocket that thins the
+# wall to kcd_panel_t around it (the latches grip that). Flange proud on the outside.
+kcd_hole_l, kcd_hole_h = kcd_body_l + 2 * kcd_hole_clr, kcd_body_h + 2 * kcd_hole_clr
+lid -= box(sx - kcd_hole_l / 2, -1, swz - kcd_hole_h / 2, kcd_hole_l, wall + 2, kcd_hole_h)
+lid -= box(sx - kcd_hole_l / 2 - kcd_latch_clr, kcd_panel_t, swz - kcd_hole_h / 2 - kcd_latch_clr,
+           kcd_hole_l + 2 * kcd_latch_clr, wall - kcd_panel_t + eps, kcd_hole_h + 2 * kcd_latch_clr)
 # Blind recesses in the hold-down bosses for the locating pins (not through the
 # top plate — the .scad's snap variant cut them through, leaving holes in the lid)
 for hx, hy in mount_holes:
@@ -533,14 +526,27 @@ assert (lid & box(ant_x0, ant_y0, ceiling_z + ant_depth + eps, ant_L, ant_W, lid
         ).volume > 0.99 * ant_L * ant_W * (lid_top_t - ant_depth - lid_text_depth - 2 * eps), "antenna recess breaks through the top plate"
 for hx, hy in mount_holes:
     _open(lid, cyl(bx(hx), by(hy), pcb_top_z + eps, 2.0, pin_proud), "locating-pin recess")
-for s in (-1, 1):
-    _open(lid, ycyl(sx + s * sw_screw_pitch / 2, eps, swz, 1.0, wall - 2 * eps), "switch screw")
-# Fit-critical keepouts stay open (enforced as geometry, not eyeballed in preview):
-_open(lid, box(sx - sw_body_l / 2, wall + eps, swz - sw_body_h / 2,
-               sw_body_l, sw_body_w - 2 * eps, sw_body_h), "switch body envelope")
+# Rocker switch: hole through, latch pocket open, and the body + tabs + receptacles
+# (over the PCB, under the ceiling) end in front of the light pipe and the S3 header
+# (PH top-entry at board (28.71, 19.96), body 5.9 x 4.5 — the wires go there).
+_open(lid, box(sx - kcd_body_l / 2, -0.5, swz - kcd_body_h / 2, kcd_body_l, wall + 1, kcd_body_h), "switch hole")
+_open(lid, box(sx - kcd_hole_l / 2 - kcd_latch_clr + eps, kcd_panel_t + eps,
+               swz - kcd_hole_h / 2 - kcd_latch_clr + eps, kcd_hole_l + 2 * kcd_latch_clr - 2 * eps,
+               wall - kcd_panel_t - 2 * eps, kcd_hole_h + 2 * kcd_latch_clr - 2 * eps), "switch latch pocket")
+assert swz - kcd_hole_h / 2 - kcd_latch_clr >= split_z - 1e-6, "switch latch pocket cuts into the lid tongue"
+assert swz + kcd_hole_h / 2 + kcd_latch_clr <= total_h - lid_top_t + 1e-6, "switch latch pocket cuts the ceiling"
+assert kcd_flange_h / 2 <= swz - split_z and swz + kcd_flange_h / 2 <= total_h - lid_top_r, \
+    "switch flange over the seam / into the top chamfer"
+_open(lid, box(sx - kcd_body_l / 2, wall + eps, swz - kcd_body_h / 2, kcd_body_l, kcd_depth - wall, kcd_body_h),
+      "switch body inside the lid")
+s3_x, s3_y, s3_l, s3_w = 28.71, 19.96, 5.9, 4.5
+kcd_y_end = kcd_depth + kcd_tab_l + kcd_conn_l
+pipe_y0 = led_cy - (led_win_w + 2 * led_head_lip + led_pipe_clr) / 2
+assert kcd_y_end + 0.5 <= min(pipe_y0, by(s3_y - s3_w / 2)), \
+    f"switch tabs + receptacles reach Y {kcd_y_end:.1f}: light pipe at {pipe_y0:.1f}, S3 plug at {by(s3_y - s3_w / 2):.1f}"
 _open(lid, box(bx(0.5), by(4.5), pcb_top_z + eps, 7, 9.5, 2), "USB-C body keepout")
 # J1 (1x4 2.54 mm header, DNP, pads at board x 34.4-42.0, y 1.4): no header envelope —
-# the centred switch's right boss sits over it (2026-09-13). Solder flying leads instead.
+# the centred switch body ends at the first pad and its tabs run over the row. Flying leads.
 
 # --- Export -------------------------------------------------------------------------------
 if __name__ == "__main__":
