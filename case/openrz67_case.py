@@ -119,6 +119,14 @@ led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # ga
 # (first stacked print, 2026-09-14). A wall 0.7 out over 1.4 up is 26.6° from vertical:
 # under the slicer's 30° support threshold, so nothing gets supported, nothing sags.
 
+# --- FPC antenna (Ebyte TX2400-FPC-2509, 25 x 9 x ~0.2, adhesive, U.FL to A1) -------------
+# Stuck to the lid CEILING in the free band between the switch body (front) and the LED
+# stem (back): furthest from the cell (metal pouch) and 10 mm over the PCB ground. A shallow
+# recess locates it; the cable (~100 mm) drops to A1 near the USB end and coils in the air
+# over the board. The lid prints upside-down, so the recess is a pocket in the print's top face.
+ant_l, ant_w, ant_clr, ant_depth = 25.0, 9.0, 0.3, 0.3
+ant_cx_frac = 0.25   # along the free band (0 = left boss end, 1 = right wall): nearer A1, short cable run
+
 # --- Slide switch SS12F15 (front wall, wired to S3) --------------------------
 sw_z = 4.8                           # body underside 1.3 mm over the PCB: clears U1 (0.9) by 0.4
 sw_slot_l, sw_slot_h = 10.65, 6.3
@@ -398,6 +406,20 @@ lid -= prism(Pos(led_cx, led_cy) * RectangleRounded(
     led_win_l + led_pipe_clr, led_win_w + led_pipe_clr, led_win_r),
     total_h - lid_top_t - eps, lid_top_t + 2 * eps)
 lid -= led_head(led_pipe_clr, eps)
+# Antenna recess in the ceiling (band: right of the (2,2) boss, in front of the LED stem,
+# behind the switch body)
+ceiling_z = total_h - lid_top_t
+band_x0 = bx(mount_holes[0][0]) + holddown_d / 2 + 0.5
+band_x1 = outer_w - wall - 0.5
+band_y0 = wall + sw_body_w + sw_body_clr + 0.5
+band_y1 = led_cy - (led_win_w + led_pipe_clr) / 2 - 0.5
+ant_L, ant_W = ant_l + 2 * ant_clr, ant_w + 2 * ant_clr
+assert ant_L <= band_x1 - band_x0 and ant_W <= band_y1 - band_y0, \
+    f"antenna recess {ant_L}x{ant_W} does not fit the free ceiling band {band_x1 - band_x0:.1f}x{band_y1 - band_y0:.1f}"
+assert ant_depth <= lid_top_t - lid_text_depth - 0.8, "antenna recess + lid text leave the top plate too thin"
+ant_x0 = band_x0 + (band_x1 - band_x0 - ant_L) * ant_cx_frac
+ant_y0 = (band_y0 + band_y1 - ant_W) / 2
+lid -= box(ant_x0, ant_y0, ceiling_z - eps, ant_L, ant_W, ant_depth + eps)
 # Switch: actuator slot, flush bracket recess in the outer wall, screw holes,
 # and the body-envelope keepout (the bosses give way over the body only)
 lid -= box(sx - sw_slot_l / 2, -1, swz - sw_slot_h / 2, sw_slot_l, wall + 2, sw_slot_h)
@@ -505,6 +527,10 @@ assert (base & box(bx(batt_x0) - batt_clr - batt_rib_t, by((board_h - batt_l) / 
                    floor_t + eps, batt_w + 2 * (batt_clr + batt_rib_t), batt_l + 2 * (batt_clr + batt_rib_t),
                    batt_rib_h - eps)).volume > 0.9 * batt_ring.volume, "battery rib ring missing"
 _open(lid, box(led_cx - 2, led_cy - 1, total_h - lid_top_t + eps, 4, 2, lid_top_t), "LED window")
+_open(lid, box(ant_x0 + 0.05, ant_y0 + 0.05, ceiling_z - 0.5, ant_L - 0.1, ant_W - 0.1, 0.5 + ant_depth - 0.02),
+      "antenna recess (and the air under it)")
+assert (lid & box(ant_x0, ant_y0, ceiling_z + ant_depth + eps, ant_L, ant_W, lid_top_t - ant_depth - lid_text_depth - 2 * eps)
+        ).volume > 0.99 * ant_L * ant_W * (lid_top_t - ant_depth - lid_text_depth - 2 * eps), "antenna recess breaks through the top plate"
 for hx, hy in mount_holes:
     _open(lid, cyl(bx(hx), by(hy), pcb_top_z + eps, 2.0, pin_proud), "locating-pin recess")
 for s in (-1, 1):
