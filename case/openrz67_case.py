@@ -174,10 +174,11 @@ lid_font = "Futura"
 lid_texts = [("OpenRZ67", 9.5, 0.0), ("TRIGGER", 5.0, 1.0)]
 lid_text_gap, lid_text_min_stroke = 1.6, 0.6   # between lines; pockets narrower than this smear
 lid_rail_w, lid_rail_end, lid_rail_gap = 0.9, 6.0, 1.5   # rail width, inset from the side walls, air to the LED seat
-lid_text_depth = 0.6              # pocket depth = the inlay thickness (3 x 0.2 layers).
-                                  # Three layers so the second colour is opaque: the inlay prints
-                                  # FIRST, flat against the bed, and the body colour would ghost
-                                  # through a single layer.
+lid_text_depth = 0.8              # pocket depth = the inlay thickness (4 x 0.2 layers).
+                                  # Four layers so the second colour reads strong: the inlay prints
+                                  # FIRST, flat against the bed, and 3 layers still let the body
+                                  # colour ghost through (2026-09-17). 0.9 is the cap at
+                                  # lid_top_t = 2.0 (the antenna-recess assert below).
 eps = 0.01
 
 # --- Derived ------------------------------------------------------------------

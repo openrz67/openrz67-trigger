@@ -164,7 +164,7 @@ between the LED seat and the front edge. A thin debossed **rail** (`lid_rail_*`,
 6 mm in from the side walls) runs across the LED row and breaks 1.5 mm around the
 light-pipe seat — the off-centre LED then reads as an indicator sitting on a line instead
 of a hole that missed the middle (the LED position is fixed by the PCB). All pockets are
-`lid_text_depth` (0.6 mm, 3 layers) deep, and an **inlay** solid (`lid_text`, exported as
+`lid_text_depth` (0.8 mm, 4 layers) deep, and an **inlay** solid (`lid_text`, exported as
 `openrz67-lid-text.stl`) fills them exactly — it is the pocket volume clipped by the lid,
 so it inherits the top-edge chamfer and cannot fight the lid for the same space (asserted). Restyled 2026-09-14 — the old Arial "OpenRZ67" / "Trigger"
 pair had uneven weights, a wide gap and sat near the edge; DIN Alternate was tried and
@@ -192,7 +192,15 @@ The inlay also fixes the print quality. The lid prints **upside down**, so an em
 floor is a bridge over open air — at 0.6 mm deep it sagged and the letters read fuzzy
 (2026-09-16). As a part, the letters print **first, flat against the bed**, and come out
 smooth. On a single-filament printer, delete the inlay part and do a manual filament change
-at Z = 0.6 instead (recolours everything above 0.6, so slice the lid alone).
+at Z = 0.8 instead (recolours everything above 0.8, so slice the lid alone).
+
+Depth was 0.6 (3 layers) until 2026-09-17: the body colour ghosted through and the letters
+read weak. 0.8 (4 layers) is stronger; **0.9 is the cap** at `lid_top_t` 2.0, from the
+antenna-recess assert. The inlay never matches the crispness of a true empty recess (the
+colour boundary sits in the first bed layer, which spreads), but a real recess is not
+available: the lid prints upside down, so the pocket floor bridges. Printing text-up would
+put the whole lid interior in overhang. Soluble support (HIPS under ABS, dissolved in
+d-limonene) would make a real recess work — parked, not tried.
 
 Edit `lid_texts` (text, size, tracking), `lid_font`, `lid_text_gap` and `lid_rail_*` to restyle; `LID_TEXT_SHOW=false`
 disables the text (on by default).
