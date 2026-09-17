@@ -11,7 +11,8 @@ file and its footprints, not from eyeballed measurements.
 > S4B-XH-A, body 5.5 mm past the board edge) and its plug stay **inside**; only the
 > heat-shrunk camera cable leaves through a keyhole slot in the right wall. Roomier on
 > purpose — the previous stacked attempt was too tight to work in. Replaces the
-> battery-beside box (git history before 2026-09-12). Not yet print-tested.
+> battery-beside box (git history before 2026-09-12). First printed 2026-09-14; the snap
+> bead and the LED seat were reworked after it (see below).
 
 ## Source data
 
@@ -30,6 +31,7 @@ negative numbers — drop the sign).
 | USB-C connector | body 8.95 × 3.2 mm on the PCB, left edge 4.8 mm in from the PCB's left edge; the shell protrudes ~2 mm past the board edge | measured physically |
 | Total HW length | ~50 mm (PCB 48 + USB-C shell 2) | `pcb_overhang_left` |
 | Rocker switch (KCD11) | snap-in body 13.5×8.5 (= panel cutout, nominal), flange 15×10, 10 deep behind the flange, two 2.8 mm tabs ~5 long at ~7 mm pitch; vendor drawings differ by ~0.5 mm | vendor data — measure your switch |
+| FPC antenna | Ebyte TX2400-FPC-2509, 25 × 9 × ~0.2 mm, U.FL/IPEX-1, ~100 mm cable, to `A1` | vendor data — measure your foil |
 | LEDs | D3 red (20.5, 18.0), D4 blue (24.2, 20.2) – 0603 SMD, top-emitting; D3 moved next to the BQ25185 charger 2026-09-07, so the 6 × 4.4 light-pipe window is centred between them | `out/openrz67-pos.csv` |
 
 Component **heights** are editable constants (`h_usbc`, `h_ph_plug`, `xh_h`) from the
@@ -97,6 +99,16 @@ a known collision fails loudly instead of surfacing in the print.
     board_y1]` cut out of the lid's hold-down bosses (full height above the PCB) where a
     boss would collide with a component body — e.g. the Ø6 boss at hole (2,2) is cut back
     to a D-shape to clear the USB-C connector's near edge (~board-Y 4.8).
+  - **Antenna recess** (`ant_*`): a shallow **25.6 × 9.6 × 0.3 mm** pocket in the lid
+    **ceiling** that locates the adhesive FPC antenna (Ebyte TX2400-FPC-2509, 25 × 9).
+    It sits in the free ceiling band between the rocker body (front) and the light-pipe
+    stem (back), right of the (2,2) hold-down boss — furthest from the cell's metal pouch
+    and ~10 mm above the PCB ground plane. `ant_cx_frac` (0.25) slides it along the band;
+    0.25 keeps it near the USB end, so the ~100 mm U.FL cable has a short run down to `A1`
+    and coils in the air over the board. Two asserts: the recess must fit the free band,
+    and `ant_depth` + `lid_text_depth` must leave ≥ 0.8 mm of top plate (this is what caps
+    the lid text at 0.9 mm). The lid prints upside-down, so the recess is a flat-bottomed
+    pocket in the print's **top** face — no bridging, no support.
 - **USB-C asymmetry**: the USB-C shell protrudes ~2 mm past the PCB's left short side.
   `pcb_overhang_left = 2.0` extends the cavity on the left; the PCB is therefore centred
   toward the RIGHT in the cavity (normal `clr = 0.4` against the right wall, `clr +
@@ -291,6 +303,10 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   lies under the board and the rib pocket around it; `standoff_h` must stay ≥ cell + foam
   (asserted), and the THT tails must stay beside the cell in X (asserted — otherwise add
   `th_keepout_depth`). `pocket_front/back` – hand and lead room beside the board.
+- `ant_l/w/clr/depth` / `ant_cx_frac` – the FPC antenna's size, the air around it, the
+  recess depth and where it sits along the ceiling band. Defaults are the Ebyte
+  TX2400-FPC-2509 (25 × 9). A different foil changes `ant_l/w`; the fit assert tells you
+  if it no longer fits the band. Antenna optional — BLE works without it, with much less range.
 - `sx` – position of the rocker switch (KCD11, `kcd_*`). The **front wall** (low Y) is
   chosen deliberately: the back wall carries the S3 connector (board-X 28.7), the LEDs and
   the battery-lead pocket. Centred on the lid (`sx = outer_w / 2`, board-X ≈ 27.5); the body
@@ -339,8 +355,8 @@ short end first.
   measure the heat-shrunk cable and set `cable_d`.
 - Snap fingers are new: print the `SNAP_TEST` corner first.
 - **Light pipe**: verify the rod lands directly over D3/D4 (adjust `led_pos` if needed)
-  and that the bottom clears the LEDs (`led_pipe_gap`). Print in clear filament; glue the
-  head into the counterbore for a permanent/sealed fit.
+  and that the bottom clears the LEDs (`led_pipe_gap`, 0.8). Print in clear filament; glue the
+  head into the funnel seat for a permanent/sealed fit.
 - The USB-C and switch openings are open out of necessity; the LED window is sealed by
   the light pipe.
 
@@ -360,4 +376,6 @@ on: four Ø1.6 pegs (`peg_*`) in its 3.2 mm side walls press into Ø1.5 holes in
 no glue (a snap hook is not printable at 1.8 mm half height; loosen `peg_press` if they
 split the wall). PETG. Tune `nose_fit` (per-side clearance, go negative for press)
 after the first print; if your sleeves measure 2.50 rather than 2.54, set `sleeve` — the
-skin assert tells you if the stack no longer fits the pocket height. Not print-tested.
+skin assert tells you if the stack no longer fits the pocket height. Printed three times
+(2026-09-08..10): Ø1.5 peg holes were a no-go, Ø1.7 very tight, and the pegs sheared off —
+hence the rib + groove per side and the 1 mm taller body behind the nose. Untested since.
