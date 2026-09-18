@@ -135,3 +135,11 @@ Two things in this repository are **not** covered, because they are not mine to 
 
 Both are redistributed here for convenience under their originators' terms. Everything
 else is mine.
+
+## Credits
+
+The camera connector pinout that made this project possible was described to me by
+Julio Ryuuzaki, who built and sold the Bluetooth [RZ Blue](https://ryuuzaki.jp/) trigger
+for years. He answered a cold email in December 2022 with the essentials — four pins, one
+ground, two live, one unconnected — and the warning that the camera closes the shutter by
+itself after about a minute in bulb mode. Thank you.
