@@ -112,9 +112,11 @@ a known collision fails loudly instead of surfacing in the print.
 - **USB-C asymmetry**: the USB-C shell protrudes ~2 mm past the PCB's left short side.
   `pcb_overhang_left = 2.0` extends the cavity on the left; the PCB is therefore centred
   toward the RIGHT in the cavity (normal `clr = 0.4` against the right wall, `clr +
-  overhang = 2.4 mm` against the left). On the right, `pcb_overhang_right` (9.1 mm,
-  derived from the U4 reach + plug + slack) makes room for the camera plug. The outer case
-  width thus becomes ~**66.3 mm**.
+  overhang = 2.4 mm` against the left). `usb_shell_poke = 1.4` then slides the whole board
+  back toward that wall so the shell noses into `usb_recess_d` instead of stopping 0.4 short
+  of it — the plug seats 1.4 mm deeper and the box is 1.4 mm narrower (2026-09-19). On the
+  right, `pcb_overhang_right` (9.1 mm, derived from the U4 reach + plug + slack) makes room
+  for the mated XH plug. The outer case width thus becomes ~**64.9 mm**.
 - **The battery** (31 × 20 × 6 LiPo) lies flat **under the PCB**, lengthwise between the
   posts in the rib pocket, `batt_foam` (1.5 mm) under the PCB. Its lead comes out at the
   left end over the low rib (the pockets beside the board give it room), goes back into
@@ -152,8 +154,9 @@ plastic stripped; heat-set inserts made assembly slow). **Tune before the full p
 `snap_bead` (click strength), `finger_t` (stiffness) and `lap_gap` (sliding fit) until the
 corner snaps shut and pries open with reasonable force.
 
-Finished size with default values: ~**66.3 × 36.0 × 25.5 mm** (X incl. the 2 mm USB-C
-overhang and the 9.1 mm U4 + plug overhang, Y incl. the two pockets, Z = floor 2 + posts
+Finished size with default values: ~**64.9 × 36.0 × 25.5 mm** (X incl. the 2 mm USB-C
+overhang less `usb_shell_poke` 1.4, and the 9.1 mm U4 + plug overhang, Y incl. the two
+pockets, Z = floor 2 + posts
 8 + PCB + 11.9 clearance + top 2; depends on `pcb_t`). The clearance is set by the rocker
 switch (body 8.5 + 1.6 over the PCB + latch room), not by the PH plugs any more (10).
 
@@ -223,17 +226,16 @@ The parameters are plain Python constants at the top of `openrz67_case.py`. Requ
 [uv](https://docs.astral.sh/uv/) — the script carries its own dependency header, so there
 is no venv to manage.
 
-**Easiest export** – run the script, which builds the case parts and the camera plug
+**Easiest export** – run the script, which builds the case parts
 and the slicer project:
 
 ```bash
 cd case
-./export.sh            # base, lid, lightpipe, camera plug -> stl/  + openrz67-case.3mf
+./export.sh            # base, lid, lightpipe -> stl/  + openrz67-case.3mf
 ./export.sh out        # custom output dir (skips the .3mf)
-uv run camera_plug.py  # just the plug; also rebuilds openrz67-case.3mf from the STLs in stl/
 ```
 
-Slice from `openrz67-case.3mf` (plate 1 case, plate 2 camera plug). Every script that writes
+Slice from `openrz67-case.3mf` (one plate). Every script that writes
 to `stl/` rebuilds it, so the 3mf is never older than the STLs.
 
 **Overrides** – `openrz67_case.py` reads these from the environment (the in-file default
@@ -359,23 +361,3 @@ short end first.
   head into the funnel seat for a permanent/sealed fit.
 - The USB-C and switch openings are open out of necessity; the LED window is sealed by
   the light pipe.
-
-## Camera plug — `camera_plug.py`
-
-A two-half shell (plate 2 of `openrz67-case.3mf`) around four female jumper-wire ends
-(2.54 mm Dupont sleeves) so they go onto the RZ67 RC-outlet as one plug. Port measured
-2026-09-06: pocket 13.91 × 3.57 mm, ~6.3 deep (uncertain), Ø0.8 round pins, 2.54 pitch,
-row centred. The nose fills the pocket with two side cheeks; a front plate with pin holes
-stops the sleeves on pull-off and a rear wall with wire notches stops them on push-on, so
-the sleeves are not glued. The body is as tall as the nose (0.4 mm skins over/under the
-sleeves), which is what lets each half print flat on its outer face with no bridges or
-supports. Debossed triangle on top = 6 V pin (leave unconnected), like the camera's own
-mark. `uv run camera_plug.py` (also run by `export.sh`) → `stl/openrz67-camera-plug-{bottom,top}.stl`,
-both already print-side down; `make_3mf.py` appends them to the project as plate 2 (`EXTRA_PLATES`). Assemble: sleeves into the bottom half, wires out the back, press the top half
-on: four Ø1.6 pegs (`peg_*`) in its 3.2 mm side walls press into Ø1.5 holes in the bottom half,
-no glue (a snap hook is not printable at 1.8 mm half height; loosen `peg_press` if they
-split the wall). PETG. Tune `nose_fit` (per-side clearance, go negative for press)
-after the first print; if your sleeves measure 2.50 rather than 2.54, set `sleeve` — the
-skin assert tells you if the stack no longer fits the pocket height. Printed three times
-(2026-09-08..10): Ø1.5 peg holes were a no-go, Ø1.7 very tight, and the pegs sheared off —
-hence the rib + groove per side and the 1 mm taller body behind the nose. Untested since.

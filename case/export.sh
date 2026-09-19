@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Export base + lid + light pipe + camera plug to STL and rebuild the slicer project .3mf.
+# Export base + lid + light pipe to STL and rebuild the slicer project .3mf.
 # The light pipe (openrz67-lightpipe.stl) prints in CLEAR/transparent filament; base and
 # lid in normal opaque filament. The lid text (on by default) is a debossed pocket in the
 # top face plus an inlay (openrz67-lid-text.stl) that fills it; make_3mf.py adds the inlay to
@@ -21,7 +21,6 @@ OUTDIR="${1:-stl}"
 command -v uv >/dev/null 2>&1 || { echo "uv not found (https://docs.astral.sh/uv/)" >&2; exit 1; }
 
 OUTDIR="$OUTDIR" uv run openrz67_case.py
-OUTDIR="$OUTDIR" uv run camera_plug.py
 
 # Each script also rebuilds openrz67-case.3mf from bambu-template.3mf when it writes to stl/
 # (print profile + plate layout + filament assignment kept). Disable with MAKE_3MF=false.

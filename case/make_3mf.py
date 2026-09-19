@@ -42,7 +42,6 @@ import uuid
 import zipfile
 
 # plate id -> STLs added as new objects (row at the plate centre, resting on the bed)
-EXTRA_PLATES = {2: ["openrz67-camera-plug-bottom.stl", "openrz67-camera-plug-top.stl"]}
 # parent STL -> [(sub-part STL, extruder)]: meshes added INSIDE an existing object as extra
 # parts, sharing its frame and plate spot. This is how the lid text gets its own filament:
 # the colour lives on the part, so it survives every re-export. Slicer colour painting does
@@ -50,7 +49,6 @@ EXTRA_PLATES = {2: ["openrz67-camera-plug-bottom.stl", "openrz67-camera-plug-top
 # saved height-range modifier. Missing sub-part STLs are skipped (LID_TEXT_SHOW=false).
 SUB_PARTS = {"openrz67-lid.stl": [("openrz67-lid-text.stl", 2)]}
 BED = 256.0            # Bambu P2S; plates sit in a row, stride = 1.2 * bed (LOGICAL_PART_PLATE_GAP)
-GAP = 8.0              # between the extra objects
 
 
 def parse_ascii_stl(path):
@@ -195,73 +193,6 @@ def add_sub_parts(work, args, names, dmodel, model_settings, oid, parent, offset
     return dmodel, model_settings, next_id
 
 
-def add_extra_objects(work, args, names, dmodel, model_settings):
-    """Append EXTRA_PLATES objects (new ids after the template's) and return the edited XML."""
-    next_id = max(int(i) for i in re.findall(r'<object id="(\d+)"', dmodel)
-                  + re.findall(r'<part id="(\d+)"', model_settings)) + 1
-    ident = max([int(i) for i in re.findall(r'identify_id" value="(\d+)"', model_settings)] + [0]) + 1
-    rels_path = os.path.join(work, "3D", "_rels", "3dmodel.model.rels")
-    rels = open(rels_path).read()
-    res, items, cfg = [], [], []
-    for plate, stls in EXTRA_PLATES.items():
-        meshes = []
-        for stl in stls:
-            path = os.path.join(args.stl_dir, stl)
-            if not os.path.isfile(path):
-                sys.exit(f"STL missing for extra object: {path}")
-            verts, tris = parse_ascii_stl(path)
-            meshes.append((stl, verts, tris))
-        row_w = sum(max(v[0] for v in m[1]) - min(v[0] for v in m[1]) for m in meshes) + GAP * (len(meshes) - 1)
-        x = (plate - 1) * BED * 1.2 + BED / 2 - row_w / 2
-        inst = []
-        for stl, verts, tris in meshes:
-            mid, oid = next_id, next_id + 1
-            next_id += 2
-            off = bbox_center(verts)
-            w = max(v[0] for v in verts) - min(v[0] for v in verts)
-            h = max(v[2] for v in verts) - min(v[2] for v in verts)
-            fname = f"3D/Objects/object_{mid}.model"
-            open(os.path.join(work, fname), "w").write(
-                '<?xml version="1.0" encoding="UTF-8"?>\n'
-                '<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" '
-                'xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" '
-                'xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p">\n'
-                ' <metadata name="BambuStudio:3mfVersion">1</metadata>\n <resources>\n'
-                f'  <object id="{mid}" p:UUID="{uuid.uuid4()}" type="model">\n{mesh_xml(verts, tris, off)}\n'
-                '  </object>\n </resources>\n <build/>\n</model>\n')
-            names.append(fname)
-            rels = rels.replace("</Relationships>",
-                                f' <Relationship Target="/{fname}" Id="rel-{oid}" '
-                                'Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n</Relationships>')
-            res.append(f'  <object id="{oid}" p:UUID="{uuid.uuid4()}" type="model">\n   <components>\n'
-                       f'    <component p:path="/{fname}" objectid="{mid}" p:UUID="{uuid.uuid4()}" '
-                       'transform="1 0 0 0 1 0 0 0 1 0 0 0"/>\n   </components>\n  </object>\n')
-            items.append(f'  <item objectid="{oid}" p:UUID="{uuid.uuid4()}" '
-                         f'transform="1 0 0 0 1 0 0 0 1 {x + w / 2:.6g} {BED / 2:.6g} {h / 2:.6g}" printable="1"/>\n')
-            cfg.append(f'  <object id="{oid}">\n    <metadata key="name" value="{stl}"/>\n    <metadata key="extruder" value="1"/>\n'
-                       f'    <metadata face_count="{len(tris)}"/>\n    <part id="{mid}" subtype="normal_part">\n'
-                       f'      <metadata key="name" value="{stl}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n'
-                       f'      <metadata key="source_file" value="{stl}"/>\n      <metadata key="source_object_id" value="0"/>\n'
-                       f'      <metadata key="source_volume_id" value="0"/>\n'
-                       + "".join(f'      <metadata key="source_offset_{a}" value="{v:.8g}"/>\n' for a, v in zip("xyz", off))
-                       + f'      <mesh_stat face_count="{len(tris)}" edges_fixed="0" degenerate_facets="0" facets_removed="0" '
-                       'facets_reversed="0" backwards_edges="0"/>\n    </part>\n  </object>\n')
-            inst.append(f'    <model_instance>\n      <metadata key="object_id" value="{oid}"/>\n'
-                        f'      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="{ident}"/>\n'
-                        '    </model_instance>\n')
-            ident += 1
-            x += w + GAP
-            print(f"  {stl:30} {len(verts)} verts / {len(tris)} tris  -> plate {plate}, {fname}")
-        cfg.append(f'  <plate>\n    <metadata key="plater_id" value="{plate}"/>\n    <metadata key="plater_name" value=""/>\n'
-                   '    <metadata key="locked" value="false"/>\n    <metadata key="filament_map_mode" value="Auto For Flush"/>\n'
-                   '    <metadata key="filament_maps" value="1 1 1 1 1"/>\n    <metadata key="filament_volume_maps" value="0 0 0 0 0"/>\n'
-                   + "".join(inst) + '  </plate>\n')
-    open(rels_path, "w").write(rels)
-    dmodel = dmodel.replace(" </resources>", "".join(res) + " </resources>").replace(" </build>", "".join(items) + " </build>")
-    model_settings = model_settings.replace("  <assemble>", "".join(cfg) + "  <assemble>")
-    return dmodel, model_settings
-
-
 def main():
     ap = argparse.ArgumentParser(description="Swap STL geometry into a Bambu/Orca project 3mf.")
     here = os.path.dirname(os.path.abspath(__file__))
@@ -339,7 +270,6 @@ def main():
             dmodel, model_settings, next_id = add_sub_parts(
                 work, args, names, dmodel, model_settings, oid, info["name"], offset, next_id)
 
-        dmodel, model_settings = add_extra_objects(work, args, names, dmodel, model_settings)
         open(ms_path, "w").write(model_settings)
 
         # refresh the dates so the slicer doesn't show a stale project date

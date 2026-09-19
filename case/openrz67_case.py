@@ -54,6 +54,11 @@ pin_d = hole_d - 0.15                # locating pins: light friction fit in the 
                                      # the PCB rattled during install; a printed pin comes out ~+0.05)
 pcb_supports = [(2, 20), (46, 2)]    # solid posts in the screwless corners
 pcb_overhang_left = 2.0              # USB-C shell protrudes past the board edge
+# The receptacle mouth used to stop 0.4 short of the wall's inner face, leaving the whole
+# usb_recess_d unused (user, 2026-09-19: the port should sit closer to its hole). Slide the
+# WHOLE board this far toward the USB wall: the shell noses into the recess, the plug engages
+# that much deeper, and the box gets this much narrower. Capped by the lip assert below.
+usb_shell_poke = 1.4
 # U4 camera connector: side-entry S4B-XH-A on the right edge, mouth facing out. Its
 # body reaches xh_mouth past the pin row (F.Fab outline), i.e. 5.5 mm past the board
 # edge; the mated XHP-4 plug sticks xh_plug_proud further. Both stay inside the box.
@@ -102,12 +107,16 @@ usb_open_w, usb_open_h, usb_open_r = 10.0, 4.6, 1.8     # lip the cable body sto
 #   plug's metal shell (8.34 x 2.56) by ~0.8 / 1.0 with the PCB located on pins. Was 11 x 7 R2
 #   until 2026-09-15 (a lot of dead room around the receptacle mouth).
 usb_recess_w, usb_recess_h, usb_recess_r = 13.0, 9.0, 3.0   # inner: room for the receptacle shell
-usb_recess_d = 1.0                   # the mouth sits 0.4 inside the wall's inner face; this is slack
+usb_recess_d = 1.2                   # was 1.0 and pure slack; now the shell actually noses in
 # Outer pocket the plug's overmold sinks into (protects the port, guides the plug in, and
 # brings the overmold 1.2 closer to the mouth — the old Fusion case had one, 2026-09-14).
 # Fits overmolds up to 13 x 8.5; a 45° bevel of usb_pocket_ch on its outer edge.
 usb_pocket_w, usb_pocket_h, usb_pocket_r, usb_pocket_d, usb_pocket_ch = 14.0, 9.5, 3.0, 1.2, 0.6
 assert wall - usb_pocket_d - usb_recess_d >= 0.8, "USB lip between the outer pocket and the inner recess too thin"
+# Mouth face vs the recess floor: keep 0.2 of air so the shell never bottoms out in the wall
+# (that would hold the PCB off its locating pins).
+assert wall + clr - usb_shell_poke - (wall - usb_recess_d) >= 0.2, \
+    "USB-C shell would bottom out in the wall recess: reduce usb_shell_poke or deepen usb_recess_d"
 # The pocket straddles the seam. Below it the base wall is normally only the outer lap half
 # (wall/2 = 1.6), so the pocket left a 0.4 skin there and the lip looked thin/ragged on the base
 # side (first print, 2026-09-15). Around the USB the base keeps its FULL wall down through the
@@ -183,7 +192,7 @@ eps = 0.01
 
 # --- Derived ------------------------------------------------------------------
 pcb_overhang_right = xh_x + xh_mouth + xh_plug_proud + xh_slack - board_w - clr
-inner_w = board_w + 2 * clr + pcb_overhang_left + pcb_overhang_right
+inner_w = board_w + 2 * clr + pcb_overhang_left + pcb_overhang_right - usb_shell_poke
 inner_h = pocket_front + clr + board_h + clr + pocket_back
 off_y = wall + pocket_front + clr
 inner_r = board_r + clr
@@ -213,7 +222,7 @@ for _kx, _ky, _kd in th_keepouts:   # tails beside the cell, not over it (else a
 
 
 def bx(x):
-    return wall + clr + pcb_overhang_left + x
+    return wall + clr + pcb_overhang_left - usb_shell_poke + x
 
 
 def by(y):
