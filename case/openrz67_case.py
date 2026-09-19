@@ -125,6 +125,14 @@ usb_solid_w = usb_pocket_w + 2 * 1.5   # width of that full-wall zone (case-Y)
 led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
 led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # gap 0.8: 0603 LED is ~0.5 tall; closer stem = less light lost sideways (2026-09-16)
+# Two clearances, not one. The HEAD keeps led_pipe_clr so its taper still self-centres and
+# drops in without forcing. The STEM is a push fit inside a COLLAR hanging off the ceiling:
+# the top plate alone gives only lid_top_t - led_head_t = 0.6 mm of grip, which is why the
+# pipe rattled and needed glue (2026-09-16). The collar adds grip length and houses a
+# retaining BEAD the pipe has to shove past, so it stays where it is pushed.
+led_stem_clr = -0.10               # stem window = pipe + this (negative = interference,
+                                   # 0.05/side on a 4.4 mm wall is ~1 % strain: fine in ABS)
+led_collar_h, led_collar_w = 2.6, 0.6      # collar length below the ceiling, and its wall
 # The head seat is a TAPER (funnel), not a step: lid prints upside-down, so a stepped
 # counterbore hangs a 1 mm ledge over the bed-side opening -> support crud, ragged edge
 # (first stacked print, 2026-09-14). A wall 0.7 out over 1.4 up is 26.6° from vertical:
@@ -414,10 +422,15 @@ def led_head(clr, extra=0.0):
     return extrude(Plane.XY.offset(total_h - led_head_t) * Pos(led_cx, led_cy) * RectangleRounded(
         led_win_l + clr, led_win_w + clr, led_win_r), amount=led_head_t + extra, taper=-led_taper)
 
-lid -= prism(Pos(led_cx, led_cy) * RectangleRounded(
-    led_win_l + led_pipe_clr, led_win_w + led_pipe_clr, led_win_r),
-    total_h - lid_top_t - eps, lid_top_t + 2 * eps)
+stem_l, stem_w = led_win_l + led_stem_clr, led_win_w + led_stem_clr
+collar_z = total_h - lid_top_t - led_collar_h          # the collar's open, lower end
+# Collar first (a solid boss off the ceiling), then bore the stem window through plate+collar.
+lid += prism(Pos(led_cx, led_cy) * RectangleRounded(
+    stem_l + 2 * led_collar_w, stem_w + 2 * led_collar_w, led_win_r), collar_z, led_collar_h + eps)
+lid -= prism(Pos(led_cx, led_cy) * RectangleRounded(stem_l, stem_w, led_win_r),
+             collar_z - eps, lid_top_t + led_collar_h + 2 * eps)
 lid -= led_head(led_pipe_clr, eps)
+assert collar_z > pcb_top_z + led_pipe_gap, "light-pipe collar hangs below the pipe's LED gap"
 # Antenna recess in the ceiling (band: right of the (2,2) boss, in front of the LED stem,
 # behind the rocker body). The foil is flush with the ceiling; the rocker top is
 # kcd_latch_clr + kcd_hole_clr under it, so only its plan footprint is kept clear.
@@ -425,7 +438,7 @@ ceiling_z = total_h - lid_top_t
 band_x0 = bx(mount_holes[0][0]) + holddown_d / 2 + 0.5
 band_x1 = outer_w - wall - 0.5
 band_y0 = kcd_depth + 0.5   # behind the rocker body's rear face (tabs + receptacles sit lower)
-band_y1 = led_cy - (led_win_w + led_pipe_clr) / 2 - 0.5
+band_y1 = led_cy - (stem_w + 2 * led_collar_w) / 2 - 0.5   # clear of the light-pipe collar
 ant_L, ant_W = ant_l + 2 * ant_clr, ant_w + 2 * ant_clr
 assert ant_L <= band_x1 - band_x0 and ant_W <= band_y1 - band_y0, \
     f"antenna recess {ant_L}x{ant_W} does not fit the free ceiling band {band_x1 - band_x0:.1f}x{band_y1 - band_y0:.1f}"
@@ -469,7 +482,10 @@ if lid_text_show:
     lines = [tracked_text(*t) for t in lid_texts]
     heights = [l.bounding_box().size.Y for l in lines]
     block_h = sum(heights) + lid_text_gap * (len(lines) - 1)
-    y = (led_cy - recess_half) / 2 + block_h / 2     # block centre: between LED seat and front edge
+    # The band's lower edge is the top-edge CHAMFER, not the raw front edge: measuring
+    # from y = 0 put the block lid_top_r/2 too low, so TRIGGER crowded the chamfer while
+    # the gap up to the rail read as a hole (2026-09-19). Now ~2.2 mm of air either side.
+    y = (lid_top_r + led_cy - recess_half) / 2 + block_h / 2      # top of the block
     for (txt, *_), sk, h in zip(lid_texts, lines, heights):
         tb = sk.bounding_box()
         sk = Pos(outer_w / 2 - (tb.min.X + tb.max.X) / 2, y - h - tb.min.Y) * sk   # centre X, top at y
