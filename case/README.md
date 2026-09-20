@@ -267,11 +267,14 @@ just inspect the exported STLs in the slicer. STL output in `case/stl/` is git-i
 ### Slicer project (.3mf)
 
 After the STLs, `export.sh` rebuilds `openrz67-case.3mf` — a
-**Bambu Studio / OrcaSlicer project** with the three parts arranged on the plate, the print
-profile, and the **per-part filament assignment** (base + lid on filament 1, light pipe on
-filament 4 = clear). It does this by swapping the fresh meshes into a hand-made template
-(`bambu-template.3mf`) via `make_3mf.py`, so all slicer settings are preserved — only the
-geometry changes. Skip it with `MAKE_3MF=false ./export.sh`, or run it standalone:
+**Bambu Studio / OrcaSlicer project**: base + lid on plate 1 (filament 1, lid text on
+filament 2), the light pipe alone on **plate 2** (filament 3 = clear) with its own
+**object settings** — 0.28 layers, 100 % infill, 8 wall loops, 20 mm/s — so it prints
+without a single filament swap and without those settings touching the case. It does this
+by swapping the fresh meshes into a template saved from the slicer (`bambu-template.3mf`)
+via `make_3mf.py`, so all slicer settings are preserved — only the geometry changes. A
+template re-saved from an exported project already carries the lid-text part; the script
+strips it and adds it fresh, so it never doubles up. Skip it with `MAKE_3MF=false ./export.sh`, or run it standalone:
 
 ```bash
 python3 make_3mf.py            # template + stl/ -> openrz67-case.3mf
@@ -290,8 +293,10 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   not close in on the funnel rim; keep the support threshold angle at 30° or lower.
 - **Light pipe** (`openrz67-lightpipe.stl`): **clear filament**. Print upright (head down
   against the bed) for the fewest layer lines across the light path, or lying down for
-  smoother walls – both work for an indicator. For the clearest light: print at a fine
-  layer height and consider sanding/dipping the top face.
+  smoother walls – both work for an indicator. For the clearest light go the *opposite*
+  way from a pretty print: **thick** layers (0.28–0.3, fewer boundaries to scatter at),
+  100 % infill / all walls, slow, hot, fan off — and a **smooth** build plate, since the
+  head's top face (the one you look at) prints against the bed; a textured plate frosts it.
 
 ## Worth adjusting before printing
 - `pcb_t` – PCB thickness (default **1.6 mm**, as ordered). Adjust only if your board

@@ -130,6 +130,31 @@ def build_mapping(model_settings, dmodel):
     return objs
 
 
+def strip_sub_parts(work, dmodel, model_settings):
+    """Remove every SUB_PARTS mesh the template already carries, so add_sub_parts adds it
+    fresh instead of a second copy. Happens as soon as an exported project is re-saved as
+    the template (2026-09-20: the lid text was in twice). Drops the <part>, its <component>
+    and the mesh <object> it points at.
+    """
+    subs = {stl for parts in SUB_PARTS.values() for stl, _ in parts}
+    for m in list(re.finditer(r'    <part id="(\d+)" subtype="normal_part">\n(.*?)    </part>\n',
+                              model_settings, re.S)):
+        name = re.search(r'key="name" value="([^"]+)"', m.group(2))
+        if not name or name.group(1) not in subs:
+            continue
+        pid = m.group(1)
+        model_settings = model_settings.replace(m.group(0), "")
+        c = re.search(rf'    <component p:path="/([^"]+)" objectid="{pid}"[^>]*/>\n', dmodel)
+        if c:
+            dmodel = dmodel.replace(c.group(0), "")
+            mfile = os.path.join(work, c.group(1))
+            txt = open(mfile).read()
+            txt = re.sub(rf'  <object id="{pid}"[^>]*>.*?</object>\n', "", txt, count=1, flags=re.S)
+            open(mfile, "w").write(txt)
+        print(f"  {name.group(1):30} already in template -> stripped, will be re-added")
+    return dmodel, model_settings
+
+
 def add_sub_parts(work, args, names, dmodel, model_settings, oid, parent, offset, next_id):
     """Add SUB_PARTS[parent] inside object `oid` as extra parts on their own extruder.
 
@@ -209,6 +234,7 @@ def main():
         dm_path = os.path.join(work, "3D", "3dmodel.model")
         model_settings = open(ms_path).read()
         dmodel = open(dm_path).read()
+        dmodel, model_settings = strip_sub_parts(work, dmodel, model_settings)
         mapping = build_mapping(model_settings, dmodel)
         next_id = max(int(i) for i in re.findall(r'<object id="(\d+)"', dmodel)
                       + re.findall(r'<part id="(\d+)"', model_settings)) + 1
