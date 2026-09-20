@@ -86,14 +86,15 @@ a known collision fails loudly instead of surfacing in the print.
     SMD LEDs ~8 mm below the lid. A separate **clear light pipe** is inserted from above
     as a top hat: a **tapered** head (funnel seat, ~flush with the top face) + a rod that
     goes down to ~0.8 mm above the LEDs and channels the light into two sharp dots. The
-    lid is printed opaque; **only the light pipe is printed in clear filament**. It is held
-    by a **press fit**: a collar hangs `led_collar_h` (2.6) off the ceiling around the stem
-    window, so the bore grips over 3.2 mm instead of the top plate's 0.6, and the bore is
-    `led_stem_clr` (-0.10) **under** the pipe — ~0.05 mm of squeeze per side, ~1 % strain in
-    ABS. Before the collar the pipe rattled and needed glue (2026-09-16). The head keeps its
-    own `led_pipe_clr` (0.2) so the taper still self-centres and drops in without forcing.
-    A snap bead inside the collar was tried and dropped: one deep enough to click is deeper
-    than a solid pipe can squeeze past, and the 0.6 mm collar wall just splays. Why a funnel and not a
+    lid is printed opaque; **only the light pipe is printed in clear filament**. It is a
+    **slip fit, glued**: `led_stem_clr` = `led_pipe_clr` (0.2), so head and stem both drop
+    in. What keeps it straight is the **collar** hanging `led_collar_h` (2.6) off the
+    ceiling around the stem window — guidance over 3.2 mm instead of the top plate's 0.6,
+    so the pipe cannot tilt in its hole. Two attempts to make it hold *without* glue both
+    failed: a snap bead inside the collar (one deep enough to click is deeper than a solid
+    pipe can squeeze past, and the 0.6 mm collar wall just splays), then an interference
+    bore (`led_stem_clr` -0.10, ~0.05/side) — which could not be pressed in by hand and was
+    reverted 2026-09-20. A drop of glue on top does the job. Why a funnel and not a
     stepped counterbore: the lid prints upside-down, and a step is a 1 mm ledge hanging
     over the bed-side opening — the slicer filled it with support and the edge came out
     ragged (first stacked print, 2026-09-14). The funnel wall is 26.6° from vertical, under
@@ -363,9 +364,9 @@ short end first.
   measure the heat-shrunk cable and set `cable_d`.
 - Snap fingers are new: print the `SNAP_TEST` corner first.
 - **Light pipe**: verify the rod lands directly over D3/D4 (adjust `led_pos` if needed)
-  and that the bottom clears the LEDs (`led_pipe_gap`, 0.8). Print in clear filament and push
-  it in — the collar's press fit should hold it on its own, and a drop of glue on top is still
-  fine if you want it sealed/permanent. **Untested (2026-09-19).** Too
-  tight to seat: `led_stem_clr` -0.05 or 0.0. Still loose: -0.15, or a longer `led_collar_h`.
+  and that the bottom clears the LEDs (`led_pipe_gap`, 0.8). Print in clear filament, drop
+  it in and glue it on top — the collar keeps it upright, it is not meant to hold on its own.
+  Rattles sideways: lengthen `led_collar_h`. Do not go back to a negative `led_stem_clr`;
+  -0.10 was unseatable by hand (2026-09-20).
 - The USB-C and switch openings are open out of necessity; the LED window is sealed by
   the light pipe.

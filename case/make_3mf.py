@@ -25,10 +25,6 @@ Usage:
     python3 make_3mf.py [--template bambu-template.3mf] [--stl-dir stl]
                         [--out openrz67-case.3mf]
 
-Objects the template does not know (EXTRA_PLATES below) are appended as new
-objects on their own plate, laid out in a row at the plate centre. That is how the
-camera plug's two halves ride along on plate 2 without touching the hand-made plate 1.
-
 Pure stdlib (no numpy). ASCII STL in, project .3mf out.
 """
 import argparse
@@ -41,7 +37,6 @@ import tempfile
 import uuid
 import zipfile
 
-# plate id -> STLs added as new objects (row at the plate centre, resting on the bed)
 # parent STL -> [(sub-part STL, extruder)]: meshes added INSIDE an existing object as extra
 # parts, sharing its frame and plate spot. This is how the lid text gets its own filament:
 # the colour lives on the part, so it survives every re-export. Slicer colour painting does

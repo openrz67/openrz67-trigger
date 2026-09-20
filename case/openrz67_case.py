@@ -125,13 +125,14 @@ usb_solid_w = usb_pocket_w + 2 * 1.5   # width of that full-wall zone (case-Y)
 led_pos = [(20.5, 18.0), (24.224, 20.186)]                 # D3 (charge), D4 (status)
 led_win_l, led_win_w, led_win_r = 6.0, 4.4, 1.2   # covers both LED bodies (D3 sits 2.2 mm lower than D4)
 led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # gap 0.8: 0603 LED is ~0.5 tall; closer stem = less light lost sideways (2026-09-16)
-# Two clearances, not one. The HEAD keeps led_pipe_clr so its taper still self-centres and
-# drops in without forcing. The STEM is a push fit inside a COLLAR hanging off the ceiling:
-# the top plate alone gives only lid_top_t - led_head_t = 0.6 mm of grip, which is why the
-# pipe rattled and needed glue (2026-09-16). The collar adds grip length and houses a
-# retaining BEAD the pipe has to shove past, so it stays where it is pushed.
-led_stem_clr = -0.10               # stem window = pipe + this (negative = interference,
-                                   # 0.05/side on a 4.4 mm wall is ~1 % strain: fine in ABS)
+# One clearance, applied twice. The HEAD keeps led_pipe_clr so its taper self-centres, and
+# the STEM gets the same so the pipe still DROPS in. An interference fit was tried here
+# (-0.10, ~0.05/side) and reverted 2026-09-20: it could not be pressed in by hand. A
+# retaining bead inside the collar was tried before that and dropped too -- deep enough to
+# click is deeper than a solid pipe squeezes past, and the 0.6 mm collar wall splays. So the
+# COLLAR earns its keep on guidance alone: grip goes from lid_top_t - led_head_t = 0.6 mm to
+# 3.2 mm, so the pipe cannot tilt in its hole. It is still glued (2026-09-16).
+led_stem_clr = led_pipe_clr        # stem window = pipe + this (slip fit, glued)
 led_collar_h, led_collar_w = 2.6, 0.6      # collar length below the ceiling, and its wall
 # The head seat is a TAPER (funnel), not a step: lid prints upside-down, so a stepped
 # counterbore hangs a 1 mm ledge over the bed-side opening -> support crud, ragged edge
