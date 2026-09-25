@@ -3,6 +3,7 @@
 #include <BLEServer.h>
 #include <esp_pm.h>
 #include <driver/ledc.h>
+#include <soc/rtc.h>
 
 #define SERVICE_UUID        "c9239c9e-6fc9-4168-b3aa-53105eb990b0"
 #define CHARACTERISTIC_UUID "458d4dc9-349f-401d-b092-a2b1c55f5319"
@@ -402,6 +403,10 @@ void configurePowerManagement() {
     if (err == ESP_OK) {
         Serial.println("Power management: " + String(pm_config.min_freq_mhz) + "-80 MHz, light sleep "
                        + String(pm_config.light_sleep_enable ? "on" : "off"));
+        // IDF's own fallback warning is below the build's log level, so say it here.
+        Serial.println(rtc_clk_slow_src_get() == SOC_RTC_SLOW_CLK_SRC_XTAL32K
+                       ? "RTC slow clock: X2 (32.768 kHz)"
+                       : "RTC slow clock: internal RC, X2 not running (no light sleep with BLE)");
     } else {
         Serial.println("Power management not available in this framework build ("
                        + String(esp_err_to_name(err)) + ")");
