@@ -1,12 +1,16 @@
 ** Drc report for openrz67.kicad_pcb **
-** Created on 2026-09-25T10:26:11 **
+** Created on 2026-09-25T11:07:43 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 16 DRC violations **
+** Found 22 DRC violations **
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(146.4095 mm, 104.3950 mm): Footprint C29
     @(145.2830 mm, 103.6690 mm): Footprint R23
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(135.4000 mm, 98.4000 mm): Footprint U2
+    @(134.1500 mm, 95.9000 mm): Footprint C24
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(138.0000 mm, 99.8000 mm): Footprint C25
@@ -23,6 +27,10 @@
     Rule: board setup constraints courtyard; warning
     @(150.1500 mm, 96.0000 mm): Footprint R25
     @(149.6000 mm, 98.0000 mm): Footprint C32
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(130.3010 mm, 97.8650 mm): Footprint L3
+    @(134.1500 mm, 95.9000 mm): Footprint C24
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(130.3010 mm, 97.8650 mm): Footprint L3
@@ -65,6 +73,22 @@
     Rule: board setup constraints silk; warning
     @(133.6100 mm, 97.4000 mm): Circle of U2 on F.Silkscreen
     @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(134.0700 mm, 97.0700 mm): Segment of U2 on F.Silkscreen
+    @(134.1500 mm, 96.6000 mm): Pad 2 [VCC] of C24 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+    @(134.1500 mm, 95.2000 mm): Pad 1 [GND] of C24 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+    @(134.1500 mm, 96.6000 mm): Pad 2 [VCC] of C24 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(133.6030 mm, 95.0710 mm): Segment of L3 on F.Silkscreen
+    @(134.1500 mm, 95.2000 mm): Pad 1 [GND] of C24 on F.Cu
 
 ** Found 0 unconnected pads **
 

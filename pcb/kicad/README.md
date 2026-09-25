@@ -56,7 +56,8 @@ out. No DRC or ERC exclusions are configured; the only custom rules are in `open
 
 | Check | Count | What |
 |---|---|---|
-| `courtyards_overlap` | 13 | Neighbours closer than 0.1 mm: C21/USB1, L3 against C20/R9, H1/USB1 (all as on the fabricated rev-1 layout), C25 against R20/R6 in the rev-2 power corner, R23 against U1, C29 and C6 since 2026-09-10 (pad-to-pad ≥ 0.40 mm everywhere except R23: 0.16 mm to U1 pad 14, its own net, and 0.18 mm to C29 pad 2), C32 against R24/R25 (rev 3 battery sense), and Q3 against BAT1 and L3 (rev 3 reverse-battery FET; nearest foreign copper 1.1 mm). C24/D3 went away when C24 moved to U2 on 2026-09-25. |
+| `courtyards_overlap` | 15 | Neighbours closer than 0.1 mm: C21/USB1, L3 against C20/R9, H1/USB1 (all as on the fabricated rev-1 layout), C25 against R20/R6 in the rev-2 power corner, R23 against U1, C29 and C6 since 2026-09-10 (pad-to-pad ≥ 0.40 mm everywhere except R23: 0.16 mm to U1 pad 14, its own net, and 0.18 mm to C29 pad 2), C32 against R24/R25 (rev 3 battery sense), Q3 against BAT1 and L3 (rev 3 reverse-battery FET; nearest foreign copper 1.1 mm), and C24 against L3 and U2 in its 1 mm notch at U2 pin 1 (bodies 0.15 mm apart). C24/D3 went away when C24 moved on 2026-09-25. |
+| `silk_over_copper` | 4 | L3's and U2's body outlines cross C24's pad mask openings by 0.05 mm; the fab clips silk there. |
 | `silk_overlap` | 1 | U2's pin-1 dot touches L3's silkscreen outline (0.02 mm). |
 | `text_height`, `text_thickness` | 2 | The `BOOT EN` label on F.SilkS is 0.5 mm / 0.10 mm, under JLCPCB's 1.0 mm / 0.15 mm. Enlarged in place it runs over the R18 pads and the S3 body, where the fab clips silkscreen against solder mask. Splitting it into separate `BOOT` and `EN` labels does not help: the free band above the S1 pads is 0.85 mm and the one below the switches is 0.7 mm, both under the 1.0 mm the text needs. Fixing it means moving parts. Every other silkscreen text is at or above 1.067 mm. |
 
@@ -294,7 +295,11 @@ source here is rev 3: the review fixes and R23 above, plus:
     (C21, U3 BAT), gate on GND. A cell plugged in backwards leaves the FET off and its body
     diode reverse-biased; the right way round the body diode conducts until V<sub>GS</sub> =
     −V<sub>cell</sub> turns the channel on, in both directions (charge and discharge), so the
-    charger still sees the cell within ~5 mV (50 mΩ × 111 mA). At (126.9, 91.7) rot 180 in
+    charger still sees the cell within ~5 mV (50 mΩ × 111 mA). The block is complete only with
+    USB out: with USB in, the charger pulls BAT+ up, V<sub>GS</sub> reaches −4 V and the FET
+    turns on whatever the cell's polarity, so a reversed cell looks shorted to the BQ25185,
+    which trickles ~7 mA into it until its safety timer expires (about 90 min). Small, but
+    unplug USB before fixing a reversed cell. At (126.9, 91.7) rot 180 in
     the top-left corner between BAT1, C20 and L3; VBUS moved to B.Cu under it (via
     (121.397, 92.159), run at y = 91.8 to the existing via at (130.5, 92.986)); BAT+ leaves
     the source east of the gate pad, then west of L3 pad 1 (the pad is 3.4 mm wide) down to
@@ -303,9 +308,15 @@ source here is rev 3: the review fixes and R23 above, plus:
     model; `fetch_3d.sh` will report C15127 separately). Two courtyard warnings (BAT1, L3).
     JLCPCB's SOT-23 orientation was not checked against a preview: confirm Q3's pin-1 dot in the
     order preview before assembly (no `ROT_FIX` entry yet).
-  - **C24 at the buck-boost output.** Was 2.75 mm from U2 pin 10 through a 0.3 mm trace; now at
-    (138.0, 97.0), its VCC pad 1.5 mm from pin 10 with a return GND via at (138.7, 96.3) beside
-    its GND pad. The VCC transfer via moved from (137.5, 96.7) to (137.2, 97.1).
+  - **C24 at the buck-boost output.** VOUT is U2 pin 1 (pin 10 is FB, tied to VOUT externally);
+    C24 sat 5 mm from it. Now at (134.15, 95.9) rot −90 in the 1 mm notch between L3's body and the VSYS
+    corner (whose via moved 0.3 mm east to (135.3, 94.7) to make room): its VCC pad is 0.8 mm
+    from pin 1, on the VCC bridge that joins pins
+    1 and 10 along y = 96.7, with a return GND via at (134.15, 94.85). L3's and U2's silk outlines
+    clip its pads' mask openings by 0.05 mm (four `silk_over_copper` warnings, cosmetic;
+    the bodies themselves are 0.15 mm clear) beside its GND pad. The VCC
+    transfer via moved from (137.5, 96.7) to (137.2, 97.1). (A first cut of this review put C24
+    at (138.0, 97.0) next to pin 10, i.e. FB — caught in PR review.)
   - **Paste windows on the exposed pads.** U1's 3.7 mm EP has no paste on the pad itself and
     four 1.5 × 1.5 mm aperture pads instead (66 % coverage, Espressif's four-window pattern);
     U2 and U3 keep one aperture reduced to 92 % linear (85 % area, TI's 84–88 %). Applied in the
