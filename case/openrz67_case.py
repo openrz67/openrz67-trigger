@@ -144,11 +144,11 @@ led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # ga
 # the STEM gets the same so the pipe still DROPS in. An interference fit was tried here
 # (-0.10, ~0.05/side) and reverted 2026-09-20: it could not be pressed in by hand. A
 # retaining bead inside the collar was tried before that and dropped too -- deep enough to
-# click is deeper than a solid pipe squeezes past, and the 0.6 mm collar wall splays. So the
+# click is deeper than a solid pipe squeezes past, and the (then 0.6 mm) collar wall splays. So the
 # COLLAR earns its keep on guidance alone: grip goes from lid_top_t - led_head_t = 0.6 mm to
 # 3.2 mm, so the pipe cannot tilt in its hole. It is still glued (2026-09-16).
 led_stem_clr = led_pipe_clr        # stem window = pipe + this (slip fit, glued)
-led_collar_h, led_collar_w = 2.6, 0.6      # collar length below the ceiling, and its wall
+led_collar_h, led_collar_w = 2.6, 0.87     # collar length below the ceiling, and its wall (two lines; was 0.6)
 # The head seat is a TAPER (funnel), not a step: lid prints upside-down, so a stepped
 # counterbore hangs a 1 mm ledge over the bed-side opening -> support crud, ragged edge
 # (first stacked print, 2026-09-14). A wall 0.7 out over 1.4 up is 26.6° from vertical:
@@ -243,6 +243,7 @@ check(split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_h
 check(wall / 2 - (snap_bead + pocket_extra_d) >= 0.87, "base lip behind the snap pocket under two lines")
 check(wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines")
 check(0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness")
+check(led_collar_w >= 0.87, "light-pipe collar wall under two perimeter lines")
 check(standoff_h >= batt_t + batt_foam - 1e-6, "no foam room over the cell")
 for _kx, _ky, _kd in th_keepouts:   # tails beside the cell, not over it (else add th_keepout_depth)
     check(_kx + _kd / 2 <= batt_x0 - batt_clr or _kx - _kd / 2 >= batt_x0 + batt_w + batt_clr,
