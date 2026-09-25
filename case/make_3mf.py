@@ -15,8 +15,8 @@ centred by the slicer on import (model_vertex = stl_vertex - bbox_centre). The
 slicer records that centre as source_offset_{x,y,z} in model_settings.config.
 We reproduce that import by recentring each fresh mesh on ITS OWN bounding-box
 centre and writing that centre back into source_offset. Recomputing (rather than
-reusing the template's stored offset) matters: if the SCAD geometry changes size
-later - e.g. back_margin grew the case in Y - the stored offset goes stale and
+reusing the template's stored offset) matters: if the case geometry changes size
+later - e.g. the case grows in Y - the stored offset goes stale and
 the part would load shifted off its plate spot. A fresh centre keeps base, lid
 and light pipe aligned with each other and on the plate, and inherits the same
 filament/extruder mapping.
@@ -43,6 +43,8 @@ import zipfile
 # not (it is stored per triangle, and we replace the mesh), and QIDI Studio segfaults on a
 # saved height-range modifier. Missing sub-part STLs are skipped (LID_TEXT_SHOW=false).
 SUB_PARTS = {"openrz67-lid.stl": [("openrz67-lid-text.stl", 2)]}
+# The template's objects, by name: exactly these get their mesh swapped (SNAP_TEST pieces are not in it)
+OBJECTS = {"openrz67-base.stl", "openrz67-lid.stl", "openrz67-lightpipe.stl"}
 BED = 256.0            # Bambu P2S; plates sit in a row, stride = 1.2 * bed (LOGICAL_PART_PLATE_GAP)
 
 
@@ -115,7 +117,7 @@ def build_mapping(model_settings, dmodel):
         oy = re.search(r'source_offset_y" value="([-0-9.eE]+)"', body)
         oz = re.search(r'source_offset_z" value="([-0-9.eE]+)"', body)
         if not (name and ox and oy and oz):
-            continue
+            sys.exit(f"template object {oid}: no name or source_offset in model_settings.config")
         objs[oid] = {
             "name": name.group(1),
             "offset": (float(ox.group(1)), float(oy.group(1)), float(oz.group(1))),
@@ -127,6 +129,10 @@ def build_mapping(model_settings, dmodel):
         oid, path = m.group(1), m.group(2)
         if oid in objs:
             objs[oid]["model_path"] = path.lstrip("/")
+    names = {o["name"] for o in objs.values() if "model_path" in o}
+    if len(objs) != len(OBJECTS) or names != OBJECTS:
+        sys.exit(f"template objects {sorted(o['name'] for o in objs.values())} (with a mesh: {sorted(names)}) "
+                 f"!= {sorted(OBJECTS)}: re-save bambu-template.3mf or update OBJECTS")
     return objs
 
 
@@ -259,14 +265,13 @@ def main():
             # keep the slicer's metadata honest: face count AND the recorded source offset
             # (the latter so it matches the centre we just recentred the mesh on)
             fc = len(tris)
-            model_settings = re.sub(
-                rf'(<object id="{oid}">.*?face_count=")\d+(")',
-                rf"\g<1>{fc}\g<2>", model_settings, count=1, flags=re.S,
-            )
-            model_settings = re.sub(
-                rf'(<object id="{oid}">.*?<mesh_stat face_count=")\d+(")',
-                rf"\g<1>{fc}\g<2>", model_settings, count=1, flags=re.S,
-            )
+            for tag in ("<metadata", "<mesh_stat"):   # object-level count, then the part's mesh_stat
+                model_settings, n = re.subn(
+                    rf'(<object id="{oid}">(?:(?!</object>).)*?{tag} face_count=")\d+(")',
+                    rf"\g<1>{fc}\g<2>", model_settings, count=1, flags=re.S,
+                )
+                if n != 1:
+                    sys.exit(f"object {oid}: no {tag} face_count in model_settings.config")
             for axis, val in zip("xyz", offset):
                 model_settings = re.sub(
                     rf'(<object id="{oid}">.*?source_offset_{axis}" value=")[-0-9.eE]+(")',
