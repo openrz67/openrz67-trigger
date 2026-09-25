@@ -60,7 +60,7 @@ The custom PCB uses a JST S4B-XH-A four-pin header (`U4`), side-entry, opening o
 
 | U4 pin | Camera signal |
 |--------|---------------|
-| 1      | Not connected (camera 6 V) |
+| 1      | Camera 6 V, unused by the board |
 | 2      | GND |
 | 3      | S1 |
 | 4      | S2 |
@@ -71,7 +71,7 @@ Verify the pin 1 orientation before assembling the camera cable.
 
 Viewed from the front, the camera's four-pin remote-control port is:
 
-1. 6 V — do not connect
+1. 6 V — wired through, unused by the board
 2. GND
 3. S1 switch
 4. S2 switch
