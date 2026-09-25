@@ -350,8 +350,8 @@ dot in the JLCPCB preview like U1/U5/U6 (`ROT_FIX` below).
 
 `out/gerber/` is tracked unpacked, so a revision's copper is diffable in git.
 `tools/regen.sh` also writes `out/openrz67-gerber.zip`, which is what you upload;
-it is gitignored because it is one command away and would otherwise churn the
-history as a binary blob on every regen. When a revision is actually ordered, copy
+it is tracked too so nobody has to run the script to get a fab-ready file (it is
+small, and regen.sh keeps it in step). When a revision is actually ordered, copy
 the zip, BOM and position file into `../archive/<date>-rev<n>/` as the record of
 what was fabricated.
 
