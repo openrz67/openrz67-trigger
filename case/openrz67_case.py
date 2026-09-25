@@ -35,7 +35,9 @@ U4 camera cable: the side-entry XH header and its plug stay INSIDE the box; only
 the (heat-shrunk) cable leaves through a keyhole slot in the lid's right wall, open
 down to the seam, so the cable drops in as the lid closes.
 
-Env overrides: PCB_T, LID_TEXT_SHOW (default true), and
+Env overrides: PCB_T, LID_TEXT_SHOW (default true), LID_TEXT / LID_TEXT_SIZE (the
+name line's string and font size), OUTDIR (STL directory, default stl/), MAKE_3MF
+(default true: rebuild openrz67-case.3mf when writing to stl/), and
 SNAP_TEST=true to also export a cropped corner pair for tuning snap_bead /
 lap_gap with a small test print before committing to the full box.
 """
@@ -205,7 +207,8 @@ orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 8.0, 2.5, 0.8, 9.0
 # (text, font size, letter tracking)
 lid_text_show = os.environ.get("LID_TEXT_SHOW", "true") == "true"
 lid_font = "Futura"
-lid_texts = [("OpenRZ67", 9.5, 0.0), ("TRIGGER", 5.0, 1.0)]
+lid_texts = [(os.environ.get("LID_TEXT", "OpenRZ67"), float(os.environ.get("LID_TEXT_SIZE", 9.5)), 0.0),
+             ("TRIGGER", 5.0, 1.0)]
 lid_text_gap, lid_text_min_stroke = 1.6, 0.6   # between lines; pockets narrower than this smear
 lid_rail_w, lid_rail_end, lid_rail_gap = 0.9, 6.0, 1.5   # rail width, inset from the side walls, air to the LED seat
 lid_text_depth = 0.8              # pocket depth = the inlay thickness (4 x 0.2 layers).
