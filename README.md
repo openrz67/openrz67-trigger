@@ -7,7 +7,7 @@ ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetoot
 * Instant shutter release
 * Bulb mode for remote long exposures
 * Self-timer countdown with app-configurable duration
-* Power-aware: 80 MHz CPU clock, 0 dBm BLE TX power, 100–200 ms advertising interval and a 30–50 ms connection interval with slave latency 2, running off a small LiPo. Automatic light sleep is not available in any prebuilt Arduino core build (see [Power](#power))
+* Power-aware: 80 MHz CPU clock, 0 dBm BLE TX power, 100–200 ms advertising interval and a 30–50 ms connection interval (slave latency 0 until light sleep exists), running off a small LiPo. Automatic light sleep is not available in any prebuilt Arduino core build (see [Power](#power))
 
 ## Hardware
 

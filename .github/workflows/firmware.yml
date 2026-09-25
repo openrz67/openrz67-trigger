@@ -2,6 +2,7 @@ name: firmware
 
 on:
   push:
+    branches: [main]
     paths: ['src/**', 'platformio.ini', '.github/workflows/firmware.yml']
   pull_request:
     paths: ['src/**', 'platformio.ini', '.github/workflows/firmware.yml']

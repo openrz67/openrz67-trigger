@@ -28,12 +28,14 @@
 // (Bluedroid's default is 20-40 ms); connection interval in 1.25 ms units with a
 // slave latency, so the chip may skip that many connection events when idle. A
 // command from the phone is seen at the next event the chip listens to, so the worst
-// added trigger delay is (CONN_LATENCY + 1) * CONN_MAX_INTERVAL * 1.25 ms.
+// added trigger delay is (CONN_LATENCY + 1) * CONN_MAX_INTERVAL * 1.25 ms. Latency
+// stays 0 until light sleep exists: with the CPU awake anyway the skipped events save
+// well under 1 mA, not worth the extra delay on the shutter.
 #define ADV_MIN_INTERVAL 0x00A0  // 100 ms
 #define ADV_MAX_INTERVAL 0x0140  // 200 ms
 #define CONN_MIN_INTERVAL 0x18   // 30 ms
 #define CONN_MAX_INTERVAL 0x28   // 50 ms
-#define CONN_LATENCY 2
+#define CONN_LATENCY 0
 #define CONN_TIMEOUT 400         // 4 s, in 10 ms units
 
 // VERBOSE comes from platformio.ini: 0 in the production env (every Serial call
@@ -80,7 +82,7 @@ constexpr int shutterPinS1 = S1_PIN; // drives U5 (camera S1)
 struct Command {
     uint8_t button;   // 1 trigger, 2 bulb, 3 countdown
     uint8_t value;    // 1 press/start, 0 release/cancel
-    uint16_t durationMs;
+    uint32_t durationMs;
 };
 QueueHandle_t commandQueue;
 
