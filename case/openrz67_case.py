@@ -156,7 +156,7 @@ led_collar_h, led_collar_w = 2.6, 0.87     # collar length below the ceiling, an
 
 # --- FPC antenna (Ebyte TX2400-FPC-2509, 25 x 9 x ~0.2, adhesive, U.FL to A1) -------------
 # Stuck to the lid CEILING in the free band between the switch body (front) and the LED
-# stem (back): furthest from the cell (metal pouch) and 10 mm over the PCB ground. A shallow
+# stem (back): furthest from the cell (metal pouch) and ~12 mm over the PCB ground. A shallow
 # recess locates it; the cable (~100 mm) drops to A1 near the USB end and coils in the air
 # over the board. The lid prints upside-down, so the recess is a pocket in the print's top face.
 ant_l, ant_w, ant_clr, ant_depth = 25.0, 9.0, 0.3, 0.3
@@ -260,7 +260,7 @@ def by(y):
 
 led_cx = (bx(led_pos[0][0]) + bx(led_pos[1][0])) / 2
 led_cy = (by(led_pos[0][1]) + by(led_pos[1][1])) / 2
-sx = outer_w / 2                     # switch centred on the lid (board-X ~27.5)
+sx = outer_w / 2                     # switch centred on the lid (board-X ~28.3)
 swz = split_z + kcd_gap + kcd_body_h / 2 + kcd_hole_clr   # switch body centre, case-Z
 
 # --- Helpers -------------------------------------------------------------------

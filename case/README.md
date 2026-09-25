@@ -53,8 +53,8 @@ a known collision fails loudly instead of surfacing in the print.
 - **Base** (tub): floor, **8 mm posts** (`standoff_h` = cell 6 + foam 1.5 + 0.5 for the
   solder/vias on the bare PCB bottom; was 11 until 2026-09-14 — the BAT1 tails lie *beside*
   the cell in X, not over it, which is asserted) in all four corners (`pcb_supports =
-  [[2,20],[46,2]]` plus the two posts at the mounting holes), and two **Ø1.7 locating
-  pins** up into the real Ø2 mounting holes. The cell lies on the floor between the posts,
+  [[2,20],[46,2]]` plus the two posts at the mounting holes), and two **Ø1.85 locating
+  pins** (`pin_d` = `hole_d` − 0.15) up into the real Ø2 mounting holes. The cell lies on the floor between the posts,
   lengthwise from board-X `batt_x0` (6), inside a **low rib ring** (`batt_rib_t` 1.6 ×
   `batt_rib_h` 2.5, `batt_clr` 0.5 around the cell — like the old battery-beside bay) that
   locates it; foam tape on top holds it down.
@@ -83,16 +83,16 @@ a known collision fails loudly instead of surfacing in the print.
     boxes: exits are open to the seam and at the wire's height — stiff wires take neither
     threading nor a vertical detour.
   - **LED light pipe** (`led_*`, separate part): D3 (red) and D4 (blue) are top-emitting
-    SMD LEDs ~8 mm below the lid. A separate **clear light pipe** is inserted from above
+    SMD LEDs ~12 mm below the lid ceiling (`comp_clr` 11.9). A separate **clear light pipe** is inserted from above
     as a top hat: a **tapered** head (funnel seat, ~flush with the top face) + a rod that
     goes down to ~0.8 mm above the LEDs and channels the light into two sharp dots. The
     lid is printed opaque; **only the light pipe is printed in clear filament**. It is a
     **slip fit, glued**: `led_stem_clr` = `led_pipe_clr` (0.2), so head and stem both drop
     in. What keeps it straight is the **collar** hanging `led_collar_h` (2.6) off the
-    ceiling around the stem window — guidance over 3.2 mm instead of the top plate's 0.6,
+    ceiling around the stem window, `led_collar_w` (0.87, two perimeter lines — asserted) thick — guidance over 3.2 mm instead of the top plate's 0.6,
     so the pipe cannot tilt in its hole. Two attempts to make it hold *without* glue both
     failed: a snap bead inside the collar (one deep enough to click is deeper than a solid
-    pipe can squeeze past, and the 0.6 mm collar wall just splays), then an interference
+    pipe can squeeze past, and the collar wall, then 0.6 mm, just splays), then an interference
     bore (`led_stem_clr` -0.10, ~0.05/side) — which could not be pressed in by hand and was
     reverted 2026-09-20. A drop of glue on top does the job. Why a funnel and not a
     stepped counterbore: the lid prints upside-down, and a step is a 1 mm ledge hanging
@@ -104,13 +104,13 @@ a known collision fails loudly instead of surfacing in the print.
     positions from pick&place.
   - **Component clearance** (`comp_keepouts`): rectangles `[board_x0, board_y0, board_x1,
     board_y1]` cut out of the lid's hold-down bosses (full height above the PCB) where a
-    boss would collide with a component body — e.g. the Ø6 boss at hole (2,2) is cut back
-    to a D-shape to clear the USB-C connector's near edge (~board-Y 4.8).
+    boss would collide with a component body — e.g. the Ø5 boss (`holddown_d`) at hole (2,2)
+    is cut back to a D-shape to clear the USB-C body (`usbc_body`, board-Y 4.0–14.5).
   - **Antenna recess** (`ant_*`): a shallow **25.6 × 9.6 × 0.3 mm** pocket in the lid
     **ceiling** that locates the adhesive FPC antenna (Ebyte TX2400-FPC-2509, 25 × 9).
     It sits in the free ceiling band between the rocker body (front) and the light-pipe
     stem (back), right of the (2,2) hold-down boss — furthest from the cell's metal pouch
-    and ~10 mm above the PCB ground plane. `ant_cx_frac` (0.25) slides it along the band;
+    and ~12 mm above the PCB ground plane. `ant_cx_frac` (0.25) slides it along the band;
     0.25 keeps it near the USB end, so the ~100 mm U.FL cable has a short run down to `A1`
     and coils in the air over the board. Two asserts: the recess must fit the free band,
     and `ant_depth` + `lid_text_depth` must leave ≥ 0.8 mm of top plate (this is what caps
@@ -145,10 +145,10 @@ steeper faces. The small ledges (0.4 on the bead, 0.5 on the pocket ceiling) pri
 single overhanging line without support.
 Each finger is `finger_l` (12 mm) long, `finger_t` (1.0 mm) thick — thinned from the
 cavity side, with a `finger_slot` (0.8) relief at each end — and the bead sits 1.1 mm
-above the finger tip, so the flexing lever is ~6 mm: about 2 % strain at full deflection,
-fine for PLA and comfortable in PETG. The rest of the tongue (1.45 mm) and the base lip
+above the finger tip (`bead_tip_h`), so the flexing lever is ~6 mm: about 2 % strain at
+full deflection, comfortable in ABS. The rest of the tongue (1.45 mm) and the base lip
 (1.6 mm, 0.9 behind the pockets) stay rigid; `wall` is 3.2 for that. The PCB is located by
-two **Ø1.85 pins** (light friction fit, coned lead-in) in its real Ø2 mounting holes and pressed onto the posts by the lid's
+two **Ø1.85 pins** (`pin_d`; light friction fit, coned down to `pin_tip_d` 1.4) in its real Ø2 mounting holes and pressed onto the posts by the lid's
 hold-down bosses (blind pin recesses inside — no holes through the top). Open with a coin
 or fingernail in the **pry slot** (`pry_w/d/h`) on the back wall's lower lid edge; the back
 fingers release first, then the front.
@@ -163,7 +163,7 @@ corner snaps shut and pries open with reasonable force.
 
 Finished size with default values: ~**64.9 × 36.0 × 25.5 mm** (X incl. the 2 mm USB-C
 overhang less `usb_shell_poke` 1.4, and the 9.1 mm U4 + plug overhang, Y incl. the two
-pockets, Z = floor 2 + posts
+pockets and the 0.8 orientation rib, Z = floor 2 + posts
 8 + PCB + 11.9 clearance + top 2; depends on `pcb_t`). The clearance is set by the rocker
 switch (body 8.5 + 1.6 over the PCB + latch room), not by the PH plugs any more (10).
 
@@ -250,8 +250,8 @@ applies when unset); anything else is a one-line edit of the constant:
 
 ```bash
 LID_TEXT_SHOW=true   ./export.sh   # lid text (on by default); LID_TEXT_SHOW=false hides it
-LID_TEXT="My text"   ./export.sh   # change the lid text string
-LID_TEXT_SIZE=4.0    ./export.sh   # cap height (mm)
+LID_TEXT="My text"   ./export.sh   # the name line (default OpenRZ67; TRIGGER stays)
+LID_TEXT_SIZE=8.0    ./export.sh   # its font size (mm, default 9.5)
 SNAP_TEST=true       ./export.sh   # also export the corner test pair for snap tuning
 PCB_T=1.0            ./export.sh   # PCB thickness (sets the base/lid split height)
 LID_TEXT_SHOW=true LID_TEXT="v2" ./export.sh     # combine freely
@@ -323,7 +323,7 @@ the slicer refreshes them when you open or slice the project — purely cosmetic
   if it no longer fits the band. Antenna optional — BLE works without it, with much less range.
 - `sx` – position of the rocker switch (KCD11, `kcd_*`). The **front wall** (low Y) is
   chosen deliberately: the back wall carries the S3 connector (board-X 28.7), the LEDs and
-  the battery-lead pocket. Centred on the lid (`sx = outer_w / 2`, board-X ≈ 27.5); the body
+  the battery-lead pocket. Centred on the lid (`sx = outer_w / 2`, board-X ≈ 28.3); the body
   ends at the first `J1` pad and its tabs run over that row, so `J1` cannot take a pin header.
   `kcd_gap` = 1.6 puts the body underside 1.6 mm above the PCB (U1 0.9, X2 and 0603s beneath)
   and leaves a 1.6 mm wall strip between the hole and the seam.
@@ -348,17 +348,19 @@ Three layers in the wall (outside in):
 - **Plug pocket** `usb_pocket_w/h/r/d` = **14 × 9.5 mm**, R3, **1.2 deep**, with a 45° bevel
   of `usb_pocket_ch` (0.6) on its outer edge. The cable's overmold sinks into it: the port
   is protected, the plug is guided in, and the overmold ends 1.2 mm closer to the receptacle
-  mouth (which sits ~0.4 mm inside the wall's inner face). Fits overmolds up to 13 × 8.5.
+  mouth (which noses 1.0 mm into the wall: `usb_shell_poke` − `clr`). Fits overmolds up to 13 × 8.5.
   The user's old Fusion case had one (added here 2026-09-14).
-- `usb_open_w/h` = **11 × 7 mm**, R2 (`usb_open_r`) – the pass-through. Its edge is the
-  **lip** (1.0 mm thick between pocket and recess, asserted ≥ 0.8) that stops the overmold;
-  the metal plug (~8.34 × 2.56) passes easily.
-- **Inner recess** `usb_recess_w/h/d` = **13 × 9 × 1.0 mm**, R3 (`usb_recess_r`), on the
-  cavity side: slack for the receptacle shell if the board sits further left than measured.
+- `usb_open_w/h` = **10 × 4.6 mm**, R1.8 (`usb_open_r`) – the pass-through. Its edge is the
+  **lip** (`wall` − `usb_pocket_d` − `usb_recess_d` = 0.8 mm between pocket and recess,
+  asserted ≥ 0.8) that stops the overmold; the metal plug (~8.34 × 2.56) passes easily.
+- **Inner recess** `usb_recess_w/h/d` = **13 × 9 × 1.2 mm**, R3 (`usb_recess_r`), on the
+  cavity side: the receptacle shell noses into it, 0.2 short of its floor (asserted).
 
-The opening's centre sits ~1.65 mm **above** the base/lid split, so the lower ~1.85 mm of
-the 7 mm-tall window falls below the seam. `cut_usb()` therefore runs in **both** `base()`
-and `lid()` — otherwise the base side wall would block the lower edge of the hole.
+The opening's centre (`usb_zc`) sits 1.65 mm **above** the base/lid split, so the lower
+0.65 mm of the 4.6 mm-tall opening (3.1 of the pocket, 2.85 of the recess) falls below the
+seam. `cut_usb` is therefore subtracted from **both** `base` and `lid`, and the base keeps
+its full wall through the lap zone around it (`usb_solid_w`), so the lip is full thickness
+on both sides of the seam.
 
 Measure your own charging cable and adjust if needed. Test with a print of just the left
 short end first.
