@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
-#include <BLE2902.h>
 #include <esp_pm.h>
 
 #define SERVICE_UUID        "c9239c9e-6fc9-4168-b3aa-53105eb990b0"
@@ -9,16 +8,33 @@
 // Rev 3: SW_SYS (battery on battery power, BQ25185 SYS voltage on USB) in mV, uint16 LE, read + notify.
 #define BATTERY_UUID        "cda71ce6-4af9-4aa2-8d34-329c2acdae09"
 #define VBAT_PERIOD 10000
+// Battery Level (0x2A19) percent from the cell voltage, linear between these two points.
+#define VBAT_EMPTY_MV 3500
+#define VBAT_FULL_MV  4200
+
+#ifndef FW_VERSION
+#define FW_VERSION "dev"
+#endif
 
 #define DELAY 2000
-#define BLINK_SPEED 500
 #define COUNTDOWN_DURATION 10000  // 10 seconds in milliseconds
 // Idle status LED: dim steady while a phone is connected, a slow soft pulse while
 // advertising. PWM via LEDC so the pulse can dim.
 #define PULSE_PERIOD 4000
 #define PULSE_MAX 120   // of 255; the LED is current-starved already, keep it soft
 #define CONNECTED_LEVEL 25  // dim steady when connected, so trigger/bulb (255) still show
-#define LED_PWM_CH 0
+
+// Radio timing, the main battery-life lever. Advertising interval in 0.625 ms units
+// (Bluedroid's default is 20-40 ms); connection interval in 1.25 ms units with a
+// slave latency, so the chip may skip that many connection events when idle. A
+// command from the phone is seen at the next event the chip listens to, so the worst
+// added trigger delay is (CONN_LATENCY + 1) * CONN_MAX_INTERVAL * 1.25 ms.
+#define ADV_MIN_INTERVAL 0x00A0  // 100 ms
+#define ADV_MAX_INTERVAL 0x0140  // 200 ms
+#define CONN_MIN_INTERVAL 0x18   // 30 ms
+#define CONN_MAX_INTERVAL 0x28   // 50 ms
+#define CONN_LATENCY 2
+#define CONN_TIMEOUT 400         // 4 s, in 10 ms units
 
 // VERBOSE comes from platformio.ini: 0 in the production env (every Serial call
 // compiles to a no-op), 1 in the debug env, where Serial is USB CDC.
@@ -45,7 +61,7 @@ uint8_t ledLevel = 0; // 0 = off, 255 = full
 
 void ledWrite(uint8_t level) {
     ledLevel = level;
-    ledcWrite(LED_PWM_CH, 255 - level); // active-low
+    ledcWrite(ledPin, 255 - level); // active-low
 }
 // S2_PIN comes from platformio.ini: GPIO3 on rev 1/2 (default), GPIO6 in the rev3 envs.
 #ifndef S2_PIN
@@ -58,22 +74,27 @@ constexpr int shutterPinS2 = S2_PIN; // drives U6 (camera S2)
 #endif
 constexpr int shutterPinS1 = S1_PIN; // drives U5 (camera S1)
 
+// Commands arrive on the BLE task (onWrite) and are executed in loop(), so the BLE
+// stack is never blocked by the shutter delays. The queue is the only shared state
+// between the two tasks besides the connection flags below.
+struct Command {
+    uint8_t button;   // 1 trigger, 2 bulb, 3 countdown
+    uint8_t value;    // 1 press/start, 0 release/cancel
+    uint16_t durationMs;
+};
+QueueHandle_t commandQueue;
+
 int incoming;
-unsigned long now;
 unsigned long timestampButton;
 unsigned long countdownStartTime;
-unsigned long countdownDuration = COUNTDOWN_DURATION; // Default to 10 seconds
+unsigned long countdownDuration = COUNTDOWN_DURATION;
 bool countdownActive = false;
 bool bulbModeActive = false;
 unsigned long lastCountdownPrint = 0;
 
 BLEServer *pServer = nullptr;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
-
-void endBulbMode();
-void startCountdown(unsigned long durationMs);
-void cancelCountdown();
+volatile bool deviceConnected = false;
+volatile bool advertiseRequested = false;
 
 void openShutter() {
     Serial.println("Setting shutterPins HIGH...");
@@ -86,6 +107,12 @@ void closeShutter() {
     Serial.println("Setting shutterPins LOW...");
     digitalWrite(shutterPinS2, LOW);
     digitalWrite(shutterPinS1, LOW);
+}
+
+void endBulbMode() {
+    Serial.println("Ending bulb mode - shutter closing");
+    bulbModeActive = false;
+    closeShutter();
 }
 
 void triggerShutter() {
@@ -102,19 +129,11 @@ void startBulbMode() {
     openShutter();
 }
 
-void endBulbMode() {
-    Serial.println("Ending bulb mode - shutter closing");
-    bulbModeActive = false;
-    closeShutter();
-}
-
-
 void startCountdown(unsigned long durationMs) {
     endBulbMode();
     // Clear stale button-1 state so the trigger timeout in loop()
     // doesn't fight the countdown blink over the LED pin
     incoming = 0;
-    countdownActive = false;
     countdownDuration = durationMs;
     countdownStartTime = millis();
     lastCountdownPrint = 0;
@@ -132,119 +151,99 @@ void cancelCountdown() {
     Serial.println("Countdown cancelled");
 }
 
+void handleCommand(const Command &c, unsigned long now) {
+    switch (c.button) {
+        case 1:
+            if (c.value == 1) {
+                // A pending countdown would keep blinking the LED and
+                // fire the shutter a second time, so cancel it first
+                cancelCountdown();
+                incoming = 11;
+                ledWrite(255);
+                timestampButton = now;
+                triggerShutter();
+            } else {
+                incoming = 10;
+                ledWrite(0);
+            }
+            break;
+        case 2:
+            if (c.value == 1) {
+                // A pending countdown would end the bulb exposure when
+                // it expires, so cancel it first
+                cancelCountdown();
+                ledWrite(255);
+                startBulbMode();
+            } else {
+                ledWrite(0);
+                endBulbMode();
+            }
+            break;
+        case 3:
+            if (c.value == 1) startCountdown(c.durationMs);
+            else cancelCountdown();
+            break;
+        default:
+            Serial.println("Unknown button triggered");
+    }
+}
+
 class BleServerCallback : public BLEServerCallbacks {
-    void onConnect(BLEServer *pServer) override {
+    void onConnect(BLEServer *pServer, ble_gap_conn_desc *desc) override {
         Serial.println("*** BLE CLIENT CONNECTED ***");
         deviceConnected = true;
-    };
+        pServer->requestConnParams(desc->conn_handle, CONN_MIN_INTERVAL,
+                                  CONN_MAX_INTERVAL, CONN_LATENCY, CONN_TIMEOUT);
+    }
 
-    void onDisconnect(BLEServer *pServer) override {
+    void onDisconnect(BLEServer *pServer, ble_gap_conn_desc *desc) override {
         Serial.println("*** BLE CLIENT DISCONNECTED ***");
         deviceConnected = false;
-
-        // Immediately restart advertising for new connections
-        delay(100); // Minimal delay for cleanup
-        pServer->startAdvertising();
-        Serial.println("*** RESTARTED ADVERTISING ***");
-    };
-
+        advertiseRequested = true; // restarted from loop(), off the BLE task
+    }
 };
 
 class BLECharacteristicCallback : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) override {
-        now = millis();
-        std::string data = pCharacteristic->getValue();
-        
+        String data = pCharacteristic->getValue();
+        Command c = {};
+
         if (data.length() == 1) {
-            // Legacy single-byte protocol
-            incoming = data[0];
+            // Legacy single-byte protocol: button * 10 + state
+            uint8_t v = data[0];
+            c.button = v / 10;
+            c.value = v % 10;
+            c.durationMs = COUNTDOWN_DURATION;
             Serial.print("BLE command received (legacy): ");
-            Serial.println(incoming);
-
-            int button = incoming / 10;
-            int value = incoming % 10;
-
-            switch (button) {
-                case 1:
-                    Serial.print("Button 1, value = ");
-                    Serial.println(value);
-                    if (value == 1) {
-                        // Button 1 PRESS - trigger shutter
-                        // A pending countdown would keep blinking the LED and
-                        // fire the shutter a second time, so cancel it first
-                        cancelCountdown();
-                        ledWrite(255);
-                        timestampButton = now;
-                        triggerShutter();
-                    } else {
-                        // Button 1 RELEASE - just turn off LED, don't trigger again
-                        ledWrite(0);
-                    }
-                    break;
-                case 2:
-                    Serial.print("Button 2 (Bulb Mode), value = ");
-                    Serial.println(value);
-                    if (value == 1) {
-                        // Start bulb mode
-                        // A pending countdown would end the bulb exposure when
-                        // it expires, so cancel it first
-                        cancelCountdown();
-                        ledWrite(255);
-                        startBulbMode();
-                    } else {
-                        // End bulb mode
-                        ledWrite(0);
-                        endBulbMode();
-                    }
-                    break;
-                case 3:
-                    Serial.print("Button 3 (Legacy Countdown), value = ");
-                    Serial.println(value);
-                    if (value == 1) {
-                        // Start countdown with default duration
-                        startCountdown(COUNTDOWN_DURATION);
-                    } else {
-                        // Cancel countdown
-                        cancelCountdown();
-                    }
-                    break;
-                default:
-                    Serial.println("Unknown button triggered");
-            }
+            Serial.println(v);
         } else if (data.length() == 3) {
-            // New multi-byte protocol
-            uint8_t command = data[0];
-            uint8_t duration = data[1];
-            uint8_t action = data[2];
-            
+            // Multi-byte protocol: [command, duration s, action]
+            c.button = data[0];
+            c.durationMs = (uint8_t)data[1] * 1000U;
+            c.value = data[2];
             Serial.print("BLE command received (multi-byte): [");
-            Serial.print(command);
+            Serial.print(c.button);
             Serial.print(", ");
-            Serial.print(duration);
+            Serial.print(c.durationMs / 1000);
             Serial.print(", ");
-            Serial.print(action);
+            Serial.print(c.value);
             Serial.println("]");
-            
-            if (command == 3) { // Countdown command
-                if (action == 1) {
-                    // Start countdown with specified duration
-                    startCountdown(duration * 1000UL); // Convert seconds to milliseconds
-                } else {
-                    // Cancel countdown
-                    cancelCountdown();
-                }
-            } else {
+            if (c.button != 3) {
                 Serial.println("Unknown multi-byte command");
+                return;
             }
         } else {
             Serial.print("Invalid command length: ");
             Serial.println(data.length());
+            return;
         }
+        xQueueSend(commandQueue, &c, 0);
     }
 };
 
 #ifdef VBAT_ADC_PIN
 BLECharacteristic *pBattery = nullptr;
+BLECharacteristic *pBatteryLevel = nullptr;
 unsigned long lastVbat = 0;
 
 // 1 MΩ / 1 MΩ divider on SW_SYS into an ADC1 pin; the 100 nF at the pin makes the 500 kΩ source fine.
@@ -258,8 +257,13 @@ void updateVbat(unsigned long t) {
     if (lastVbat && t - lastVbat < VBAT_PERIOD) return;
     lastVbat = t;
     uint16_t mv = readVbatMillivolts();
+    uint8_t percent = constrain((int)(mv - VBAT_EMPTY_MV) * 100 / (VBAT_FULL_MV - VBAT_EMPTY_MV), 0, 100);
     pBattery->setValue((uint8_t *)&mv, 2);
-    if (deviceConnected) pBattery->notify();
+    pBatteryLevel->setValue(&percent, 1);
+    if (deviceConnected) {
+        pBattery->notify();
+        pBatteryLevel->notify();
+    }
     Serial.print("SW_SYS mV: ");
     Serial.println(mv);
 }
@@ -280,26 +284,42 @@ void setupBLE() {
             BLECharacteristic::PROPERTY_WRITE_NR
     );
     pCharacteristic->setCallbacks(new BLECharacteristicCallback());
-    pCharacteristic->setValue("Hello from OpenRZ67!");
 #ifdef VBAT_ADC_PIN
     pBattery = pService->createCharacteristic(
             BATTERY_UUID,
             BLECharacteristic::PROPERTY_READ |
             BLECharacteristic::PROPERTY_NOTIFY
     );
-    pBattery->addDescriptor(new BLE2902());
 #endif
-
     pService->start();
-    Serial.println("BLE service and characteristic configured");
+
+    // Device Information Service (0x180A), so any BLE tool can read the firmware version.
+    BLEService *pDis = pServer->createService(BLEUUID((uint16_t)0x180A));
+    pDis->createCharacteristic(BLEUUID((uint16_t)0x2A29), BLECharacteristic::PROPERTY_READ)->setValue("OpenRZ67");
+    pDis->createCharacteristic(BLEUUID((uint16_t)0x2A24), BLECharacteristic::PROPERTY_READ)->setValue("Trigger");
+    pDis->createCharacteristic(BLEUUID((uint16_t)0x2A26), BLECharacteristic::PROPERTY_READ)->setValue(FW_VERSION);
+    pDis->start();
+
+#ifdef VBAT_ADC_PIN
+    // Battery Service (0x180F): Battery Level in percent, the standard form phones show.
+    BLEService *pBas = pServer->createService(BLEUUID((uint16_t)0x180F));
+    pBatteryLevel = pBas->createCharacteristic(
+            BLEUUID((uint16_t)0x2A19),
+            BLECharacteristic::PROPERTY_READ |
+            BLECharacteristic::PROPERTY_NOTIFY
+    );
+    pBas->start();
+#endif
+    Serial.println("BLE services configured");
 
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->setScanResponse(true);
-    pAdvertising->setMinPreferred(0);
-    pAdvertising->setMaxPreferred(0);
+    pAdvertising->setMinPreferred(CONN_MIN_INTERVAL);
+    pAdvertising->setMaxPreferred(CONN_MAX_INTERVAL);
+    pAdvertising->setMinInterval(ADV_MIN_INTERVAL);
+    pAdvertising->setMaxInterval(ADV_MAX_INTERVAL);
 
-    // Additional advertising configuration for better discoverability
     BLEAdvertisementData adData;
     adData.setName("OpenRZ67");
     adData.setCompleteServices(BLEUUID(SERVICE_UUID));
@@ -310,19 +330,10 @@ void setupBLE() {
     scanResponseData.setCompleteServices(BLEUUID(SERVICE_UUID));
     pAdvertising->setScanResponseData(scanResponseData);
 
-    Serial.println("BLE advertising configured");
+    // 0 dBm on advertising and connections (the default is +3 dBm)
+    BLEDevice::setPower(ESP_PWR_LVL_N0, ESP_BLE_PWR_TYPE_ADV);
+    BLEDevice::setPower(ESP_PWR_LVL_N0, ESP_BLE_PWR_TYPE_DEFAULT);
 
-    // Set advertising power (most important for battery life)
-    esp_err_t adv_power = esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_ADV, ESP_PWR_LVL_N0);  // 0dBm
-    Serial.print("Set advertising power to 0dBm: ");
-    Serial.println(adv_power == ESP_OK ? "SUCCESS" : "FAILED");
-
-    // Set default power for other operations
-    esp_err_t default_power = esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_DEFAULT, ESP_PWR_LVL_N0);  // 0dBm
-    Serial.print("Set default power to 0dBm: ");
-    Serial.println(default_power == ESP_OK ? "SUCCESS" : "FAILED");
-
-    // Start advertising
     pAdvertising->start();
     Serial.println("*** BLE ADVERTISING STARTED - Device visible as 'OpenRZ67' ***");
 }
@@ -339,32 +350,16 @@ void idleLed(unsigned long t) {
     ledWrite((uint8_t)(PULSE_MAX * x * x));
 }
 
-void checkToReconnect() //added
-{
-    if (deviceConnected && !oldDeviceConnected) {
-        Serial.println("Reconnected");
-        oldDeviceConnected = deviceConnected;
-    }
-    if (!deviceConnected && oldDeviceConnected) {
-        Serial.println("Connection state updated: disconnected");
-        oldDeviceConnected = deviceConnected;
-    }
-}
-
 void configurePowerManagement() {
-    esp_pm_config_esp32c3_t pm_config = {
+    esp_pm_config_t pm_config = {
         .max_freq_mhz = 80,
         .min_freq_mhz = 10,
         // USB Serial/JTAG drops off the bus when the C3 enters light sleep, so the
         // debug build (CDC on) keeps the chip awake; production may sleep.
         .light_sleep_enable = !ARDUINO_USB_CDC_ON_BOOT
     };
-    // The Arduino core used here (2.0.14, framework-arduinoespressif32 3.20014 via
-    // espressif32@6.6.0) ships its ESP-IDF libraries with CONFIG_PM_ENABLE unset, so
-    // this returns ESP_ERR_NOT_SUPPORTED and neither DFS nor automatic light sleep is
-    // active. The CPU clock is therefore fixed at F_CPU, which platformio.ini sets to
-    // 80 MHz (board_build.f_cpu; the board default is 160). Kept so a framework with
-    // PM enabled picks it up.
+    // Needs CONFIG_PM_ENABLE in the framework's sdkconfig; otherwise this returns
+    // ESP_ERR_NOT_SUPPORTED and the clock stays at F_CPU (80 MHz, platformio.ini).
     esp_err_t err = esp_pm_configure(&pm_config);
     if (err == ESP_OK) {
         Serial.println("Power management: DFS 10-80 MHz, light sleep "
@@ -376,108 +371,80 @@ void configurePowerManagement() {
 }
 
 void setup() {
-
 #if ARDUINO_USB_CDC_ON_BOOT
     Serial.setTxTimeoutMs(0); // Don't block when no serial monitor connected
 #endif
     Serial.begin(115200);
     delay(500);  // Brief delay for serial stability
 
+    commandQueue = xQueueCreate(4, sizeof(Command));
     setupBLE();
 
-    Serial.println("=== OPENRZ67 TRIGGER STARTING ===");
-    Serial.print("ESP32 Chip Model: ");
-    Serial.println(ESP.getChipModel());
-    Serial.print("ESP32 Chip Revision: ");
-    Serial.println(ESP.getChipRevision());
-    Serial.print("Flash Size: ");
-    Serial.print(ESP.getFlashChipSize() / (1024 * 1024));
-    Serial.println(" MB");
+    Serial.println("=== OPENRZ67 TRIGGER " FW_VERSION " ===");
     Serial.print("Free Heap: ");
-    Serial.print(ESP.getFreeHeap());
-    Serial.println(" bytes");
+    Serial.println(ESP.getFreeHeap());
 
-    Serial.println("Configuring GPIO pins...");
-    ledcSetup(LED_PWM_CH, 5000, 8);
-    ledcAttachPin(ledPin, LED_PWM_CH);
+    ledcAttach(ledPin, 5000, 8);
     ledWrite(0);
     pinMode(shutterPinS1, OUTPUT);
     pinMode(shutterPinS2, OUTPUT);
-    Serial.print("LED pin configured: GPIO");
-    Serial.println(ledPin);
-    Serial.print("Shutter pin configured: GPIO");
-    Serial.println(shutterPinS2);
-    Serial.print("Shutter pin configured: GPIO");
-    Serial.println(shutterPinS1);
 
-    // Configure power management for frequency scaling
     configurePowerManagement();
-
     Serial.println("=== SETUP COMPLETE - SYSTEM READY ===");
-    Serial.println("Hello from Open RZ67 Trigger!");
 }
 
-
 void loop() {
+    unsigned long now = millis();
 
-    checkToReconnect();
-
-    if (deviceConnected) {
-        now = millis(); // Store current time
-
-        if (incoming == 11 and ledLevel > 0 and now > timestampButton + DELAY) {
-            // Shutter has fired, disable LED
-            ledWrite(0);
-            Serial.println("Button 1 timeout reached");
-        }
+    if (advertiseRequested) {
+        advertiseRequested = false;
+        pServer->startAdvertising();
+        Serial.println("*** RESTARTED ADVERTISING ***");
     }
 
-    // Handle Arduino countdown - runs regardless of connection status
-    if (countdownActive && countdownStartTime > 0) {
-        unsigned long currentTime = millis();
-        unsigned long elapsed = currentTime - countdownStartTime;
+    Command c;
+    while (xQueueReceive(commandQueue, &c, 0) == pdTRUE) handleCommand(c, now);
 
-        // Print countdown status only once per second to avoid spam
-        if (currentTime - lastCountdownPrint >= 1000) {
-            unsigned long secondsRemaining = (countdownDuration - elapsed) / 1000;
+    if (incoming == 11 && ledLevel > 0 && now - timestampButton >= DELAY) {
+        // Shutter has fired, disable LED
+        ledWrite(0);
+        Serial.println("Button 1 timeout reached");
+    }
+
+    // Countdown runs regardless of connection status
+    if (countdownActive) {
+        unsigned long elapsed = now - countdownStartTime;
+
+        if (now - lastCountdownPrint >= 1000) {
             Serial.print("Countdown: ");
-            Serial.print(secondsRemaining);
+            Serial.print((countdownDuration - elapsed) / 1000);
             Serial.println(" seconds remaining");
-            lastCountdownPrint = currentTime;
+            lastCountdownPrint = now;
         }
 
         if (elapsed >= countdownDuration) {
-            // Countdown complete - trigger shutter
             countdownActive = false;
             countdownStartTime = 0;
             triggerShutter();
             ledWrite(0);
             Serial.println("Countdown complete - shutter triggered!");
         } else {
-            // Blink LED during countdown (faster blink than button 2)
-            if (elapsed % 250 < 125) {  // 250ms cycle, on for first 125ms
-                ledWrite(255);
-            } else {
-                ledWrite(0);
-            }
+            ledWrite(elapsed % 250 < 125 ? 255 : 0); // fast blink
         }
     }
 
-    // Handle bulb mode LED indication - steady light when active
     if (bulbModeActive) {
         ledWrite(255);
     }
 
     // Idle: steady = phone connected, soft pulse = on and waiting
-    unsigned long t = millis();
-    bool triggerHold = incoming == 11 && t <= timestampButton + DELAY;
+    bool triggerHold = incoming == 11 && now - timestampButton < DELAY;
     if (!countdownActive && !bulbModeActive && !triggerHold) {
-        idleLed(t);
+        idleLed(now);
     }
 #ifdef VBAT_ADC_PIN
-    updateVbat(t);
+    updateVbat(now);
 #endif
 
     delay(10);
-
 }

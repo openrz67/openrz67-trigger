@@ -7,7 +7,7 @@ ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetoot
 * Instant shutter release
 * Bulb mode for remote long exposures
 * Self-timer countdown with app-configurable duration
-* Power-optimized: 80 MHz CPU clock and 0 dBm BLE TX power, running off a small LiPo (automatic light sleep is not available in the Arduino framework build, see `platformio.ini`)
+* Power-aware: 80 MHz CPU clock, 0 dBm BLE TX power, 100–200 ms advertising interval and a 30–50 ms connection interval with slave latency 2, running off a small LiPo. Automatic light sleep is not available in any prebuilt Arduino core build (see [Power](#power))
 
 ## Hardware
 
@@ -82,7 +82,11 @@ To trigger the shutter release, the PhotoMOS outputs short S1/S2 to camera GND. 
 
 The device advertises as `OpenRZ67` with service UUID `c9239c9e-6fc9-4168-b3aa-53105eb990b0` and characteristic `458d4dc9-349f-401d-b092-a2b1c55f5319`. Send commands using Write Without Response.
 
-On rev 3 boards there is a second characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage in millivolts as a little-endian `uint16`, refreshed every 10 s. On battery this is the cell voltage (about 4200 full, 3500 low); on USB it is the BQ25185 SYS regulation voltage, which is higher. It is a system voltage, not a USB-present flag: a full cell (4200 nominal) and a USB-powered SYS rail overlap once charger tolerance, the 1 % divider and the ADC's ±70 mV are added up, and DPPM or supplement mode can pull SYS down with USB still plugged in. A high reading suggests USB; treat roughly 4250–4350 as undecided, and use hysteresis if a client acts on it. Certain USB status needs a separate signal.
+The device also exposes the standard Device Information Service (`0x180A`: manufacturer, model, firmware revision `0x2A26` = `FW_VERSION` from `platformio.ini`), so any BLE tool can read the firmware version.
+
+On rev 3 boards there is a second characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage in millivolts as a little-endian `uint16`, refreshed every 10 s. On battery this is the cell voltage (about 4200 full, 3500 low); on USB it is the BQ25185 SYS regulation voltage, which is higher. It is a system voltage, not a USB-present flag: a full cell (4200 nominal) and a USB-powered SYS rail overlap once charger tolerance, the 1 % divider and the ADC's ±70 mV are added up, and DPPM or supplement mode can pull SYS down with USB still plugged in. A high reading suggests USB; treat roughly 4250–4350 as undecided, and use hysteresis if a client acts on it. Certain USB status needs a separate signal. Rev 3 also exposes the standard Battery Service (`0x180F`, Battery Level `0x2A19`, read + notify): the same reading as a percentage, linear from 3500 mV (0 %) to 4200 mV (100 %), which is what phones show without any app.
+
+Commands are queued in the BLE callback and executed in `loop()`, so the BLE stack is never blocked by the shutter timing. The characteristic is open (no pairing or bonding): anyone in radio range can fire the camera, which is accepted for a shutter release.
 
 **Single-byte commands** (value = button × 10 + state):
 
@@ -106,7 +110,7 @@ Starting a trigger or bulb exposure cancels any pending countdown.
 
 ## Building
 
-The project uses [PlatformIO](https://platformio.org/) and the `esp32-c3-devkitm-1` board definition:
+The project uses [PlatformIO](https://platformio.org/) with the [pioarduino](https://github.com/pioarduino/platform-espressif32) platform (Arduino core 3.3, ESP-IDF 5.5, NimBLE) and the `esp32-c3-devkitm-1` board definition:
 
 ```bash
 pio run
@@ -118,6 +122,12 @@ If uploading does not start, hold `BOOT`, press and release `EN`, then release `
 For a rev 1 board (S1 on GPIO 21 instead of GPIO 4), flash the `rev1` env: `pio run -e rev1 -t upload`. For a rev 3 board (S2 on GPIO 6, battery sense on GPIO 3), flash `rev3` or `rev3-debug`: `pio run -e rev3 -t upload`. The default env is rev 2; the board revision is only a set of `-D` pin flags in `platformio.ini`.
 
 The production build has no serial output. For logging, flash the `debug` env (`pio run -e debug -t upload`): it enables USB CDC on the USB-C connector and `VERBOSE=1`. UART0 is not used for logging because its RX pin (GPIO 20) drives the status LED; GPIO 21 (UART0 TX) is free since rev 2 and is on the `J1` header for a TX-only dongle if ever needed.
+
+`pio check` runs cppcheck over `src/`; CI (`.github/workflows/firmware.yml`) builds every env and runs it on each push.
+
+## Power
+
+The prebuilt Arduino core libraries (2.0.x and 3.x alike) ship with `CONFIG_PM_ENABLE` unset, so `esp_pm_configure()` returns `ESP_ERR_NOT_SUPPORTED` and the chip never enters automatic light sleep: it idles awake at 80 MHz between BLE events. Getting light sleep means building Arduino as an ESP-IDF component (`framework = arduino, espidf` in `platformio.ini`) with an `sdkconfig.defaults` that sets `CONFIG_PM_ENABLE`, `CONFIG_FREERTOS_USE_TICKLESS_IDLE`, `CONFIG_BT_CTRL_MODEM_SLEEP` (mode 1) and the 32.768 kHz crystal `X2` as the BLE low-power clock (`CONFIG_BT_CTRL_LPCLK_SEL_EXT_32K_XTAL`, `CONFIG_RTC_CLK_SRC_EXT_CRYS`). Two things need care in that build: the USB Serial/JTAG port drops off the bus in light sleep (the `debug` env already asks for light sleep off), and the LEDC clock behind the status LED stops in light sleep unless it is moved to `RC_FAST`. Not done yet; it needs a board on the bench to verify.
 
 ## License
 
