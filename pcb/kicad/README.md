@@ -306,8 +306,7 @@ source here is rev 3: the review fixes and R23 above, plus:
     the C21 via at (126.8, 95.888); gate via at (127.3, 93.4). The footprint is KiCad's
     `SOT-23` copied into `openrz67.pretty/` with KiCad's own STEP for the render (not an LCSC
     model; `fetch_3d.sh` will report C15127 separately). Two courtyard warnings (BAT1, L3).
-    JLCPCB's SOT-23 orientation was not checked against a preview: confirm Q3's pin-1 dot in the
-    order preview before assembly (no `ROT_FIX` entry yet).
+    Q3's orientation matched the JLCPCB order preview on 2026-09-25 (no `ROT_FIX` needed).
   - **C24 at the buck-boost output.** VOUT is U2 pin 1 (pin 10 is FB, tied to VOUT externally);
     C24 sat 5 mm from it. Now at (134.15, 95.9) rot −90 in the 1 mm notch between L3's body and the VSYS
     corner (whose via moved 0.3 mm east to (135.3, 94.7) to make room): its VCC pad is 0.8 mm
