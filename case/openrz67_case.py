@@ -65,7 +65,7 @@ mount_holes = [(2, 2), (46, 20)]     # the real Ø2 holes (board coords)
 hole_d = 2.0                         # their diameter
 pin_d = hole_d - 0.15                # locating pins: light friction fit in the FR4 holes (was -0.3:
                                      # the PCB rattled during install; a printed pin comes out ~+0.05)
-pcb_supports = [(2, 20), (46, 2)]    # solid posts in the screwless corners
+pcb_supports = [(2, 20), (46, 2)]    # solid posts in the two corners without a mounting hole
 pcb_overhang_left = 2.0              # USB-C shell protrudes past the board edge
 # The receptacle mouth used to stop 0.4 short of the wall's inner face, leaving the whole
 # usb_recess_d unused (user, 2026-09-19: the port should sit closer to its hole). Slide the
@@ -196,8 +196,8 @@ pry_w, pry_d, pry_h = 12.0, 1.0, 1.2   # coin slot in the lid's lower edge, back
 lap, lap_gap = 7.0, 0.15             # lap <= split_z - floor_t; 7 mm fingers, bead near the tip -> ~2 % strain
 orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 8.0, 2.5, 0.8, 9.0
 # Debossed (pocket) text in the lid top, per the FDM rules: prints upside-down
-# against the bed (crisp), and one filament change at Z = lid_text_depth colours
-# the letters. Nameplate lockup below the LED window: the name, then a small tracked
+# against the bed (crisp), and the lid_text inlay (filament 2, see below) fills the
+# pockets. Nameplate lockup below the LED window: the name, then a small tracked
 # all-caps subtitle, both centred on the lid's X (the LED is off-centre) and the block
 # centred between the LED seat and the front edge. A thin debossed RAIL runs across the
 # LED row, broken around the light-pipe seat: the off-centre LED then reads as an
@@ -291,7 +291,7 @@ mid_sk = rrect(inner_w + wall, inner_h + wall, inner_r + wall / 2, wall / 2, wal
 
 # --- Shared cuts -----------------------------------------------------------------
 # USB-C (left wall): 10x4.6 R1.8 through-cut (plug shell only) whose outer edge is the
-# cable-body lip, plus a 13x9x1 inner recess so the receptacle shell pokes into the wall
+# cable-body lip, plus a 13x9 inner recess usb_recess_d (1.2) deep so the receptacle shell pokes into the wall
 # and the mouth reaches the lip. Straddles the split -> cut from BOTH base and lid.
 usb_cy, usb_zc = by(22 - 13.259), pcb_top_z + h_usbc / 2
 cut_usb = xprism(Pos(usb_cy, usb_zc) * RectangleRounded(usb_open_w, usb_open_h, usb_open_r),
@@ -471,7 +471,7 @@ lid -= box(sx - kcd_hole_l / 2, -1, swz - kcd_hole_h / 2, kcd_hole_l, wall + 2, 
 lid -= box(sx - kcd_hole_l / 2 - kcd_latch_clr, kcd_panel_t, swz - kcd_hole_h / 2 - kcd_latch_clr,
            kcd_hole_l + 2 * kcd_latch_clr, wall - kcd_panel_t + eps, kcd_hole_h + 2 * kcd_latch_clr)
 # Blind recesses in the hold-down bosses for the locating pins (not through the
-# top plate — the .scad's snap variant cut them through, leaving holes in the lid)
+# top plate, so the lid has no holes over them)
 for hx, hy in mount_holes:
     lid -= cyl(bx(hx), by(hy), pcb_top_z - eps, pin_recess_d, pin_proud + pin_recess_extra + eps)
 # Coin/fingernail pry slot in the lid's lower edge, back wall centre (over the
