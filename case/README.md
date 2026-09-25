@@ -1,9 +1,12 @@
 # Parametric enclosure (build123d)
 
 `openrz67_case.py` is a parametric two-part enclosure for the OpenRZ67 trigger PCB
-**rev 2** (the KiCad project in `../pcb/kicad/`), written in
+**rev 2** (tag `pcb-rev2` of the KiCad project in `../pcb/kicad/`), written in
 [build123d](https://build123d.readthedocs.io/) (Python). It is built from the board
-file and its footprints, not from eyeballed measurements.
+file and its footprints, not from eyeballed measurements. Rev 3 (the source now) keeps
+the outline, both mounting holes and every connector and LED position; its new parts
+(Q3, R24/R25/C32) are low top-side SMDs clear of the lid bosses and light pipe, so the
+same case fits. Not yet test-fitted: no rev 3 board exists.
 
 > **Stacked layout (2026-09-12):** the LiPo cell lies flat **under the PCB** (foam
 > between) in a low rib pocket, the PCB sits on 8 mm posts, and open **pockets** in front of (2 mm) and
