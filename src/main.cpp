@@ -52,6 +52,7 @@
       void begin(...) {}
   };
 static NullStream nullSerial;
+#undef Serial // the core defines it as a macro when CDC is off
 #define Serial nullSerial
 #endif
 
