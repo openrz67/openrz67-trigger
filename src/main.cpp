@@ -2,6 +2,7 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <esp_pm.h>
+#include <driver/ledc.h>
 
 #define SERVICE_UUID        "c9239c9e-6fc9-4168-b3aa-53105eb990b0"
 #define CHARACTERISTIC_UUID "458d4dc9-349f-401d-b092-a2b1c55f5319"
@@ -24,14 +25,13 @@
 #define PULSE_MAX 120   // of 255; the LED is current-starved already, keep it soft
 #define CONNECTED_LEVEL 25  // dim steady when connected, so trigger/bulb (255) still show
 
-// Radio timing, the main battery-life lever once light sleep exists. Advertising interval
+// Radio timing, the main battery-life lever with light sleep on. Advertising interval
 // in 0.625 ms units: kept fast, since a slower one (100-200 ms was tried) makes the phone
-// take seconds longer to find the device and saves under 1 mA while the CPU is awake anyway; connection interval in 1.25 ms units with a
+// take seconds longer to find the device; connection interval in 1.25 ms units with a
 // slave latency, so the chip may skip that many connection events when idle. A
 // command from the phone is seen at the next event the chip listens to, so the worst
 // added trigger delay is (CONN_LATENCY + 1) * CONN_MAX_INTERVAL * 1.25 ms. Latency
-// stays 0 until light sleep exists: with the CPU awake anyway the skipped events save
-// well under 1 mA, not worth the extra delay on the shutter.
+// is 0 until a bench measurement shows what skipping events saves against that delay.
 #define ADV_MIN_INTERVAL 0x0030  // 30 ms
 #define ADV_MAX_INTERVAL 0x0060  // 60 ms
 #define CONN_MIN_INTERVAL 0x18   // 30 ms
@@ -58,14 +58,38 @@ static NullStream nullSerial;
 #endif
 
 constexpr int ledPin = 20; // GPIO20 (U0RXD)
-// D4's anode is on VCC and its cathode reaches GPIO20 through R20, so the LED is
-// active-low: driving the pin LOW lights it. Flip these two if a board is wired the
-// other way round.
 uint8_t ledLevel = 0; // 0 = off, 255 = full
+
+// LEDC straight from ESP-IDF, since Arduino's ledcAttach() cannot ask for KEEP_ALIVE and
+// the PWM would stop whenever the chip light-sleeps. RC_FAST is the only LEDC clock on the
+// C3 that runs through light sleep (APB stops).
+void setupLed() {
+    ledc_timer_config_t timer = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_8_BIT,
+        .timer_num = LEDC_TIMER_0,
+        .freq_hz = 5000,
+        .clk_cfg = LEDC_USE_RC_FAST_CLK,
+    };
+    ESP_ERROR_CHECK(ledc_timer_config(&timer));
+    ledc_channel_config_t channel = {
+        .gpio_num = ledPin,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_0,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0,
+        .sleep_mode = LEDC_SLEEP_MODE_KEEP_ALIVE,
+        // D4's anode is on VCC and its cathode reaches GPIO20 through R20, so the LED is
+        // active-low. Clear this if a board is wired the other way round.
+        .flags = {.output_invert = 1},
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&channel));
+}
 
 void ledWrite(uint8_t level) {
     ledLevel = level;
-    ledcWrite(ledPin, 255 - level); // active-low
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, level);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 }
 // S2_PIN comes from platformio.ini: GPIO3 on rev 1/2 (default), GPIO6 in the rev3 envs.
 #ifndef S2_PIN
@@ -100,7 +124,15 @@ BLEServer *pServer = nullptr;
 volatile bool deviceConnected = false;
 volatile bool advertiseRequested = false;
 
+// Tickless idle forces PM_SLP_DISABLE_GPIO on, which releases every pin in light sleep.
+// A released S1/S2 pin reads as off through R21/R22, fine while closed but it would end
+// a bulb exposure, so the chip stays out of light sleep while the shutter is open.
+esp_pm_lock_handle_t shutterAwake;
+bool shutterOpen = false;
+
 void openShutter() {
+    if (!shutterOpen) esp_pm_lock_acquire(shutterAwake);
+    shutterOpen = true;
     Serial.println("Setting shutterPins HIGH...");
     digitalWrite(shutterPinS1, HIGH);
     delay(10); // Allow S1's PhotoMOS to turn on before requesting release.
@@ -111,6 +143,8 @@ void closeShutter() {
     Serial.println("Setting shutterPins LOW...");
     digitalWrite(shutterPinS2, LOW);
     digitalWrite(shutterPinS1, LOW);
+    if (shutterOpen) esp_pm_lock_release(shutterAwake);
+    shutterOpen = false;
 }
 
 void endBulbMode() {
@@ -356,17 +390,17 @@ void idleLed(unsigned long t) {
 
 void configurePowerManagement() {
     esp_pm_config_t pm_config = {
+        // USB Serial/JTAG drops off the bus in light sleep and is untested under DFS, so
+        // the debug build (CDC on) stays awake at a fixed 80 MHz; production sleeps.
         .max_freq_mhz = 80,
-        .min_freq_mhz = 10,
-        // USB Serial/JTAG drops off the bus when the C3 enters light sleep, so the
-        // debug build (CDC on) keeps the chip awake; production may sleep.
+        .min_freq_mhz = ARDUINO_USB_CDC_ON_BOOT ? 80 : 10,
         .light_sleep_enable = !ARDUINO_USB_CDC_ON_BOOT
     };
-    // Needs CONFIG_PM_ENABLE in the framework's sdkconfig; otherwise this returns
-    // ESP_ERR_NOT_SUPPORTED and the clock stays at F_CPU (80 MHz, platformio.ini).
+    // Needs CONFIG_PM_ENABLE (custom_sdkconfig in platformio.ini); without it this returns
+    // ESP_ERR_NOT_SUPPORTED and the clock stays at F_CPU.
     esp_err_t err = esp_pm_configure(&pm_config);
     if (err == ESP_OK) {
-        Serial.println("Power management: DFS 10-80 MHz, light sleep "
+        Serial.println("Power management: " + String(pm_config.min_freq_mhz) + "-80 MHz, light sleep "
                        + String(pm_config.light_sleep_enable ? "on" : "off"));
     } else {
         Serial.println("Power management not available in this framework build ("
@@ -382,14 +416,14 @@ void setup() {
     delay(500);  // Brief delay for serial stability
 
     commandQueue = xQueueCreate(4, sizeof(Command));
+    ESP_ERROR_CHECK(esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "shutter", &shutterAwake));
     setupBLE();
 
     Serial.println("=== OPENRZ67 TRIGGER " FW_VERSION " ===");
     Serial.print("Free Heap: ");
     Serial.println(ESP.getFreeHeap());
 
-    ledcAttach(ledPin, 5000, 8);
-    ledWrite(0);
+    setupLed();
     pinMode(shutterPinS1, OUTPUT);
     pinMode(shutterPinS2, OUTPUT);
 
