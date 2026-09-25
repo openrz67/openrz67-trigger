@@ -1535,8 +1535,32 @@
 	(pad "33" smd rect
 		(at 0 0)
 		(size 3.7 3.7)
-		(layers "F.Cu" "F.Mask" "F.Paste")
+		(layers "F.Cu" "F.Mask")
 		(uuid "b4dc510d-612c-4e41-a3f4-dc43e216ca96")
+	)
+	(pad "" smd rect
+		(at -0.95 -0.95)
+		(size 1.5 1.5)
+		(layers "F.Paste")
+		(uuid "e286c1ac-02aa-4545-901c-70426c5c72ff")
+	)
+	(pad "" smd rect
+		(at -0.95 0.95)
+		(size 1.5 1.5)
+		(layers "F.Paste")
+		(uuid "941bbe86-32d5-4362-bf96-9c486b6eab40")
+	)
+	(pad "" smd rect
+		(at 0.95 -0.95)
+		(size 1.5 1.5)
+		(layers "F.Paste")
+		(uuid "b2b910da-6b7f-4824-86ee-e503d6de65a4")
+	)
+	(pad "" smd rect
+		(at 0.95 0.95)
+		(size 1.5 1.5)
+		(layers "F.Paste")
+		(uuid "c6c8d579-0f77-4f26-8e3c-c2bd7faad5a2")
 	)
 	(embedded_fonts no)
 	(model "${KIPRJMOD}/openrz67.3dshapes/QFN-32_L5.0-W5.0-H0.9-P0.50-TL-EP3.7.wrl"

@@ -1,12 +1,16 @@
 ** Drc report for openrz67.kicad_pcb **
-** Created on 2026-09-15T21:31:19 **
+** Created on 2026-09-25T11:07:43 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 15 DRC violations **
+** Found 22 DRC violations **
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(146.4095 mm, 104.3950 mm): Footprint C29
     @(145.2830 mm, 103.6690 mm): Footprint R23
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(135.4000 mm, 98.4000 mm): Footprint U2
+    @(134.1500 mm, 95.9000 mm): Footprint C24
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(138.0000 mm, 99.8000 mm): Footprint C25
@@ -26,6 +30,14 @@
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(130.3010 mm, 97.8650 mm): Footprint L3
+    @(134.1500 mm, 95.9000 mm): Footprint C24
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(130.3010 mm, 97.8650 mm): Footprint L3
+    @(126.9000 mm, 91.7000 mm): Footprint Q3
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; warning
+    @(130.3010 mm, 97.8650 mm): Footprint L3
     @(129.7790 mm, 92.2860 mm): Footprint C20
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
@@ -33,12 +45,12 @@
     @(127.9565 mm, 102.5530 mm): Footprint R9
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
-    @(149.6000 mm, 98.0000 mm): Footprint C32
-    @(149.0500 mm, 96.0000 mm): Footprint R24
+    @(123.2750 mm, 94.8105 mm): Footprint BAT1
+    @(126.9000 mm, 91.7000 mm): Footprint Q3
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
-    @(139.3000 mm, 96.5000 mm): Footprint C24
-    @(140.5000 mm, 94.0000 mm): Footprint D3
+    @(149.6000 mm, 98.0000 mm): Footprint C32
+    @(149.0500 mm, 96.0000 mm): Footprint R24
 [courtyards_overlap]: Courtyards overlap
     Rule: board setup constraints courtyard; warning
     @(141.2570 mm, 104.4195 mm): Footprint U1
@@ -61,6 +73,22 @@
     Rule: board setup constraints silk; warning
     @(133.6100 mm, 97.4000 mm): Circle of U2 on F.Silkscreen
     @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(134.0700 mm, 97.0700 mm): Segment of U2 on F.Silkscreen
+    @(134.1500 mm, 96.6000 mm): Pad 2 [VCC] of C24 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+    @(134.1500 mm, 95.2000 mm): Pad 1 [GND] of C24 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(133.7010 mm, 94.1650 mm): Segment of L3 on F.Silkscreen
+    @(134.1500 mm, 96.6000 mm): Pad 2 [VCC] of C24 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(133.6030 mm, 95.0710 mm): Segment of L3 on F.Silkscreen
+    @(134.1500 mm, 95.2000 mm): Pad 1 [GND] of C24 on F.Cu
 
 ** Found 0 unconnected pads **
 
