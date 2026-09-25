@@ -657,3 +657,5 @@ if __name__ == "__main__":
         if (here / "bambu-template.3mf").exists():   # slicer project: swap all fresh STLs into the template
             subprocess.run([sys.executable, "make_3mf.py", "--stl-dir", str(out), "--out", "openrz67-case.3mf"], cwd=here, check=True)
             print("openrz67-case.3mf oppdatert")
+        else:
+            print("WARNING: bambu-template.3mf missing, openrz67-case.3mf NOT rebuilt", file=sys.stderr)
