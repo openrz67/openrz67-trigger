@@ -80,8 +80,9 @@ cable_d, cable_clr = 5.0, 0.5        # heat-shrunk 4-wire bundle; slot = cable_d
 # TH solder tails below the PCB: [board_x, board_y, relief_dia] (BAT1 pins)
 th_keepouts = [(3.275, 16.189, 3.2), (3.275, 18.189, 3.2)]
 th_keepout_depth = 3.5                # PH tails are 3.5 mm (CONN-TH_PH2.00-LI-2P.wrl); pocket reaches the floor
+usbc_body = (0.0, 4.0, 8.0, 14.5)    # USB-C connector body (x0, y0, x1, y1), board coords
 # Component bodies above the PCB the lid bosses must clear: (x0, y0, x1, y1)
-comp_keepouts = [(0.0, 4.0, 8.0, 14.5),   # USB-C connector body
+comp_keepouts = [usbc_body,
                  (xh_x - xh_back - xh_clr, xh_y - xh_w / 2 - xh_clr,
                   xh_x + xh_mouth + xh_plug_proud, xh_y + xh_w / 2 + xh_clr)]
 #                ^ U4 body + plug vs the (46,20) hold-down boss (0.3 mm apart nominally)
@@ -94,6 +95,7 @@ frame_ribs_front, frame_ribs_back = [20, 32], [20, 32]  # fin centres in board-X
 
 # --- Fit and walls ----------------------------------------------------------
 clr, wall, floor_t, lid_top_t = 0.4, 3.2, 2.0, 2.0   # wall 3.2: lap halves 1.6 (rigid; the fingers flex)
+keepout_margin = 0.5                 # air between neighbouring envelopes (antenna band, switch tabs)
 lid_top_r = 2.0                      # 45° chamfer round the lid's top edge (softens the box). Bed-side
 #   edge when the lid prints upside-down: a chamfer prints clean, a fillet's first layers overhang > 45°.
 pocket_front, pocket_back = 2.0, 4.0  # open air beside the board's long edges: fingers / battery lead
@@ -166,8 +168,8 @@ kcd_body_l, kcd_body_h = 13.5, 8.5   # body behind the flange (X, Z) = the panel
 kcd_hole_clr = 0.3                   # per side; snap-in wants a snug hole
 kcd_flange_l, kcd_flange_h = 15.0, 10.0   # bezel, sits proud on the OUTSIDE of the wall
 kcd_depth = 10.0                     # flange underside -> body rear (Y)
-kcd_tab_l, kcd_tab_pitch = 5.0, 7.0  # 2.8 mm tabs past the body rear; tab centre spacing (X)
-kcd_conn_l, kcd_conn_w = 3.0, 4.0    # receptacle past the tab tip: flag (90°) type. A straight
+kcd_tab_l = 5.0                      # 2.8 mm tabs past the body rear
+kcd_conn_l = 3.0                     # receptacle past the tab tip: flag (90°) type. A straight
 #   insulated FDFN 1.25-110 reaches ~12 past the tip and runs into the S3 plug / light pipe.
 kcd_panel_t = 2.0                    # panel the latches grip: the wall is pocketed from INSIDE to this
 kcd_gap = 1.6                        # body underside over the PCB (U1 0.9 beneath); also the wall
@@ -177,12 +179,15 @@ kcd_latch_clr = 1.2                  # free inner wall past the hole edges, wher
 # --- Snap closure: cantilever fingers in the lid tongue -------------------------
 snap_bead = 0.55   # how far the bead on a finger sticks out (0.45 held too loosely, 2026-09-14)
 bead_h = 1.4       # bead height
+bead_tip_h = 1.1   # bead centre above the finger tip
 pocket_extra_d, pocket_extra_h = 0.15, 0.3   # base pocket deeper / taller than the bead (lead-in; slop = h/2)
 bead_ch_in, bead_ch_out, pocket_ch = 0.4, 0.15, 0.2  # click-in ramp / retention face / pocket ceiling chamfers
 finger_l, finger_t, finger_slot = 12.0, 1.0, 0.8   # finger length, thickness (thinned from inside), relief slot
 snap_fingers_x = [13.0, 51.0]        # finger centres (case-X), front AND back wall, near the corners
 holddown_d = 5.0   # lid bosses that press the PCB onto the posts
 pin_proud = 0.8    # locating pins stand this far above the PCB top
+pin_tip_d = 1.4    # pin cone tip (lead-in)
+pin_recess_d, pin_recess_extra = 2.6, 0.7   # blind pin recess in the hold-down bosses: Ø, depth past pin_proud
 pry_w, pry_d, pry_h = 12.0, 1.0, 1.2   # coin slot in the lid's lower edge, back wall
 
 # --- Ship-lap edge / orientation mark / lid text -----------------------------
@@ -225,7 +230,7 @@ pcb_top_z = pcb_z + pcb_t
 split_z = pcb_top_z
 lid_h = comp_clr + lid_top_t
 total_h = split_z + lid_h
-bead_z = split_z - lap + 1.1            # bead centre: near the finger tip (long lever, low strain)
+bead_z = split_z - lap + bead_tip_h     # bead centre: near the finger tip (long lever, low strain)
 check(lap <= split_z - floor_t, "lid lip would reach the floor")
 check(lid_top_r <= min(wall, lid_top_t) and lid_top_r < inner_r + wall, "lid top chamfer too big")
 check(split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_h) / 2 < split_z,
@@ -342,7 +347,7 @@ base -= prism(mid_sk, split_z - lap, lap + 1) - usb_zone     # rabbet: outer wal
 # Posts at the mount holes with Ø1.85 locating pins into the real PCB holes (straight
 # through the board, then a cone down to Ø1.4 above it as lead-in), plus solid posts
 # in the other corners
-pin_taper = math.degrees(math.atan((pin_d - 1.4) / 2 / pin_proud))
+pin_taper = math.degrees(math.atan((pin_d - pin_tip_d) / 2 / pin_proud))
 for hx, hy in mount_holes:
     base += cyl(bx(hx), by(hy), floor_t, standoff_d, standoff_h)
     base += cyl(bx(hx), by(hy), pcb_z - eps, pin_d, pcb_t + eps)
@@ -445,10 +450,10 @@ check(collar_z > pcb_top_z + led_pipe_gap, "light-pipe collar hangs below the pi
 # behind the rocker body). The foil is flush with the ceiling; the rocker top is
 # kcd_latch_clr + kcd_hole_clr under it, so only its plan footprint is kept clear.
 ceiling_z = total_h - lid_top_t
-band_x0 = bx(mount_holes[0][0]) + holddown_d / 2 + 0.5
-band_x1 = outer_w - wall - 0.5
-band_y0 = kcd_depth + 0.5   # behind the rocker body's rear face (tabs + receptacles sit lower)
-band_y1 = led_cy - (stem_w + 2 * led_collar_w) / 2 - 0.5   # clear of the light-pipe collar
+band_x0 = bx(mount_holes[0][0]) + holddown_d / 2 + keepout_margin
+band_x1 = outer_w - wall - keepout_margin
+band_y0 = kcd_depth + keepout_margin   # behind the rocker body's rear face (tabs + receptacles sit lower)
+band_y1 = led_cy - (stem_w + 2 * led_collar_w) / 2 - keepout_margin   # clear of the light-pipe collar
 ant_L, ant_W = ant_l + 2 * ant_clr, ant_w + 2 * ant_clr
 check(ant_L <= band_x1 - band_x0 and ant_W <= band_y1 - band_y0,
     f"antenna recess {ant_L}x{ant_W} does not fit the free ceiling band {band_x1 - band_x0:.1f}x{band_y1 - band_y0:.1f}")
@@ -465,7 +470,7 @@ lid -= box(sx - kcd_hole_l / 2 - kcd_latch_clr, kcd_panel_t, swz - kcd_hole_h / 
 # Blind recesses in the hold-down bosses for the locating pins (not through the
 # top plate — the .scad's snap variant cut them through, leaving holes in the lid)
 for hx, hy in mount_holes:
-    lid -= cyl(bx(hx), by(hy), pcb_top_z - eps, 2.6, pin_proud + 0.7 + eps)
+    lid -= cyl(bx(hx), by(hy), pcb_top_z - eps, pin_recess_d, pin_proud + pin_recess_extra + eps)
 # Coin/fingernail pry slot in the lid's lower edge, back wall centre (over the
 # back pocket — nothing behind it).
 lid -= box(outer_w / 2 - pry_w / 2, outer_h - pry_d, split_z - eps,
@@ -596,14 +601,17 @@ check(swz - kcd_hole_h / 2 - kcd_latch_clr >= split_z - 1e-6, "switch latch pock
 check(swz + kcd_hole_h / 2 + kcd_latch_clr <= total_h - lid_top_t + 1e-6, "switch latch pocket cuts the ceiling")
 check(kcd_flange_h / 2 <= swz - split_z and swz + kcd_flange_h / 2 <= total_h - lid_top_r,
     "switch flange over the seam / into the top chamfer")
+check(outer_r <= sx - kcd_flange_l / 2 and sx + kcd_flange_l / 2 <= outer_w - outer_r,
+    "switch flange runs onto the rounded corners")
 _open(lid, box(sx - kcd_body_l / 2, wall + eps, swz - kcd_body_h / 2, kcd_body_l, kcd_depth - wall, kcd_body_h),
       "switch body inside the lid")
 s3_x, s3_y, s3_l, s3_w = 28.71, 19.96, 5.9, 4.5
 kcd_y_end = kcd_depth + kcd_tab_l + kcd_conn_l
 pipe_y0 = led_cy - (led_win_w + 2 * led_head_lip + led_pipe_clr) / 2
-check(kcd_y_end + 0.5 <= min(pipe_y0, by(s3_y - s3_w / 2)),
+check(kcd_y_end + keepout_margin <= min(pipe_y0, by(s3_y - s3_w / 2)),
     f"switch tabs + receptacles reach Y {kcd_y_end:.1f}: light pipe at {pipe_y0:.1f}, S3 plug at {by(s3_y - s3_w / 2):.1f}")
-_open(lid, box(bx(0.5), by(4.5), pcb_top_z + eps, 7, 9.5, 2), "USB-C body keepout")
+_ux0, _uy0, _ux1, _uy1 = usbc_body   # probe inset 0.5 all round
+_open(lid, box(bx(_ux0 + 0.5), by(_uy0 + 0.5), pcb_top_z + eps, _ux1 - _ux0 - 1, _uy1 - _uy0 - 1, 2), "USB-C body keepout")
 # J1 (1x4 2.54 mm header, DNP, pads at board x 34.4-42.0, y 1.4): no header envelope —
 # the centred switch body ends at the first pad and its tabs run over the row. Flying leads.
 
