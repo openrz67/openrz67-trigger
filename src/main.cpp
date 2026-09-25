@@ -24,15 +24,16 @@
 #define PULSE_MAX 120   // of 255; the LED is current-starved already, keep it soft
 #define CONNECTED_LEVEL 25  // dim steady when connected, so trigger/bulb (255) still show
 
-// Radio timing, the main battery-life lever. Advertising interval in 0.625 ms units
-// (Bluedroid's default is 20-40 ms); connection interval in 1.25 ms units with a
+// Radio timing, the main battery-life lever once light sleep exists. Advertising interval
+// in 0.625 ms units: kept fast, since a slower one (100-200 ms was tried) makes the phone
+// take seconds longer to find the device and saves under 1 mA while the CPU is awake anyway; connection interval in 1.25 ms units with a
 // slave latency, so the chip may skip that many connection events when idle. A
 // command from the phone is seen at the next event the chip listens to, so the worst
 // added trigger delay is (CONN_LATENCY + 1) * CONN_MAX_INTERVAL * 1.25 ms. Latency
 // stays 0 until light sleep exists: with the CPU awake anyway the skipped events save
 // well under 1 mA, not worth the extra delay on the shutter.
-#define ADV_MIN_INTERVAL 0x00A0  // 100 ms
-#define ADV_MAX_INTERVAL 0x0140  // 200 ms
+#define ADV_MIN_INTERVAL 0x0030  // 30 ms
+#define ADV_MAX_INTERVAL 0x0060  // 60 ms
 #define CONN_MIN_INTERVAL 0x18   // 30 ms
 #define CONN_MAX_INTERVAL 0x28   // 50 ms
 #define CONN_LATENCY 0
