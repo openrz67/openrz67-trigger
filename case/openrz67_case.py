@@ -40,10 +40,21 @@ SNAP_TEST=true to also export a cropped corner pair for tuning snap_bead /
 lap_gap with a small test print before committing to the full box.
 """
 
+import math
 import os
+import socket
+import subprocess
+import sys
 from pathlib import Path
 
 from build123d import *
+
+
+def check(cond, msg):
+    """Keepout / printability guard. Not `assert`: `python -O` would strip those."""
+    if not cond:
+        raise SystemExit(msg)
+
 
 # --- Board (rev 2, from ../pcb/kicad/) ---------------------------------------
 board_w, board_h, board_r = 48.0, 22.0, 2.0
@@ -112,11 +123,11 @@ usb_recess_d = 1.2                   # was 1.0 and pure slack; now the shell act
 # brings the overmold 1.2 closer to the mouth — the old Fusion case had one, 2026-09-14).
 # Fits overmolds up to 13 x 8.5; a 45° bevel of usb_pocket_ch on its outer edge.
 usb_pocket_w, usb_pocket_h, usb_pocket_r, usb_pocket_d, usb_pocket_ch = 14.0, 9.5, 3.0, 1.2, 0.6
-assert wall - usb_pocket_d - usb_recess_d >= 0.8, "USB lip between the outer pocket and the inner recess too thin"
+check(wall - usb_pocket_d - usb_recess_d >= 0.8, "USB lip between the outer pocket and the inner recess too thin")
 # Mouth face vs the recess floor: keep 0.2 of air so the shell never bottoms out in the wall
 # (that would hold the PCB off its locating pins).
-assert wall + clr - usb_shell_poke - (wall - usb_recess_d) >= 0.2, \
-    "USB-C shell would bottom out in the wall recess: reduce usb_shell_poke or deepen usb_recess_d"
+check(wall + clr - usb_shell_poke - (wall - usb_recess_d) >= 0.2,
+    "USB-C shell would bottom out in the wall recess: reduce usb_shell_poke or deepen usb_recess_d")
 # The pocket straddles the seam. Below it the base wall is normally only the outer lap half
 # (wall/2 = 1.6), so the pocket left a 0.4 skin there and the lip looked thin/ragged on the base
 # side (first print, 2026-09-15). Around the USB the base keeps its FULL wall down through the
@@ -215,19 +226,19 @@ split_z = pcb_top_z
 lid_h = comp_clr + lid_top_t
 total_h = split_z + lid_h
 bead_z = split_z - lap + 1.1            # bead centre: near the finger tip (long lever, low strain)
-assert lap <= split_z - floor_t, "lid lip would reach the floor"
-assert lid_top_r <= min(wall, lid_top_t) and lid_top_r < inner_r + wall, "lid top chamfer too big"
-assert split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_h) / 2 < split_z, \
-    "snap bead/pocket outside the lap zone"
+check(lap <= split_z - floor_t, "lid lip would reach the floor")
+check(lid_top_r <= min(wall, lid_top_t) and lid_top_r < inner_r + wall, "lid top chamfer too big")
+check(split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_h) / 2 < split_z,
+    "snap bead/pocket outside the lap zone")
 # Printability: the lap halves must slice as real perimeters (0.4 mm nozzle:
 # a two-line freestanding wall 0.87 mm)
-assert wall / 2 - (snap_bead + pocket_extra_d) >= 0.87, "base lip behind the snap pocket under two lines"
-assert wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines"
-assert 0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness"
-assert standoff_h >= batt_t + batt_foam - 1e-6, "no foam room over the cell"
+check(wall / 2 - (snap_bead + pocket_extra_d) >= 0.87, "base lip behind the snap pocket under two lines")
+check(wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines")
+check(0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness")
+check(standoff_h >= batt_t + batt_foam - 1e-6, "no foam room over the cell")
 for _kx, _ky, _kd in th_keepouts:   # tails beside the cell, not over it (else add th_keepout_depth)
-    assert _kx + _kd / 2 <= batt_x0 - batt_clr or _kx - _kd / 2 >= batt_x0 + batt_w + batt_clr, \
-        "THT tails over the cell: standoff_h must include th_keepout_depth"
+    check(_kx + _kd / 2 <= batt_x0 - batt_clr or _kx - _kd / 2 >= batt_x0 + batt_w + batt_clr,
+        "THT tails over the cell: standoff_h must include th_keepout_depth")
 
 
 def bx(x):
@@ -312,7 +323,7 @@ finger_bands = [(fx - finger_l / 2, fx + finger_l / 2) for fx in snap_fingers_x]
 for fx0, fx1 in finger_bands:
     for cx in frame_ribs_front + frame_ribs_back:
         n0, n1 = bx(cx) - frame_rib_l / 2 - frame_notch_clr, bx(cx) + frame_rib_l / 2 + frame_notch_clr
-        assert fx1 + finger_slot <= n0 or fx0 - finger_slot >= n1, "snap finger overlaps a fin notch"
+        check(fx1 + finger_slot <= n0 or fx0 - finger_slot >= n1, "snap finger overlaps a fin notch")
 
 
 def orient_mark_rib(z0):
@@ -331,8 +342,7 @@ base -= prism(mid_sk, split_z - lap, lap + 1) - usb_zone     # rabbet: outer wal
 # Posts at the mount holes with Ø1.85 locating pins into the real PCB holes (straight
 # through the board, then a cone down to Ø1.4 above it as lead-in), plus solid posts
 # in the other corners
-import math as _m
-pin_taper = _m.degrees(_m.atan((pin_d - 1.4) / 2 / pin_proud))
+pin_taper = math.degrees(math.atan((pin_d - 1.4) / 2 / pin_proud))
 for hx, hy in mount_holes:
     base += cyl(bx(hx), by(hy), floor_t, standoff_d, standoff_h)
     base += cyl(bx(hx), by(hy), pcb_z - eps, pin_d, pcb_t + eps)
@@ -413,10 +423,9 @@ lid -= cut_usb
 lid -= cut_cable
 # LED light-pipe hole: straight stem window through the top plate + tapered head seat
 # (top hat from above, flush top). led_head(clr) builds the funnel / the matching head.
-import math
 led_taper = math.degrees(math.atan(led_head_lip / led_head_t))
-assert led_taper <= 28, f"light-pipe head taper {led_taper:.1f}° would get slicer support (30° threshold)"
-assert led_head_t < lid_top_t, "light-pipe head seat goes through the top plate"
+check(led_taper <= 28, f"light-pipe head taper {led_taper:.1f}° would get slicer support (30° threshold)")
+check(led_head_t < lid_top_t, "light-pipe head seat goes through the top plate")
 
 def led_head(clr, extra=0.0):
     """Frustum: stem-window size at z = total_h - led_head_t, growing to +2*lip at the top."""
@@ -431,7 +440,7 @@ lid += prism(Pos(led_cx, led_cy) * RectangleRounded(
 lid -= prism(Pos(led_cx, led_cy) * RectangleRounded(stem_l, stem_w, led_win_r),
              collar_z - eps, lid_top_t + led_collar_h + 2 * eps)
 lid -= led_head(led_pipe_clr, eps)
-assert collar_z > pcb_top_z + led_pipe_gap, "light-pipe collar hangs below the pipe's LED gap"
+check(collar_z > pcb_top_z + led_pipe_gap, "light-pipe collar hangs below the pipe's LED gap")
 # Antenna recess in the ceiling (band: right of the (2,2) boss, in front of the LED stem,
 # behind the rocker body). The foil is flush with the ceiling; the rocker top is
 # kcd_latch_clr + kcd_hole_clr under it, so only its plan footprint is kept clear.
@@ -441,9 +450,9 @@ band_x1 = outer_w - wall - 0.5
 band_y0 = kcd_depth + 0.5   # behind the rocker body's rear face (tabs + receptacles sit lower)
 band_y1 = led_cy - (stem_w + 2 * led_collar_w) / 2 - 0.5   # clear of the light-pipe collar
 ant_L, ant_W = ant_l + 2 * ant_clr, ant_w + 2 * ant_clr
-assert ant_L <= band_x1 - band_x0 and ant_W <= band_y1 - band_y0, \
-    f"antenna recess {ant_L}x{ant_W} does not fit the free ceiling band {band_x1 - band_x0:.1f}x{band_y1 - band_y0:.1f}"
-assert ant_depth <= lid_top_t - lid_text_depth - 0.8, "antenna recess + lid text leave the top plate too thin"
+check(ant_L <= band_x1 - band_x0 and ant_W <= band_y1 - band_y0,
+    f"antenna recess {ant_L}x{ant_W} does not fit the free ceiling band {band_x1 - band_x0:.1f}x{band_y1 - band_y0:.1f}")
+check(ant_depth <= lid_top_t - lid_text_depth - 0.8, "antenna recess + lid text leave the top plate too thin")
 ant_x0 = band_x0 + (band_x1 - band_x0 - ant_L) * ant_cx_frac
 ant_y0 = (band_y0 + band_y1 - ant_W) / 2
 lid -= box(ant_x0, ant_y0, ceiling_z - eps, ant_L, ant_W, ant_depth + eps)
@@ -491,9 +500,9 @@ if lid_text_show:
         tb = sk.bounding_box()
         sk = Pos(outer_w / 2 - (tb.min.X + tb.max.X) / 2, y - h - tb.min.Y) * sk   # centre X, top at y
         tb = sk.bounding_box()
-        assert tb.min.X > lid_top_r + 1 and tb.max.X < outer_w - lid_top_r - 1, f"'{txt}' too wide ({tb.size.X:.1f}mm)"
-        assert tb.max.Y < led_cy - recess_half - 1, f"'{txt}' hits the LED seat"
-        assert tb.min.Y > lid_top_r + 0.5, f"'{txt}' runs into the top-edge chamfer"
+        check(tb.min.X > lid_top_r + 1 and tb.max.X < outer_w - lid_top_r - 1, f"'{txt}' too wide ({tb.size.X:.1f}mm)")
+        check(tb.max.Y < led_cy - recess_half - 1, f"'{txt}' hits the LED seat")
+        check(tb.min.Y > lid_top_r + 0.5, f"'{txt}' runs into the top-edge chamfer")
         # Printability: every stroke >= lid_text_min_stroke (shrinking a glyph by half of
         # it must neither split nor drop it). build123d 0.11's offset() crashes on glyphs
         # with holes, so shrink outer/inner wires by hand.
@@ -505,7 +514,7 @@ if lid_text_show:
                 n = len(g.faces()) if hasattr(g, "faces") else len(g)
             except Exception:   # the wire collapsed: stroke thinner than the offset
                 n = 0
-            assert n == 1, f"'{txt}' has strokes under {lid_text_min_stroke} mm (a glyph -> {n} faces)"
+            check(n == 1, f"'{txt}' has strokes under {lid_text_min_stroke} mm (a glyph -> {n} faces)")
         c = prism(sk, total_h - lid_text_depth, lid_text_depth + eps)
         text_cut = c if text_cut is None else text_cut + c
         y -= h + lid_text_gap
@@ -531,49 +540,49 @@ lightpipe += prism(Pos(led_cx, led_cy) * RectangleRounded(led_win_l, led_win_w, 
 
 # --- Assertions ------------------------------------------------------------------------
 for name, p in (("base", base), ("lid", lid), ("lightpipe", lightpipe)):
-    assert p.is_valid, f"{name}: invalid solid"
+    check(p.is_valid, f"{name}: invalid solid")
 
 bb = base.bounding_box()
-assert abs(bb.size.X - outer_w) < 1e-3, f"base X {bb.size.X}"
-assert abs(bb.max.Y - outer_h) < 1e-3 and abs(bb.min.Y + orient_mark_d) < 1e-3, "base Y"
-assert abs(bb.max.Z - (pcb_z + pcb_t + pin_proud)) < 1e-3, f"base Z {bb.max.Z}"  # pins on top
-assert abs(lightpipe.bounding_box().max.Z - total_h) < 1e-3, "light pipe not flush with the top"
+check(abs(bb.size.X - outer_w) < 1e-3, f"base X {bb.size.X}")
+check(abs(bb.max.Y - outer_h) < 1e-3 and abs(bb.min.Y + orient_mark_d) < 1e-3, "base Y")
+check(abs(bb.max.Z - (pcb_z + pcb_t + pin_proud)) < 1e-3, f"base Z {bb.max.Z}")  # pins on top
+check(abs(lightpipe.bounding_box().max.Z - total_h) < 1e-3, "light pipe not flush with the top")
 lb = lid.bounding_box()
-assert abs(lb.min.Z - (split_z - lap)) < 1e-3 and abs(lb.max.Z - total_h) < 1e-3, "lid Z"
+check(abs(lb.min.Z - (split_z - lap)) < 1e-3 and abs(lb.max.Z - total_h) < 1e-3, "lid Z")
 if lid_text is not None:
-    assert lid_text.is_valid and lid_text.volume > 1e-3, "lid text inlay: empty or invalid"
+    check(lid_text.is_valid and lid_text.volume > 1e-3, "lid text inlay: empty or invalid")
     tb = lid_text.bounding_box()
-    assert abs(tb.max.Z - total_h) < 1e-3, "inlay not flush with the lid top"
-    assert tb.min.Z > total_h - lid_text_depth - 1e-3, "inlay deeper than the pocket"
-    assert (lid & lid_text).volume < 1e-6, "inlay overlaps the lid (the two parts must not fight)"
+    check(abs(tb.max.Z - total_h) < 1e-3, "inlay not flush with the lid top")
+    check(tb.min.Z > total_h - lid_text_depth - 1e-3, "inlay deeper than the pocket")
+    check((lid & lid_text).volume < 1e-6, "inlay overlaps the lid (the two parts must not fight)")
 
 # Holes must actually break through (a wrong axis gives the same volume):
 def _open(solid, probe, what):
     v = (solid & probe).volume
-    assert v < 1e-6, f"{what} blocked (probe volume {v:.3f})"
+    check(v < 1e-6, f"{what} blocked (probe volume {v:.3f})")
 
 _open(base + lid, box(-0.5, usb_cy - 4.3, usb_zc - 1.5, wall + 1, 8.6, 3.0), "USB opening")   # plug shell + 0.25/0.2 slop
 _open(base + lid, box(-0.5, usb_cy - usb_pocket_w / 2 + usb_pocket_r / 2, usb_zc - usb_pocket_h / 2 + usb_pocket_r / 2,
                       usb_pocket_d + 0.5, usb_pocket_w - usb_pocket_r, usb_pocket_h - usb_pocket_r), "USB plug pocket")
-assert (base + lid & box(usb_pocket_d + 0.05, usb_cy - usb_pocket_w / 2, usb_zc - usb_pocket_h / 2, 0.5,
-                         usb_pocket_w, usb_pocket_h)).volume > 0.5 * 0.5 * (usb_pocket_w * usb_pocket_h - usb_open_w * usb_open_h), \
-    "USB lip behind the plug pocket missing"
+check((base + lid & box(usb_pocket_d + 0.05, usb_cy - usb_pocket_w / 2, usb_zc - usb_pocket_h / 2, 0.5,
+                        usb_pocket_w, usb_pocket_h)).volume > 0.5 * 0.5 * (usb_pocket_w * usb_pocket_h - usb_open_w * usb_open_h),
+    "USB lip behind the plug pocket missing")
 _open(base + lid, box(bx(xh_x - xh_back), xh_cy - xh_w / 2, split_z + eps,
                       xh_mouth + xh_back + xh_plug_proud, xh_w, xh_h), "U4 body + plug inside the box")
 _open(base + lid, xprism(Pos(xh_cy, cable_zc) * Circle(cable_d / 2), bx(xh_x + xh_mouth + xh_plug_proud),
                          outer_w), "camera cable out through the right wall")
-assert bx(xh_x + xh_mouth + xh_plug_proud) <= outer_w - wall - xh_slack + 1e-6, "U4 plug hits the wall"
+check(bx(xh_x + xh_mouth + xh_plug_proud) <= outer_w - wall - xh_slack + 1e-6, "U4 plug hits the wall")
 # Cell under the PCB (+ pocket fit): inside the rib ring, between the posts, under the THT tails
 _open(base, box(bx(batt_x0) - batt_clr, by((board_h - batt_l) / 2) - batt_clr, floor_t + eps,
                 batt_w + 2 * batt_clr, batt_l + 2 * batt_clr, batt_t), "cell under the PCB")
-assert (base & box(bx(batt_x0) - batt_clr - batt_rib_t, by((board_h - batt_l) / 2) - batt_clr - batt_rib_t,
-                   floor_t + eps, batt_w + 2 * (batt_clr + batt_rib_t), batt_l + 2 * (batt_clr + batt_rib_t),
-                   batt_rib_h - eps)).volume > 0.9 * batt_ring.volume, "battery rib ring missing"
+check((base & box(bx(batt_x0) - batt_clr - batt_rib_t, by((board_h - batt_l) / 2) - batt_clr - batt_rib_t,
+                  floor_t + eps, batt_w + 2 * (batt_clr + batt_rib_t), batt_l + 2 * (batt_clr + batt_rib_t),
+                  batt_rib_h - eps)).volume > 0.9 * batt_ring.volume, "battery rib ring missing")
 _open(lid, box(led_cx - 2, led_cy - 1, total_h - lid_top_t + eps, 4, 2, lid_top_t), "LED window")
 _open(lid, box(ant_x0 + 0.05, ant_y0 + 0.05, ceiling_z - 0.5, ant_L - 0.1, ant_W - 0.1, 0.5 + ant_depth - 0.02),
       "antenna recess (and the air under it)")
-assert (lid & box(ant_x0, ant_y0, ceiling_z + ant_depth + eps, ant_L, ant_W, lid_top_t - ant_depth - lid_text_depth - 2 * eps)
-        ).volume > 0.99 * ant_L * ant_W * (lid_top_t - ant_depth - lid_text_depth - 2 * eps), "antenna recess breaks through the top plate"
+check((lid & box(ant_x0, ant_y0, ceiling_z + ant_depth + eps, ant_L, ant_W, lid_top_t - ant_depth - lid_text_depth - 2 * eps)
+       ).volume > 0.99 * ant_L * ant_W * (lid_top_t - ant_depth - lid_text_depth - 2 * eps), "antenna recess breaks through the top plate")
 for hx, hy in mount_holes:
     _open(lid, cyl(bx(hx), by(hy), pcb_top_z + eps, 2.0, pin_proud), "locating-pin recess")
 # Rocker switch: hole through, latch pocket open, and the body + tabs + receptacles
@@ -583,17 +592,17 @@ _open(lid, box(sx - kcd_body_l / 2, -0.5, swz - kcd_body_h / 2, kcd_body_l, wall
 _open(lid, box(sx - kcd_hole_l / 2 - kcd_latch_clr + eps, kcd_panel_t + eps,
                swz - kcd_hole_h / 2 - kcd_latch_clr + eps, kcd_hole_l + 2 * kcd_latch_clr - 2 * eps,
                wall - kcd_panel_t - 2 * eps, kcd_hole_h + 2 * kcd_latch_clr - 2 * eps), "switch latch pocket")
-assert swz - kcd_hole_h / 2 - kcd_latch_clr >= split_z - 1e-6, "switch latch pocket cuts into the lid tongue"
-assert swz + kcd_hole_h / 2 + kcd_latch_clr <= total_h - lid_top_t + 1e-6, "switch latch pocket cuts the ceiling"
-assert kcd_flange_h / 2 <= swz - split_z and swz + kcd_flange_h / 2 <= total_h - lid_top_r, \
-    "switch flange over the seam / into the top chamfer"
+check(swz - kcd_hole_h / 2 - kcd_latch_clr >= split_z - 1e-6, "switch latch pocket cuts into the lid tongue")
+check(swz + kcd_hole_h / 2 + kcd_latch_clr <= total_h - lid_top_t + 1e-6, "switch latch pocket cuts the ceiling")
+check(kcd_flange_h / 2 <= swz - split_z and swz + kcd_flange_h / 2 <= total_h - lid_top_r,
+    "switch flange over the seam / into the top chamfer")
 _open(lid, box(sx - kcd_body_l / 2, wall + eps, swz - kcd_body_h / 2, kcd_body_l, kcd_depth - wall, kcd_body_h),
       "switch body inside the lid")
 s3_x, s3_y, s3_l, s3_w = 28.71, 19.96, 5.9, 4.5
 kcd_y_end = kcd_depth + kcd_tab_l + kcd_conn_l
 pipe_y0 = led_cy - (led_win_w + 2 * led_head_lip + led_pipe_clr) / 2
-assert kcd_y_end + 0.5 <= min(pipe_y0, by(s3_y - s3_w / 2)), \
-    f"switch tabs + receptacles reach Y {kcd_y_end:.1f}: light pipe at {pipe_y0:.1f}, S3 plug at {by(s3_y - s3_w / 2):.1f}"
+check(kcd_y_end + 0.5 <= min(pipe_y0, by(s3_y - s3_w / 2)),
+    f"switch tabs + receptacles reach Y {kcd_y_end:.1f}: light pipe at {pipe_y0:.1f}, S3 plug at {by(s3_y - s3_w / 2):.1f}")
 _open(lid, box(bx(0.5), by(4.5), pcb_top_z + eps, 7, 9.5, 2), "USB-C body keepout")
 # J1 (1x4 2.54 mm header, DNP, pads at board x 34.4-42.0, y 1.4): no header envelope —
 # the centred switch body ends at the first pad and its tabs run over the row. Flying leads.
@@ -602,12 +611,16 @@ _open(lid, box(bx(0.5), by(4.5), pcb_top_z + eps, 7, 9.5, 2), "USB-C body keepou
 if __name__ == "__main__":
     # Assembled preview in VS Code's OCP CAD Viewer, when it is open (port 3939).
     # Toggle part visibility in the viewer tree; show() does nothing/raises without it.
-    import socket
-    try:
-        assert socket.socket().connect_ex(("127.0.0.1", 3939)) == 0  # VS Code OCP CAD Viewer open?
-        from ocp_vscode import show   # uv run --with ocp_vscode openrz67_case.py
-        show(base, lid, lightpipe, names=["base", "lid", "lightpipe"])
-    except (AssertionError, ImportError):
+    with socket.socket() as s:
+        s.settimeout(0.5)
+        viewer = s.connect_ex(("127.0.0.1", 3939)) == 0   # VS Code OCP CAD Viewer open?
+    if viewer:
+        try:
+            from ocp_vscode import show   # uv run --with ocp_vscode openrz67_case.py
+            show(base, lid, lightpipe, names=["base", "lid", "lightpipe"])
+        except ImportError:
+            viewer = False
+    if not viewer:
         print("OCP-viewer ikke åpen (eller ocp_vscode mangler: uv run --with ocp_vscode), hopper over forhåndsvisning")
     out = Path(os.environ.get("OUTDIR", Path(__file__).resolve().parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
@@ -629,7 +642,6 @@ if __name__ == "__main__":
               f"{p.volume / 1000:.2f} cm3")
     print(f"STLs in {out}")
     if out.resolve() == Path(__file__).resolve().parent / "stl" and os.environ.get("MAKE_3MF", "true") == "true":
-        import subprocess, sys
         here = Path(__file__).resolve().parent
         if (here / "bambu-template.3mf").exists():   # slicer project: swap all fresh STLs into the template
             subprocess.run([sys.executable, "make_3mf.py", "--stl-dir", str(out), "--out", "openrz67-case.3mf"], cwd=here, check=True)
