@@ -330,6 +330,7 @@
 		(at 0 0 90)
 		(size 0.9 1.5)
 		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_paste_margin_ratio -0.04)
 		(uuid "1a35dd1f-1455-4bc1-b580-9db092ab895a")
 	)
 	(embedded_fonts no)

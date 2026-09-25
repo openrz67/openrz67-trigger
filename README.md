@@ -17,13 +17,13 @@ The current prototype is a custom PCB (design and fabrication files in [`pcb/`](
 
 The PCB source is the KiCad project in [`pcb/kicad/`](pcb/kicad/) (ported from EasyEDA Pro in September 2026). Generated Gerber/BOM/position files are in `pcb/kicad/out/`. Each ordered revision's upload package and the EasyEDA Pro exports are kept under [`pcb/archive/`](pcb/archive/).
 
-The built boards are **rev 2**, ordered 2026-09-07 and **verified working 2026-09-14** (USB and battery power, BLE, shutter trigger); the source is now **rev 3** (routing fixes, R23, battery voltage sense on GPIO3 with S2 moved to GPIO6), not yet ordered; what was sent to the fab is in [`pcb/archive/`](pcb/archive/). Rev 2 swaps the G6K relays for PhotoMOS parts, changes `U4` to a side-entry connector and replaces the 1 A LGS5500 charger/boost and LDO with a BQ25185 charger (111 mA) and a TPS63031 buck-boost; the battery connector stays on top. The board pictured above is rev 2, and the enclosure in [`case/`](case/) is drawn for it (first print 2026-09-14). Connector part numbers and geometry are documented in [`pcb/kicad/README.md`](pcb/kicad/README.md), which is the authoritative source for them.
+The built boards are **rev 2**, ordered 2026-09-07 and **verified working 2026-09-14** (USB and battery power, BLE, shutter trigger); the source is now **rev 3** (routing fixes, R23, battery voltage sense on GPIO3 with S2 moved to GPIO6, a reverse-battery P-FET `Q3`, C24 at the buck-boost output, paste windows on the exposed pads), not yet ordered; what was sent to the fab is in [`pcb/archive/`](pcb/archive/). Rev 2 swaps the G6K relays for PhotoMOS parts, changes `U4` to a side-entry connector and replaces the 1 A LGS5500 charger/boost and LDO with a BQ25185 charger (111 mA) and a TPS63031 buck-boost; the battery connector stays on top. The board pictured above is rev 2, and the enclosure in [`case/`](case/) is drawn for it (first print 2026-09-14). Connector part numbers and geometry are documented in [`pcb/kicad/README.md`](pcb/kicad/README.md), which is the authoritative source for them.
 
 * 1× ESP32-C3FH4
 * 2× Toshiba TLP172AM PhotoMOS relays (solid-state, isolated) to close the shutter contacts
 * Supporting components per the [BOM](pcb/kicad/out/openrz67-bom.csv)
 * 2.4 GHz antenna with U.FL connector
-* 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`); charged at 111 mA by a TI BQ25185 (the cell is rated for 120 mA), with a TPS63031 buck-boost holding 3.3 V from USB or battery
+* 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`), behind an AO3401A P-FET (`Q3`, rev 3) that blocks a cell plugged in backwards; charged at 111 mA by a TI BQ25185 (the cell is rated for 120 mA), with a TPS63031 buck-boost holding 3.3 V from USB or battery
 * KCD11 mini rocker switch (snap-in, 2.8 mm tabs) on `S3`; every off-board part (cell, switch, antenna, cables) is in [BOM.md](BOM.md)
 * Unpopulated header `J1` along the bottom edge for bench logging and experiments: 1×4 (3V3, GND, GPIO21/TX, GPIO6) on rev 2, 1×3 (3V3, GND, GPIO21/TX) in rev 3 since GPIO6 drives the S2 relay there
 

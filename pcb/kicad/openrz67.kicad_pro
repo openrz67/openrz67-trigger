@@ -615,6 +615,10 @@
       {
         "netclass": "5v",
         "pattern": "SW2"
+      },
+      {
+        "netclass": "5v",
+        "pattern": "BAT_CELL"
       }
     ]
   },
