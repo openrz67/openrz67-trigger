@@ -5,7 +5,7 @@
 # pioarduino hybrid compile (custom_sdkconfig) writes these into the project root
 .dummy/
 managed_components/
-sdkconfig.defaults
+sdkconfig.*
 pioenvs/
 piolibdeps/
 
