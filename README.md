@@ -1,6 +1,6 @@
 # openrz67-trigger
 
-ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetooth LE. It runs on an ESP32-C3 connected to the camera's electrical remote port and is controlled from the companion Android app, [openrz67-android](https://github.com/openrz67/openrz67-android).
+ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetooth LE. It runs on an ESP32-C3 connected to the camera's electrical remote port and is controlled from the companion apps, [openrz67-android](https://github.com/openrz67/openrz67-android) and [openrz67-ios](https://github.com/openrz67/openrz67-ios).
 
 ## Features
 
