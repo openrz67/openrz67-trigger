@@ -7,7 +7,7 @@ ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetoot
 * Instant shutter release
 * Bulb mode for remote long exposures
 * Self-timer countdown with app-configurable duration
-* Power-aware: 80 MHz CPU clock, 0 dBm BLE TX power, 30–60 ms advertising interval and a 30–50 ms connection interval (slave latency 0 until light sleep exists; both radio savings are worth little while the CPU is awake), running off a small LiPo. Automatic light sleep is not available in any prebuilt Arduino core build (see [Power](#power))
+* Power-aware: 80 MHz CPU clock, 0 dBm BLE TX power, 30–60 ms advertising interval and a 30–50 ms connection interval (slave latency 0 for now), automatic light sleep between BLE events, running off a small LiPo (see [Power](#power))
 
 ## Hardware
 
@@ -127,7 +127,13 @@ The production build has no serial output. For logging, flash the `debug` env (`
 
 ## Power
 
-The prebuilt Arduino core libraries (2.0.x and 3.x alike) ship with `CONFIG_PM_ENABLE` unset, so `esp_pm_configure()` returns `ESP_ERR_NOT_SUPPORTED` and the chip never enters automatic light sleep: it idles awake at 80 MHz between BLE events. Getting light sleep means building Arduino as an ESP-IDF component (`framework = arduino, espidf` in `platformio.ini`) with an `sdkconfig.defaults` that sets `CONFIG_PM_ENABLE`, `CONFIG_FREERTOS_USE_TICKLESS_IDLE`, `CONFIG_BT_CTRL_MODEM_SLEEP` (mode 1) and the 32.768 kHz crystal `X2` as the BLE low-power clock (`CONFIG_BT_CTRL_LPCLK_SEL_EXT_32K_XTAL`, `CONFIG_RTC_CLK_SRC_EXT_CRYS`). Two things need care in that build: the USB Serial/JTAG port drops off the bus in light sleep (the `debug` env already asks for light sleep off), and the LEDC clock behind the status LED stops in light sleep unless it is moved to `RC_FAST`. Not done yet; it needs a board on the bench to verify.
+The prebuilt Arduino core libraries ship with power management off, so `custom_sdkconfig` in `platformio.ini` has pioarduino rebuild them (the first build per machine takes a few minutes) with `CONFIG_PM_ENABLE`, `CONFIG_FREERTOS_USE_TICKLESS_IDLE`, BLE modem sleep (mode 1) and the 32.768 kHz crystal `X2` as the BLE low-power clock. `configurePowerManagement()` then turns on DFS (10–80 MHz) and automatic light sleep: the chip naps between BLE events and the radio wakes it for each one, so the phone connection stays up and a trigger arrives as before. Three things follow from it:
+
+* The status LED runs on LEDC from `RC_FAST` in keep-alive mode, set up with ESP-IDF directly, since the APB clock stops in light sleep.
+* Light sleep releases every GPIO (`PM_SLP_DISABLE_GPIO`, forced on with tickless idle), so a PM lock keeps the chip awake while the shutter is open (bulb and the trigger pulse).
+* The USB Serial/JTAG port drops off the bus in light sleep, so the `debug` env stays awake at 80 MHz, and flashing a sleeping production build may need the `BOOT`/`EN` sequence above.
+
+If `X2` does not start, ESP-IDF logs it and falls back to the internal RC; BLE keeps working on the main crystal, without light sleep. Untested on a board; the current draw is not measured yet.
 
 ## License
 
