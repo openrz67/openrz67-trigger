@@ -1,50 +1,64 @@
 # openrz67-trigger
 
-ESP32 firmware for remote-triggering the Mamiya RZ67 analog camera over Bluetooth LE. It runs on an ESP32-C3 connected to the camera's electrical remote port and is controlled from the companion apps, [openrz67-android](https://github.com/openrz67/openrz67-android) and [openrz67-ios](https://github.com/openrz67/openrz67-ios).
+ESP32 firmware and hardware for remote-triggering the Mamiya RZ67 analog camera over
+Bluetooth LE. It runs on an ESP32-C3 connected to the camera's electrical remote port and is
+controlled from the companion apps, [openrz67-android](https://github.com/openrz67/openrz67-android)
+and [openrz67-ios](https://github.com/openrz67/openrz67-ios).
 
 ## Features
 
 * Instant shutter release
 * Bulb mode for remote long exposures
 * Self-timer countdown with app-configurable duration
-* Power-aware: 80 MHz CPU clock, 0 dBm BLE TX power, 30–60 ms advertising interval and a 30–50 ms connection interval (slave latency 0 for now), automatic light sleep between BLE events, running off a small LiPo (see [Power](#power))
+* Runs off a small LiPo, with light sleep between BLE events (see [Power](#power))
 
 ## Hardware
 
-The current prototype is a custom PCB (design and fabrication files in [`pcb/`](pcb/)):
+A custom PCB in a 3D-printed case:
 
 ![Custom PCB](pcb/kicad/out/openrz67-top.png)
 
-The PCB source is the KiCad project in [`pcb/kicad/`](pcb/kicad/) (ported from EasyEDA Pro in September 2026). Generated Gerber/BOM/position files are in `pcb/kicad/out/`. Each ordered revision's upload package and the EasyEDA Pro exports are kept under [`pcb/archive/`](pcb/archive/).
+| Directory | What |
+|---|---|
+| [`pcb/kicad/`](pcb/kicad/) | KiCad source, generated fab files in `out/`, design history in `notes/` |
+| [`pcb/archive/`](pcb/archive/) | exactly what was sent to the fab, one folder per order |
+| [`case/`](case/) | parametric build123d enclosure |
+| [`BOM.md`](BOM.md) | every part that is not soldered to the PCB (cell, switch, antenna, cables) |
 
-The built boards are **rev 2**, ordered 2026-09-07 and **verified working 2026-09-14** (USB and battery power, BLE, shutter trigger); the source is now **rev 3** (routing fixes, R23, battery voltage sense on GPIO3 with S2 moved to GPIO6, a reverse-battery P-FET `Q3`, C24 at the buck-boost output, paste windows on the exposed pads), not yet ordered; what was sent to the fab is in [`pcb/archive/`](pcb/archive/). Rev 2 swaps the G6K relays for PhotoMOS parts, changes `U4` to a side-entry connector and replaces the 1 A LGS5500 charger/boost and LDO with a BQ25185 charger (111 mA) and a TPS63031 buck-boost; the battery connector stays on top. The board pictured above is rev 2, and the enclosure in [`case/`](case/) is drawn for it (first print 2026-09-14). Connector part numbers and geometry are documented in [`pcb/kicad/README.md`](pcb/kicad/README.md), which is the authoritative source for them.
+The boards in use are **rev 2**, verified working. The source is **rev 3**, not yet fabricated;
+the case fits both.
 
-* 1× ESP32-C3FH4
-* 2× Toshiba TLP172AM PhotoMOS relays (solid-state, isolated) to close the shutter contacts
-* Supporting components per the [BOM](pcb/kicad/out/openrz67-bom.csv)
-* 2.4 GHz antenna with U.FL connector
-* 250 mAh LiPo for power, on a JST B2B-PH-K-S top-entry connector (`BAT1`), behind an AO3401A P-FET (`Q3`, rev 3) that blocks a cell plugged in backwards; charged at 111 mA by a TI BQ25185 (the cell is rated for 120 mA), with a TPS63031 buck-boost holding 3.3 V from USB or battery
-* KCD11 mini rocker switch (snap-in, 2.8 mm tabs) on `S3`; every off-board part (cell, switch, antenna, cables) is in [BOM.md](BOM.md)
-* Unpopulated header `J1` along the bottom edge for bench logging and experiments: 1×4 (3V3, GND, GPIO21/TX, GPIO6) on rev 2, 1×3 (3V3, GND, GPIO21/TX) in rev 3 since GPIO6 drives the S2 relay there
+On the board:
 
-The solution is flexible: an ESP32-C3 development board such as the Seeed XIAO ESP32C3 and two isolated switch channels work too. Assign two output-capable GPIOs in `src/main.cpp`. On the PCB each channel is a TLP172AM PhotoMOS relay whose LED is driven from the GPIO through 150 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep ESP32 ground and camera ground separate.
+* ESP32-C3FH4 with an FPC antenna on a U.FL connector
+* 2× Toshiba TLP172AM PhotoMOS relays (solid-state, isolated) close the shutter contacts
+* TI BQ25185 charger (111 mA) and TPS63031 buck-boost, 250 mAh LiPo on `BAT1`, reverse-battery
+  P-FET (rev 3)
+* KCD11 rocker power switch on `S3`
+* `J1`, unpopulated header for bench logging: 3V3, GND, GPIO21/TX (plus GPIO6 on rev 2)
+
+The firmware also runs on any ESP32-C3 board with two isolated switch channels: assign two
+output-capable GPIOs in `src/main.cpp`. On the PCB each GPIO drives a PhotoMOS LED through
+150 Ω; the isolated output closes S1 or S2 to camera ground while the GPIO is HIGH. Keep
+ESP32 ground and camera ground separate.
 
 ![Wiring diagram for the ESP32-C3, two TLP172AM PhotoMOS channels and the Mamiya RZ67 camera port](assets/wiring-diagram.svg)
 
-### Current PCB pinout
+### Pinout
 
-| GPIO | Rev 2 (built) | Rev 3 (source, not ordered) |
-|------|---------------|-----------------------------|
-| 3    | Shutter output S2 (U6), net `S2_DRV` | Battery sense, net `VBAT_SENSE`: `SW_SYS` through 1 MΩ / 1 MΩ (R24/R25) + 100 nF (C32), ×2 = cell voltage on battery, BQ25185 SYS voltage on USB |
-| 4    | Shutter output S1 (U5), net `S1_DRV` | same |
-| 6    | `J1` pin 4, spare | Shutter output S2 (U6), net `S2_DRV` (`J1` shrinks to 1×3) |
+| GPIO | Rev 2 (built) | Rev 3 (source) |
+|------|---------------|----------------|
+| 3    | Shutter output S2 (`S2_DRV`) | Battery sense (`VBAT_SENSE`): `SW_SYS` through a 1 MΩ / 1 MΩ divider |
+| 4    | Shutter output S1 (`S1_DRV`) | same |
+| 6    | `J1` pin 4, spare | Shutter output S2 (`S2_DRV`) |
 | 20   | Status LED (`D4`, blue) | same |
 
-The firmware covers every revision through build flags: `S1_PIN` (rev 1), `S2_PIN` and `VBAT_ADC_PIN` (rev 3); see the `rev1` and `rev3` envs in `platformio.ini`.
+The firmware covers every revision through build flags in `platformio.ini`: `S1_PIN` (rev 1),
+`S2_PIN` and `VBAT_ADC_PIN` (rev 3).
 
 ### LEDs
 
-Both LEDs sit under the same light-pipe window in the lid.
+Both LEDs sit under the same light pipe in the lid.
 
 | LED | Meaning |
 |-----|---------|
@@ -56,7 +70,7 @@ Both LEDs sit under the same light-pipe window in the lid.
 
 ### Camera connector
 
-The custom PCB uses a JST S4B-XH-A four-pin header (`U4`), side-entry, opening out of the right board edge:
+`U4` is a JST S4B-XH-A four-pin side-entry header, opening out of the right board edge:
 
 | U4 pin | Camera signal |
 |--------|---------------|
@@ -76,17 +90,26 @@ Viewed from the front, the camera's four-pin remote-control port is:
 3. S1 switch
 4. S2 switch
 
-To trigger the shutter release, the PhotoMOS outputs short S1/S2 to camera GND. For bulb exposures, set the camera's shutter-speed dial to `B`. The camera closes the shutter automatically after approximately 60 seconds even if the switches remain closed.
+To trigger the shutter, the PhotoMOS outputs short S1/S2 to camera GND. For bulb exposures,
+set the shutter-speed dial to `B`. The camera closes the shutter by itself after about
+60 seconds even if the switches stay closed.
 
 ## BLE protocol
 
-The device advertises as `OpenRZ67` with service UUID `c9239c9e-6fc9-4168-b3aa-53105eb990b0` and characteristic `458d4dc9-349f-401d-b092-a2b1c55f5319`. Send commands using Write Without Response.
+The device advertises as `OpenRZ67` with service UUID `c9239c9e-6fc9-4168-b3aa-53105eb990b0`
+and characteristic `458d4dc9-349f-401d-b092-a2b1c55f5319`. Send commands using Write Without
+Response. The characteristic is open (no pairing): anyone in radio range can fire the camera,
+which is accepted for a shutter release.
 
-The device also exposes the standard Device Information Service (`0x180A`: manufacturer, model, firmware revision `0x2A26` = `FW_VERSION` from `platformio.ini`), so any BLE tool can read the firmware version.
+Also exposed: the standard Device Information Service (`0x180A`, firmware revision `0x2A26` =
+`FW_VERSION` from `platformio.ini`), and on rev 3:
 
-On rev 3 boards there is a second characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage in millivolts as a little-endian `uint16`, refreshed every 10 s. On battery this is the cell voltage (about 4200 full, 3500 low); on USB it is the BQ25185 SYS regulation voltage, which is higher. It is a system voltage, not a USB-present flag: a full cell (4200 nominal) and a USB-powered SYS rail overlap once charger tolerance, the 1 % divider and the ADC's ±70 mV are added up, and DPPM or supplement mode can pull SYS down with USB still plugged in. A high reading suggests USB; treat roughly 4250–4350 as undecided, and use hysteresis if a client acts on it. Certain USB status needs a separate signal. Rev 3 also exposes the standard Battery Service (`0x180F`, Battery Level `0x2A19`, read + notify): the same reading as a percentage, linear from 3500 mV (0 %) to 4200 mV (100 %), which is what phones show without any app.
-
-Commands are queued in the BLE callback and executed in `loop()`, so the BLE stack is never blocked by the shutter timing. The characteristic is open (no pairing or bonding): anyone in radio range can fire the camera, which is accepted for a shutter release.
+* characteristic `cda71ce6-4af9-4aa2-8d34-329c2acdae09` (read + notify): the `SW_SYS` voltage
+  in millivolts, little-endian `uint16`, refreshed every 10 s. On battery this is the cell
+  voltage (about 4200 full, 3500 low); on USB it is the charger's SYS voltage, which is higher.
+  It is not a reliable USB-present flag: treat roughly 4250–4350 as undecided.
+* Battery Service (`0x180F`, Battery Level `0x2A19`): the same reading as a percentage, linear
+  from 3500 mV (0 %) to 4200 mV (100 %), which is what phones show without any app.
 
 **Single-byte commands** (value = button × 10 + state):
 
@@ -94,7 +117,7 @@ Commands are queued in the BLE callback and executed in `loop()`, so the BLE sta
 |-------|--------|
 | 11 | Trigger shutter with a 100 ms pulse |
 | 10 | Clear status LED; no shutter action |
-| 21 | Start bulb mode: holds S1/S2 closed until 20 is sent. Camera dial must be on `B`, otherwise this is just one normal exposure |
+| 21 | Start bulb mode: holds S1/S2 closed until 20 is sent. Camera dial must be on `B` |
 | 20 | End bulb mode |
 | 31 | Start countdown with the default duration of 10 s |
 | 30 | Cancel countdown |
@@ -106,11 +129,13 @@ Commands are queued in the BLE callback and executed in `loop()`, so the BLE sta
 | `[3, n, 1]` | Start countdown of *n* seconds (`1–255`) |
 | `[3, _, 0]` | Cancel countdown |
 
-Starting a trigger or bulb exposure cancels any pending countdown.
+Starting a trigger or bulb exposure cancels any pending countdown. Commands are queued in
+the BLE callback and executed in `loop()`, so the BLE stack never blocks on shutter timing.
 
 ## Building
 
-The project uses [PlatformIO](https://platformio.org/) with the [pioarduino](https://github.com/pioarduino/platform-espressif32) platform (Arduino core 3.3, ESP-IDF 5.5, NimBLE) and the `esp32-c3-devkitm-1` board definition:
+[PlatformIO](https://platformio.org/) with the [pioarduino](https://github.com/pioarduino/platform-espressif32)
+platform (Arduino core 3.3, ESP-IDF 5.5, NimBLE):
 
 ```bash
 pio run
@@ -119,28 +144,43 @@ pio run -t upload
 
 If uploading does not start, hold `BOOT`, press and release `EN`, then release `BOOT` and retry.
 
-For a rev 1 board (S1 on GPIO 21 instead of GPIO 4), flash the `rev1` env: `pio run -e rev1 -t upload`. For a rev 3 board (S2 on GPIO 6, battery sense on GPIO 3), flash `rev3` or `rev3-debug`: `pio run -e rev3 -t upload`. The default env is rev 2; the board revision is only a set of `-D` pin flags in `platformio.ini`.
+| Env | Board |
+|---|---|
+| default | rev 2 |
+| `rev1` | rev 1 (S1 on GPIO 21) |
+| `rev3`, `rev3-debug` | rev 3 (S2 on GPIO 6, battery sense on GPIO 3) |
+| `debug` | rev 2 with USB CDC logging and `VERBOSE=1` |
 
-The production build has no serial output. For logging, flash the `debug` env (`pio run -e debug -t upload`): it enables USB CDC on the USB-C connector and `VERBOSE=1`. UART0 is not used for logging because its RX pin (GPIO 20) drives the status LED; GPIO 21 (UART0 TX) is free since rev 2 and is on the `J1` header for a TX-only dongle if ever needed.
+The production build has no serial output. UART0 is not used for logging because its RX pin
+(GPIO 20) drives the status LED; GPIO 21 (UART0 TX) is on `J1` for a TX-only dongle.
 
-`pio check` runs cppcheck over `src/`; CI (`.github/workflows/firmware.yml`) builds every env and runs it on each push.
+`pio check` runs cppcheck over `src/`; CI (`.github/workflows/firmware.yml`) builds every env
+and runs it on each push.
 
 ## Power
 
-The prebuilt Arduino core libraries ship with power management off, so `custom_sdkconfig` in `platformio.ini` has pioarduino rebuild them (the first build per machine takes a few minutes) with `CONFIG_PM_ENABLE`, `CONFIG_FREERTOS_USE_TICKLESS_IDLE`, BLE modem sleep (mode 1) and the 32.768 kHz crystal `X2` as the BLE low-power clock. `configurePowerManagement()` then turns on DFS (10–80 MHz) and automatic light sleep: the chip naps between BLE events and the radio wakes it for each one, so the phone connection stays up and a trigger arrives as before. Three things follow from it:
+The chip runs at 80 MHz with DFS down to 10 MHz, 0 dBm BLE TX power, and automatic light
+sleep between BLE events: the radio wakes it for each one, so the phone connection stays up
+and a trigger arrives as before. `custom_sdkconfig` in `platformio.ini` has pioarduino
+rebuild the Arduino core with `CONFIG_PM_ENABLE`, tickless idle, BLE modem sleep and the
+32.768 kHz crystal `X2` as the BLE low-power clock (the first build per machine takes a few
+minutes). Consequences:
 
-* The status LED runs on LEDC from `RC_FAST` in keep-alive mode, set up with ESP-IDF directly, since the APB clock stops in light sleep.
-* Light sleep releases every GPIO (`PM_SLP_DISABLE_GPIO`, forced on with tickless idle), so a PM lock keeps the chip awake while the shutter is open (bulb and the trigger pulse).
-* The USB Serial/JTAG port drops off the bus in light sleep, so the `debug` env stays awake at 80 MHz, and flashing a sleeping production build may need the `BOOT`/`EN` sequence above.
+* The status LED runs on LEDC from `RC_FAST` in keep-alive mode, since the APB clock stops
+  in light sleep.
+* Light sleep releases every GPIO, so a PM lock keeps the chip awake while the shutter is
+  open (bulb and the trigger pulse).
+* The USB Serial/JTAG port drops off the bus in light sleep, so the `debug` env stays awake,
+  and flashing a sleeping production build may need the `BOOT`/`EN` sequence above.
 
-If `X2` does not start, ESP-IDF logs it and falls back to the internal RC; BLE keeps working on the main crystal, without light sleep. Untested on a board; the current draw is not measured yet.
+If `X2` does not start, ESP-IDF falls back to the internal RC and BLE keeps working without
+light sleep. Current draw is not measured yet.
 
 ## License
 
-[MIT](LICENSE), covering the firmware in `src/`, the KiCad design files in `pcb/kicad/`
-and the enclosure sources in `case/`. MIT is written for software, but its grant is broad
-enough to serve a hardware design; if you need an instrument written for hardware, the
-closest equivalent is CERN-OHL-P.
+[MIT](LICENSE), covering the firmware in `src/`, the KiCad design files in `pcb/kicad/` and
+the enclosure sources in `case/`. MIT is written for software, but its grant is broad enough
+to serve a hardware design; the closest hardware-specific equivalent is CERN-OHL-P.
 
 Two things in this repository are **not** covered, because they are not mine to license:
 
@@ -149,8 +189,7 @@ Two things in this repository are **not** covered, because they are not mine to 
 * The 3D models in `pcb/kicad/openrz67.3dshapes/` were fetched per LCSC part number with
   `easyeda2kicad`.
 
-Both are redistributed here for convenience under their originators' terms. Everything
-else is mine.
+Both are redistributed here for convenience under their originators' terms.
 
 ## Credits
 
