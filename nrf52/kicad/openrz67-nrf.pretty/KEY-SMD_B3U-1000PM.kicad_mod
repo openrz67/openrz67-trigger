@@ -1,0 +1,353 @@
+(footprint "KEY-SMD_B3U-1000PM"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(property "Reference" "S1"
+		(at -0.6295 -0.61 270)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "a585dea6-2838-4be3-be97-88fc50bb0701")
+		(effects
+			(font
+				(size 0.686 0.6285)
+				(thickness 0.1525)
+			)
+			(justify left bottom)
+		)
+	)
+	(property "Value" "B3U-1000P"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(uuid "dc7aaf5f-139c-4f27-b730-1ab282a11cfb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "cb26baf7-7976-4497-b0c9-c0e125aeaedb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "15f51b9c-cfdb-4f2a-8d75-cd41f06c8f7d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "JLC_3DModel_Q" "8fac3831edd647e988fceee88db20287|0819f05c4eef4c71ace90d822a990e87"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "1f9071e5-aa0f-4b26-aecf-6bd7a515e05c")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "JLC_3D_Size" "4 2.5"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9ea1d424-f835-4311-bcef-e7589fd0b551")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Manufacturer" "OMRON(欧姆龙)"
+		(at 0 0 270)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "fc4d07a8-cd49-4175-a635-926e8759d605")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Manufacturer Part" "B3U-1000P"
+		(at 0 0 270)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "52ad24f2-d907-4216-b7b1-8fb33721b3c0")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Supplier" "LCSC"
+		(at 0 0 270)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "eb358698-576d-4858-bca9-363c37f46808")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Supplier Part" "C231329"
+		(at 0 0 270)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "51039d8b-40ed-425f-83fb-90dbcc2e8acc")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "LCSC Part Name" "3*2.5*1.6mm 立贴 轻触开关"
+		(at 0 0 270)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8452418c-9266-4ac0-9fb6-d7614c8a85fd")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -1.5 -1.25)
+		(end 1.5 -1.25)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "1849438c-b3d7-4fee-ab43-47b554a1f5d3")
+	)
+	(fp_line
+		(start -1.5 -1.25)
+		(end 1.5 -1.25)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "a409b485-2c9f-4be2-a81b-9f1605a6ec44")
+	)
+	(fp_line
+		(start -1.5 -1.081)
+		(end -1.5 -1.25)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "0d8d2a39-14ed-4539-a937-f945065706bc")
+	)
+	(fp_line
+		(start -1.5 1.25)
+		(end -1.5 1.087)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "15ba27c8-1b92-44f5-8d6b-974ca3a4aa62")
+	)
+	(fp_line
+		(start -1.5 1.25)
+		(end 1.5 1.25)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "9fc25ae8-4ef8-47cb-ad27-56befad73db0")
+	)
+	(fp_line
+		(start 1.5 -1.25)
+		(end 1.5 -1.081)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "edeb3902-38c4-45d8-a4f8-d4049afec944")
+	)
+	(fp_line
+		(start 1.5 1.081)
+		(end 1.5 1.25)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "7d6c1980-1c20-4012-87a2-650b531fed63")
+	)
+	(fp_line
+		(start 1.5 1.25)
+		(end -1.5 1.25)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "4039903f-b6b6-4776-909a-896b3974b00a")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 0.8 0)
+		(stroke
+			(width 0.254)
+			(type default)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "34d0e2c0-b22d-4b91-a0ae-830b679bb127")
+	)
+	(fp_rect
+		(start -2.6 -1.355)
+		(end 2.6 1.3)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "44b8ac2c-7108-4080-b3de-4640c3940209")
+	)
+	(fp_line
+		(start -1.5 -1.25)
+		(end 1.5 -1.25)
+		(stroke
+			(width 0.051)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "1b366b24-2709-4db2-a388-b8ce1d33b497")
+	)
+	(fp_line
+		(start -1.5 1.25)
+		(end -1.5 -1.25)
+		(stroke
+			(width 0.051)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "6baa96a4-f4bd-4250-b6ec-fa85d9555597")
+	)
+	(fp_line
+		(start 1.5 -1.25)
+		(end 1.5 1.25)
+		(stroke
+			(width 0.051)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "3e686cf5-090f-4a7f-bb55-09c67a5cbff5")
+	)
+	(fp_line
+		(start 1.5 1.25)
+		(end -1.5 1.25)
+		(stroke
+			(width 0.051)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "143b2150-f4ae-4f51-bd7e-57922ec611a7")
+	)
+	(fp_poly
+		(pts
+			(xy -1.944567 -1.272961) (xy -1.977039 -1.305433) (xy -2.022961 -1.305433) (xy -2.055433 -1.272961)
+			(xy -2.055433 -1.227039) (xy -2.022961 -1.194567) (xy -1.977039 -1.194567) (xy -1.944567 -1.227039)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill yes)
+		(layer "F.Fab")
+		(uuid "556ea4a7-9460-4ead-971a-331ff42f6d55")
+	)
+	(fp_poly
+		(pts
+			(xy -2 0.7) (xy -2 -0.7) (xy -1.4 -0.7) (xy -1.4 0.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill yes)
+		(layer "User.1")
+		(uuid "4c432e6f-8033-4a3e-9051-a5ded3f209c9")
+	)
+	(fp_poly
+		(pts
+			(xy 1.4 0.7) (xy 1.4 -0.7) (xy 2 -0.7) (xy 2 0.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill yes)
+		(layer "User.1")
+		(uuid "3a9c4067-eea9-4c1b-9cc3-99d15db83f8d")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(uuid "bff77d7a-9393-4102-a96e-de804a397446")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.1)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -1.7 0)
+		(size 0.8 1.7)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "46c368f9-ccc0-4e9d-9164-cffb37f85f7d")
+	)
+	(pad "2" smd rect
+		(at 1.7 0)
+		(size 0.8 1.7)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "2795071a-18cf-40d0-986d-bc677920ff99")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/openrz67.3dshapes/KEY-SMD_2P-L3.0-W2.5-H1.6-LS4.0.wrl"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -0 -0 -0)
+		)
+	)
+)

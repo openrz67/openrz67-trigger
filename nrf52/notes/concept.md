@@ -76,3 +76,26 @@ XH connector, as today.
 - 100–220 µF in 1206/1210 at 6.3 V, or a tantalum.
 - Actual TX current of the chosen module at 0 dBm with DC/DC enabled.
 - Camera-side requirements in `../../case/notes/rz67-remote-inputs.md` still hold for 5 mA drive.
+
+## Layout decisions (kicad/, first pass)
+
+- **Board 31 × 30, not 26 × 30.** The XH connector is 17 mm wide including its two tabs
+  and the holder clip spans 26 mm; both set the width. The cell sits on the back, centred,
+  5 mm below the antenna end.
+- **XH in its SMD side-entry variant (S4B-XH-SM4-TB, C161861).** The through-hole S4B-XH-A
+  would put tails under the cell. Same housing, so the existing cable fits.
+- **Connector at the bottom edge, module at the top.** With the connector on the right edge
+  there was no corridor for the SWD and drive traces between the module pads and the
+  connector pads.
+- **Four plain SWD pads instead of Tag-Connect.** The TC2030-NL footprint with its three
+  locating holes did not fit next to the connector tab, and the reset line is not needed:
+  pyOCD / J-Link reset the nRF52 over SWD.
+- **GPIO choice is dictated by the module footprint.** Only the outer pad rows can be
+  routed on the top layer (the inner row is boxed in). Button on P0.30 (last pad of the left
+  column), LED on P0.00/XL1 (first pad of the bottom row), S1/S2 on the NFC pins P0.09/P0.10.
+  The module has no 32 kHz crystal, so XL1 is a free GPIO when LFCLK runs from RC.
+- **Both clip feet are VDD** and tied together on the back layer below the cell pad; 100 µF
+  sits at the right foot. Electrically redundant with the clip itself, but it keeps the
+  netlist honest and puts the bulk cap at the cell.
+- **Antenna keepout** is a rule area over the module's antenna end, both layers, 3.8 mm
+  deep. Ebyte's manual gives no number; this is the module's own antenna length plus 1 mm.
