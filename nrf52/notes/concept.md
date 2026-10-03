@@ -102,3 +102,20 @@ XH connector, as today.
   netlist honest and puts the bulk cap at the cell.
 - **Antenna keepout** is a rule area over the module's antenna end, both layers, 3.8 mm
   deep. Ebyte's manual gives no number; this is the module's own antenna length plus 1 mm.
+
+## Case decisions (case/, first pass)
+
+- **Board on a ledge, cell hanging below, component side up.** The button and LED must face
+  the lid, and the cell only needs the board lifted out to be changed. A floor hole under
+  the cell is the "eject": push the cell, the board comes up.
+- **Snap fingers moved to the side walls.** The back wall carries the plug opening, the
+  front wall faces the antenna end; the ESP32 case's finger geometry is reused unchanged,
+  which is why the wall stays 3.2 mm on a box this small.
+- **Button as a cantilever tab in the lid**, not a separate cap: nothing to lose, no extra
+  part, and ABS at 1.0 mm over an 8 mm tab flexes the 0.3 mm the switch needs. Untested.
+- **No light pipe.** A Ø1.6 hole 3 mm above a 0603 LED shows the light; a pipe can be glued
+  in later if it is too dim. `D1` was moved 1.6 mm away from `SW1` on the board so the hole
+  clears the tab's slot.
+- **Lid bosses sit on free copper, not on the board corners.** The module fills the
+  front-left corner and `C1` + `J1` the back-right one; `J1` moved 0.7 mm and `C1` 2.8 mm
+  on the board to free a spot.
