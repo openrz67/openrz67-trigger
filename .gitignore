@@ -57,3 +57,7 @@ projectFilesBackup/
 .mcp.json
 .claude/settings.local.json
 __pycache__/
+
+# KiCad per-user view settings
+*.kicad_prl
+*-backups/
