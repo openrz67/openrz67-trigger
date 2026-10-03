@@ -1,6 +1,6 @@
 # openrz67 nRF52 PCB — KiCad project
 
-KiCad 10 project for the coin-cell trigger: 31 × 30 mm, 2 layers, Ebyte E73-2G4M08S1C
+KiCad 10 project for the coin-cell trigger: 27 × 29 mm, 2 layers, Ebyte E73-2G4M08S1C
 (nRF52840) module, CR2032 clip on the back, two TLP172AM PhotoMOS relays, JST SH 1.0 mm
 side-entry camera connector, four SWD pads, one button, one LED. No regulator, no charger, no power
 switch. Concept stage, not fabricated.
@@ -78,14 +78,14 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 
 ## Mechanical
 
-Outline 31 × 30 mm, R0.8 corners, no mounting holes. All parts on top except the cell clip
+Outline 27 × 29 mm, R0.8 corners, no mounting holes. All parts on top except the cell clip
 on the back. Module antenna end is flush with the top edge (y = 0); the camera connector
-mouth faces the bottom edge (y = 30); SWD pads and the button sit bottom-left, the LED
+mouth faces the bottom edge (y = 29); SWD pads and the button sit bottom-left, the LED
 between them and the connector.
 
 | Part | Height over the board |
 |---|---|
-| CR2032 clip `BT1` (back) | 3.75 mm, the cell under it; cell centre (15.5, 18), slides in from either long side |
+| CR2032 clip `BT1` (back) | 3.75 mm, the cell under it; cell centre (13.5, 18), slides in from either long side |
 | Camera connector `J1` | 2.9 mm, body 6.0 × 4.3 |
 | Module `U1` | about 2 mm (not verified) |
 

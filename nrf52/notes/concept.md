@@ -79,9 +79,9 @@ XH connector, as today.
 
 ## Layout decisions (kicad/, first pass)
 
-- **Board 31 × 30, not 26 × 30.** The XH connector is 17 mm wide including its two tabs
-  and the holder clip spans 26 mm; both set the width. The cell sits on the back, centred,
-  5 mm below the antenna end.
+- **Board 27 × 29.** The clip's two feet span 25.9 mm, that is the width. The cell sits on
+  the back, centred, 5 mm below the antenna end. (The first pass was 31 × 30 because of the
+  17 mm wide XH connector.)
 - **JST SH 1.0 mm (SM04B-SRSS-TB, C160404) instead of XH.** The user does not need the XH
   plug. XH side-entry is 7 mm tall and 17 mm wide with its tabs, SH is 2.9 × 6 mm, and SH
   4-pin is the Qwiic / STEMMA QT cable, so pigtails are everywhere. Pin 1 is camera ground

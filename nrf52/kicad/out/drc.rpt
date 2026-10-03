@@ -1,52 +1,52 @@
 ** Drc report for openrz67-nrf.kicad_pcb **
-** Created on 2026-10-03T23:11:47 **
+** Created on 2026-10-03T23:17:23 **
 ** Report includes: Errors, Warnings, Exclusions **
 
 ** Found 11 DRC violations **
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(9.2700 mm, 19.1100 mm): Arc of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(7.2700 mm, 19.1100 mm): Arc of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(5.0500 mm, 22.5000 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(3.0500 mm, 22.5000 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(7.8900 mm, 17.5700 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(5.8900 mm, 17.5700 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(10.6500 mm, 15.4600 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(8.6500 mm, 15.4600 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(25.9500 mm, 13.5000 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(23.9500 mm, 13.5000 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(21.8300 mm, 19.1000 mm): Arc of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(19.8300 mm, 19.1000 mm): Arc of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(21.8300 mm, 19.1000 mm): Arc of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(19.8300 mm, 19.1000 mm): Arc of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(20.4500 mm, 15.4500 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(18.4500 mm, 15.4500 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(20.4500 mm, 17.5600 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(18.4500 mm, 17.5600 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(20.4500 mm, 17.5600 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(18.4500 mm, 17.5600 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(20.4500 mm, 15.4500 mm): Segment of BT1 on B.Silkscreen
-    @(15.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
+    @(18.4500 mm, 15.4500 mm): Segment of BT1 on B.Silkscreen
+    @(13.5000 mm, 18.0000 mm): Pad 3 [GND] of BT1 on B.Cu
 
 ** Found 0 unconnected pads **
 
