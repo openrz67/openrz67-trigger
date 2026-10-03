@@ -119,3 +119,19 @@ XH connector, as today.
 - **Lid bosses sit on free copper, not on the board corners.** The module fills the
   front-left corner and `C1` + `J1` the back-right one; `J1` moved 0.7 mm and `C1` 2.8 mm
   on the board to free a spot.
+
+## Firmware decisions (firmware/, skeleton, unbuilt)
+
+- **Zephyr app with its own board** (`boards/openrz67/openrz67_nrf`), not an overlay on the
+  nRF52840 DK: the pin map lives in one devicetree file next to the code, and `west build
+  -b openrz67_nrf` says what it is.
+- **GATT copied byte for byte** from the ESP32 firmware, including the legacy 1-byte and
+  the 3-byte countdown commands, so both apps keep working.
+- **Main loop sleeps as long as it can.** `next_wait()` wakes it for LED edges and the
+  countdown only; idle and connected it wakes once a second. The radio runs on its own.
+- **System OFF, not deep sleep with a timer**: the button's SENSE wakes the chip, nothing
+  else needs to. Advertising runs 5 minutes after boot and after each disconnect.
+- **No UART, no console** in the normal build; `debug.conf` adds RTT logging for a probe
+  session. The board has no serial pins.
+- **Battery from VDD** on the SAADC's internal channel, no divider. 2.5 to 3.0 V = 0 to
+  100 % on the Battery Service, raw mV on the custom characteristic.

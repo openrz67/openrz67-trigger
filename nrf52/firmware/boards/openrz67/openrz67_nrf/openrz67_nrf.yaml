@@ -1,0 +1,13 @@
+identifier: openrz67_nrf
+name: OpenRZ67 nRF52 trigger
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+ram: 256
+flash: 1024
+supported:
+  - adc
+  - gpio
+  - ble

@@ -1,0 +1,2 @@
+config BOARD_OPENRZ67_NRF
+	select SOC_NRF52840_QIAA
