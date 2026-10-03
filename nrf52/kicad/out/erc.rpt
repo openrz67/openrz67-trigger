@@ -1,4 +1,4 @@
-ERC report (2026-10-03T22:42:35, Encoding UTF8)
+ERC report (2026-10-03T23:11:48, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
@@ -46,7 +46,7 @@ Report includes: Errors, Warnings, Exclusions
     @(224.92 mm, 36.19 mm): Symbol J2 Pin 1 [Pin_1, Passive, Line]
 [endpoint_off_grid]: Symbol pin or wire end off connection grid
     ; warning
-    @(224.92 mm, 131.19 mm): Symbol J1 Pin 1 [1, Passive, Line]
+    @(226.19 mm, 131.19 mm): Symbol J1 Pin 1 [1, Passive, Line]
 
  ** ERC messages: 15  Errors 0  Warnings 15
 

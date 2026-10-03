@@ -1,8 +1,8 @@
 # openrz67 nRF52 PCB — KiCad project
 
 KiCad 10 project for the coin-cell trigger: 31 × 30 mm, 2 layers, Ebyte E73-2G4M08S1C
-(nRF52840) module, CR2032 holder on the back, two TLP172AM PhotoMOS relays, JST XH side-entry
-camera connector, four SWD pads, one button, one LED. No regulator, no charger, no power
+(nRF52840) module, CR2032 clip on the back, two TLP172AM PhotoMOS relays, JST SH 1.0 mm
+side-entry camera connector, four SWD pads, one button, one LED. No regulator, no charger, no power
 switch. Concept stage, not fabricated.
 
 The schematic and the board are **generated**: `tools/design.py` holds parts, placement,
@@ -51,10 +51,10 @@ Connectors:
 
 | Ref | Pin | Signal |
 |---|---|---|
-| `J1` camera, XH 2.5 mm | 1 | not connected |
-| | 2 | camera ground |
-| | 3 | S1 |
-| | 4 | S2 |
+| `J1` camera, SH 1.0 mm (Qwiic/STEMMA QT cable) | 1 | camera ground (black) |
+| | 2 | not connected |
+| | 3 | S1 (blue) |
+| | 4 | S2 (yellow) |
 | `J2` SWD pads, 2.54 mm | 1 | VDD |
 | | 2 | SWDIO |
 | | 3 | SWCLK |
@@ -78,11 +78,18 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 
 ## Mechanical
 
-Outline 31 × 30 mm, R0.8 corners, no mounting holes. All parts on top except the cell holder
-on the back; the cell is centred at (15.5, 18). Module antenna end is flush with the top
-edge (y = 0). Camera connector mouth is at the bottom edge (y = 30), SWD pads and the
-button sit on the bottom-left, the LED between them and the connector.
+Outline 31 × 30 mm, R0.8 corners, no mounting holes. All parts on top except the cell clip
+on the back. Module antenna end is flush with the top edge (y = 0); the camera connector
+mouth faces the bottom edge (y = 30); SWD pads and the button sit bottom-left, the LED
+between them and the connector.
 
-Open items before ordering: holder pad polarity (centre pad assumed cell negative), holder
-insertion direction for the case, E73 antenna keepout against Ebyte's drawing, and the
-S4B-XH-SM4-TB and MY-2032-16 heights for the case.
+| Part | Height over the board |
+|---|---|
+| CR2032 clip `BT1` (back) | 3.75 mm, the cell under it; cell centre (15.5, 18), slides in from either long side |
+| Camera connector `J1` | 2.9 mm, body 6.0 × 4.3 |
+| Module `U1` | about 2 mm (not verified) |
+
+`BT1` is only the positive clip (MYOUNG drawing: "TERMINAL(+)"). The cell's negative face
+rests on the Ø10 mm bare pad in the middle of the back; order the board with ENIG so that
+pad does not oxidise. Ebyte's manual gives no antenna keepout figure, only "keep copper and
+noisy traces away from the antenna end"; the 3.8 mm rule area is this project's choice.

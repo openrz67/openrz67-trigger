@@ -9,7 +9,7 @@ design cannot do: live on a coin cell with no power switch, no charger and no re
 - The GATT: service `c9239c9e-…`, command characteristic `458d4dc9-…`, battery mV characteristic
   `cda71ce6-…`, DIS 0x180A, BAS 0x180F. The apps do not change.
 - Two TLP172AM PhotoMOS channels. Isolated, bidirectional, proven on the camera.
-- The camera cable and its S4B-XH-A side-entry connector, so the existing cable fits.
+- The camera cable's camera end. The board end becomes a JST SH plug (see layout decisions).
 
 ## What goes
 
@@ -71,8 +71,8 @@ XH connector, as today.
 
 ## To verify before drawing
 
-- E73-2G4M08S1C LCSC number, stock, JLC assembly class, antenna keepout drawing.
-- CR2032 holder footprint and LCSC part; CR2450 variant.
+- E73-2G4M08S1C: JLC assembly class. (LCSC C356849, stock OK; Ebyte gives no keepout figure.)
+- CR2450 clip variant, if the case wants the bigger cell.
 - 100–220 µF in 1206/1210 at 6.3 V, or a tantalum.
 - Actual TX current of the chosen module at 0 dBm with DC/DC enabled.
 - Camera-side requirements in `../../case/notes/rz67-remote-inputs.md` still hold for 5 mA drive.
@@ -82,8 +82,11 @@ XH connector, as today.
 - **Board 31 × 30, not 26 × 30.** The XH connector is 17 mm wide including its two tabs
   and the holder clip spans 26 mm; both set the width. The cell sits on the back, centred,
   5 mm below the antenna end.
-- **XH in its SMD side-entry variant (S4B-XH-SM4-TB, C161861).** The through-hole S4B-XH-A
-  would put tails under the cell. Same housing, so the existing cable fits.
+- **JST SH 1.0 mm (SM04B-SRSS-TB, C160404) instead of XH.** The user does not need the XH
+  plug. XH side-entry is 7 mm tall and 17 mm wide with its tabs, SH is 2.9 × 6 mm, and SH
+  4-pin is the Qwiic / STEMMA QT cable, so pigtails are everywhere. Pin 1 is camera ground
+  so a Qwiic cable's black wire is ground. (The through-hole XH was never an option here:
+  its tails would sit under the cell.)
 - **Connector at the bottom edge, module at the top.** With the connector on the right edge
   there was no corridor for the SWD and drive traces between the module pads and the
   connector pads.

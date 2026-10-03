@@ -18,7 +18,7 @@ PROJECT_UUID = "5d1c1d2e-0a3b-4c4d-9e5f-6a7b8c9d0e1f"
 
 # ref -> library symbol name
 SYMBOL = {
-    "U1": "E73-2G4M08S1C", "BT1": "MY-2032-16", "J1": "S4B-XH-SM4-TB-",
+    "U1": "E73-2G4M08S1C", "BT1": "MY-2032-16", "J1": "SM04B-SRSS-TB",
     "U2": "TLP172AM", "U3": "TLP172AM", "R1": "R", "R2": "R", "R3": "R",
     "C1": "CL31A107MQHNNNE", "C2": "GRM155R71H104KE14D", "J2": "Conn_01x04",
     "SW1": "B3U-1000P", "D1": "KT-0603R",
