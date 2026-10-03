@@ -109,9 +109,6 @@ static const struct bt_data ad[] = {
 static const struct bt_data sd[] = {
 	BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, sizeof(CONFIG_BT_DEVICE_NAME) - 1),
 };
-#ifndef BT_LE_ADV_OPT_CONN
-#define BT_LE_ADV_OPT_CONN BT_LE_ADV_OPT_CONNECTABLE
-#endif
 /* 30-60 ms advertising, as on the ESP32 board; the phone sees us at once */
 static const struct bt_le_adv_param adv_param =
 	BT_LE_ADV_PARAM_INIT(BT_LE_ADV_OPT_CONN, 0x0030, 0x0060, NULL);

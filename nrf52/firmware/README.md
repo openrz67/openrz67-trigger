@@ -3,8 +3,8 @@
 Zephyr application for the coin-cell trigger in [`../kicad/`](../kicad/). Same Bluetooth
 services and command bytes as the ESP32-C3 firmware in the repository root, so the
 [Android](https://github.com/openrz67/openrz67-android) and
-[iOS](https://github.com/openrz67/openrz67-ios) apps work unchanged. **Not yet built or
-flashed on hardware.**
+[iOS](https://github.com/openrz67/openrz67-ios) apps work unchanged. Builds with nRF Connect
+SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
 
 | File | What |
 |---|---|
@@ -44,20 +44,37 @@ oscillator. P0.09/P0.10 are NFC pins set to GPIO.
 
 ## Build and flash
 
-Needs the nRF Connect SDK (west, Zephyr SDK). From an NCS workspace:
+Needs the nRF Connect SDK (west workspace) and the Zephyr SDK toolchain. One-time setup, as
+done on the development Mac:
 
 ```sh
-west build -b openrz67_nrf -s /path/to/openrz67-trigger/nrf52/firmware -d build
-west build -b openrz67_nrf -s ... -- -DEXTRA_CONF_FILE=debug.conf   # with RTT logging
+brew install cmake ninja dtc
+uv venv --python 3.12 ~/ncs/.venv && uv pip install -p ~/ncs/.venv west
+cd ~/ncs && source .venv/bin/activate
+west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.4.1 . && west update --narrow -o=--depth=1
+uv pip install -p .venv -r zephyr/scripts/requirements.txt -r nrf/scripts/requirements-build.txt
+# Zephyr SDK 1.0.1 (zephyr/SDK_VERSION): minimal bundle + the arm toolchain into gnu/, then setup.sh -h -c
 ```
+
+Build (the board lives in this directory, so pass it as `BOARD_ROOT`; no sysbuild, there is
+no bootloader):
+
+```sh
+cd ~/ncs && source .venv/bin/activate && export ZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-1.0.1
+FW=/path/to/openrz67-trigger/nrf52/firmware
+west build --no-sysbuild -b openrz67_nrf -s $FW -d $FW/build -- -DBOARD_ROOT=$FW
+west build --no-sysbuild -b openrz67_nrf -s $FW -d $FW/build -- -DBOARD_ROOT=$FW -DEXTRA_CONF_FILE=debug.conf   # RTT logging
+```
+
+The image is `build/zephyr/zephyr.hex`.
 
 Flashing is over SWD. A Raspberry Pi Pico running Raspberry Pi's `debugprobe` firmware
 (CMSIS-DAP) works through pyOCD; a J-Link through its own runner:
 
 ```sh
 pip install pyocd && pyocd pack install nrf52840
-west flash --runner pyocd
-west flash --runner jlink
+west flash -d $FW/build --runner pyocd
+west flash -d $FW/build --runner jlink
 ```
 
 Wire the probe to `J2`: pad 1 VDD (reference voltage), 2 SWDIO, 3 SWCLK, 4 GND. There is no

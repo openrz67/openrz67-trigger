@@ -120,7 +120,7 @@ XH connector, as today.
   front-left corner and `C1` + `J1` the back-right one; `J1` moved 0.7 mm and `C1` 2.8 mm
   on the board to free a spot.
 
-## Firmware decisions (firmware/, skeleton, unbuilt)
+## Firmware decisions (firmware/, builds, not flashed)
 
 - **Zephyr app with its own board** (`boards/openrz67/openrz67_nrf`), not an overlay on the
   nRF52840 DK: the pin map lives in one devicetree file next to the code, and `west build

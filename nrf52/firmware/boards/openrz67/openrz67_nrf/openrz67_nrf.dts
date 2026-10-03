@@ -77,6 +77,11 @@
 	status = "okay";
 };
 
+/* P0.09 / P0.10 drive the PhotoMOS LEDs, not NFC */
+&uicr {
+	nfct-pins-as-gpios;
+};
+
 &flash0 {
 	partitions {
 		compatible = "fixed-partitions";
