@@ -28,7 +28,7 @@
 	(fp_line (start -3.00 -1.78) (end 3.00 -1.78) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 3.00 -1.78) (end 3.00 2.47) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 3.00 2.47) (end -3.00 2.47) (layer F.CrtYd) (width 0.05))
-	(model "nrf.3dshapes/CONN-SMD_SR1.00-WS-4P.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/CONN-SMD_SR1.00-WS-4P.wrl"
 		(offset (xyz 0.000 0.000 0.000))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

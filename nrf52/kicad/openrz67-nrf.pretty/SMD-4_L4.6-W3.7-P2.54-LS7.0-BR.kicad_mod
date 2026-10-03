@@ -171,7 +171,7 @@
 		(uuid "c4e6ae67-0acb-4092-8a51-e5cf19495d9b")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/openrz67.3dshapes/SMD-4_L3.7-W4.6-H2.2-LS7.0-P2.54.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/SOP-6_4P-L3.7-W4.6-H2.1-LS7.0-P1.27.wrl"
 		(offset
 			(xyz 0 0 0)
 		)

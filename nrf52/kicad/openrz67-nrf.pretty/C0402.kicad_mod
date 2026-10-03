@@ -314,7 +314,7 @@
 		(uuid "4a15de07-2ace-4ea1-a422-459c25622af9")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/openrz67.3dshapes/C0402_L1.0-W0.5-H0.5.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/C0402_L1.0-W0.5-H0.5.wrl"
 		(offset
 			(xyz 0 0 0)
 		)

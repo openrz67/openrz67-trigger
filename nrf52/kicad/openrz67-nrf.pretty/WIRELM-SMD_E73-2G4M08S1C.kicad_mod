@@ -100,7 +100,7 @@
 	(fp_line (start -6.50 -7.01) (end 6.50 -7.01) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 6.50 -7.01) (end 6.50 10.98) (layer F.CrtYd) (width 0.05))
 	(fp_line (start 6.50 10.98) (end -6.50 10.98) (layer F.CrtYd) (width 0.05))
-	(model "nrf.3dshapes/WIRELM-SMD_L18.0-W13.0-H3.0-E73-2G4M08S1C.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/WIRELM-SMD_L18.0-W13.0-H3.0-E73-2G4M08S1C.wrl"
 		(offset (xyz 0.000 0.000 0.000))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

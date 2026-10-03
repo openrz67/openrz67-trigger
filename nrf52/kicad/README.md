@@ -16,6 +16,9 @@ run overwrites them.
 | `tools/gen_sch.py` | writes `openrz67-nrf.kicad_sch`: one symbol per part, a global label on every used pin, a no-connect on every unused one |
 | `tools/gen_pcb.py` | writes `openrz67-nrf.kicad_pcb` with pcbnew: footprints, nets, outline, GND pours, antenna keepout, tracks, design rules |
 | `tools/regen.sh` | runs both generators, then exports everything in `out/` and runs DRC (with schematic parity) and ERC |
+| `tools/fetch_3d.sh` | downloads STEP+WRL models for every LCSC part in the BOM into `openrz67-nrf.3dshapes/` |
+| `tools/export_step.sh` | board STEP to `out/openrz67-nrf.step` (gitignored); fetches missing part models first |
+| `openrz67-nrf.3dshapes/` | 3D models; `.wrl` committed (renders), `.step` gitignored |
 | `openrz67-nrf.kicad_sym`, `openrz67-nrf.pretty/` | project libraries: LCSC/EasyEDA imports via easyeda2kicad, KiCad's `R`, and the own `SWD_1x04_P2.54` pad footprint |
 | `out/` | generated: Gerber+drill zip, position file, BOM with LCSC numbers, schematic PDF, top/bottom renders, DRC/ERC reports |
 

@@ -1,0 +1,11 @@
+.history/
+*.lck
+*-backups/
+fp-info-cache
+_autosave-*
+*.kicad_prl
+openrz67-nrf.3dshapes/*.step
+out/openrz67-nrf.step
+out/openrz67-nrf.glb
+.venv-tools/
+

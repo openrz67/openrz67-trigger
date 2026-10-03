@@ -339,7 +339,7 @@
 		(uuid "2795071a-18cf-40d0-986d-bc677920ff99")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/openrz67.3dshapes/KEY-SMD_2P-L3.0-W2.5-H1.6-LS4.0.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/KEY-SMD_2P-L3.0-W2.5-H1.6-LS4.0.wrl"
 		(offset
 			(xyz 0 0 0)
 		)

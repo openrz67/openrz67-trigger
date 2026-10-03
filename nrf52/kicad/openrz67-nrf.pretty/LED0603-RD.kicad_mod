@@ -380,7 +380,7 @@
 		(uuid "4ce919dc-5027-4bbe-8816-45d6e2e827c5")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/openrz67.3dshapes/LED0603_L1.6-W0.8-H0.6.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/LED0603_L1.6-W0.8-H0.6.wrl"
 		(offset
 			(xyz 0 0 0)
 		)

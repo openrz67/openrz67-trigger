@@ -270,7 +270,7 @@
 		(uuid "f0777ba5-a9b0-425f-b399-4ed089bc7639")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/openrz67.3dshapes/R0402_L1.0-W0.5-H0.4.wrl"
+	(model "${KIPRJMOD}/openrz67-nrf.3dshapes/R0402_L1.0-W0.5-H0.4.wrl"
 		(offset
 			(xyz 0 0 0)
 		)
