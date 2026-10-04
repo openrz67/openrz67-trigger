@@ -250,3 +250,27 @@ ends at the pipe's lower end, 0.8 above the board: only `D1` and `R3` (both unde
 under its ring, `J1`'s body is 0.4 away. `qidi-template.3mf` was rebuilt from the ESP32
 case's template (identical print settings) with the objects renamed, so the pipe keeps its
 plate 2 / clear filament / per-object profile.
+
+## Cell change with the board in the lid (2026-10-04)
+
+Users put in and change the cell themselves, so the board no longer drops loose out of the
+base. Two hooks off the lid ceiling hold it in the lid, and the lid tongue is gone from the
+back wall, so the cell slides out of the clip backwards. It cannot go forwards: it needs
+14.5 mm of travel to clear the strap, and the front ledge stops it after 7.
+
+Rejected:
+- **Coin-twist hatch in the floor**: the clip loads sideways, and no top-loading CR2032 holder
+  on JLC fits a 27 × 29 board (all are 28-33 mm tail to tail).
+- **Glue the board to the lid bosses**: a broken case would scrap the board. With hooks the
+  board comes out and a new case can be mailed.
+
+The hooks hang from the ceiling, not off the tongue: on the tongue the barb would sit 1.6 mm
+below the finger root, too stiff to spring 0.5 mm. From the ceiling the finger is 5.6 mm to the
+barb, about 2.4 % strain, under the snap fingers' 3.3 %. They need 1.9 mm between the board's
+side edge and the wall (was 0.4), so the case is 3 mm wider. The clip keepout was a full box;
+the 3D model shows only the solder legs within 2.5 mm of the board, so the check is now strap
+plus legs, and the hooks sit in front of the legs.
+
+Untested: the hook click and release force, and the barb's flat face. It prints as a 0.7 mm
+overhang, like the snap bead's retention face.
+

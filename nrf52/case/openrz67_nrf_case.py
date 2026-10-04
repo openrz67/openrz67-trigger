@@ -8,8 +8,9 @@ Two-part snap-fit box for the coin-cell board in ../kicad/ (27 x 29 mm, CR2032 c
 the back). The board rests on a ledge around the base cavity with the cell hanging below
 it; the lid presses it down with four corner bosses. The lid carries a cantilever button
 tab over SW1, a light pipe over D1 and the opening for the JST SH camera plug in its back
-wall. The floor is flat and closed for velcro; for a cell change the lid comes off and the
-board drops out when the base is turned over.
+wall. The floor is flat and closed for velcro. Two hooks off the lid ceiling clip under the
+board's side edges, so for a cell change the board comes off with the lid and the cell slides
+out of the clip backwards: the lid tongue is open along the whole back wall.
 
 Parts: base (tub), lid (telescoping tongue with four snap fingers on the side walls) and
 light pipe (clear filament, glued into the lid). Print orientation: base floor-down, lid
@@ -50,6 +51,9 @@ pcb_t = float(os.environ.get("PCB_T", "1.6"))
 cell_c = (13.5, 18.0)                 # CR2032 centre (BT1), on the back
 cell_d, cell_t = 20.0, 3.2
 clip_l, clip_w, clip_h = 25.9, 9.4, 3.75   # MY-2032-16 clip incl. feet; highest point under the board
+# From the clip's 3D model: within 2.5 mm of the board only the two solder legs (pad 2 height)
+# are there; the strap and its contact dimples take the lowest clip_strap_h.
+clip_leg_w, clip_strap_h = 5.0, 1.3
 sw_c, sw_h = (6.0, 27.6), 1.6         # B3U-1000P centre and height
 led_c = (15.8, 27.6)                  # D1
 conn_c, conn_w, conn_h, conn_mouth = (21.3, 24.7), 6.0, 2.9, 2.47   # SM04B-SRSS-TB: centre, body, height, body past the centre toward the mouth
@@ -57,7 +61,7 @@ module = (0.5, 0.0, 15.5, 19.0, 2.0)  # E73 incl. pads: x0, y0, x1, y1, height
 max_part_h = 2.9                      # tallest part above the board (the connector)
 
 # --- Enclosure ---------------------------------------------------------------------------
-clr = 0.4                 # board edge to inner wall
+clr = 0.4                 # board front/back edge to inner wall
 wall = 3.2                # splits into two 1.6 mm lap halves (snap needs >= 3.14, see checks)
 floor_t = 1.6
 lid_top_t = 1.6
@@ -71,6 +75,14 @@ ledge_gap = 0.2           # air between the ledge wall and the lid tongue
 # the front-left one and C1 + J1 the back-right one
 bosses = [(1.3, 21.2, 2.4), (25.5, 1.5, 2.4), (1.5, 27.5, 2.4), (26.0, 23.0, 2.0)]
 ant_wall_clr = 1.0        # air in front of the antenna end (board y 0)
+# Board hooks: a finger off the lid ceiling on each side wall, its barb under the board's side
+# edge, so the board stays in the lid when the lid comes off. To take the board out, pull the
+# tab below each barb outward (fingernail between tab and clip leg). Between the snap fingers,
+# where the clip band has already broken the ledge, in front of the clip's solder legs.
+hook_y, hook_w, hook_t = 13.45, 3.4, 1.0      # board y of the centre, width, finger thickness
+hook_gap, hook_grip, hook_flex = 0.2, 0.5, 0.7  # finger to board edge, barb under the board, air behind the finger
+hook_flat, hook_slack, hook_tab = 0.3, 0.1, 1.5  # flat retention face, board play, release tab below the barb
+side_clr = hook_flex + hook_t + hook_gap      # board side edge to inner wall
 
 # Button: cantilever tab in the lid top over SW1, nub underneath
 tab_w, tab_l, tab_slot = 6.0, 7.45, 0.7
@@ -112,7 +124,7 @@ lap, lap_gap = 5.0, 0.15
 eps = 0.01
 
 # --- Derived --------------------------------------------------------------------------------
-inner_w = board_w + 2 * clr
+inner_w = board_w + 2 * side_clr
 inner_h = board_h + 2 * clr + ant_wall_clr
 inner_r = board_r + clr
 outer_w, outer_h, outer_r = inner_w + 2 * wall, inner_h + 2 * wall, inner_r + wall
@@ -134,12 +146,13 @@ check(wall / 2 - (snap_bead + pocket_extra_d) >= 0.87, "base lip behind the snap
 check(wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines")
 check(0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness")
 check(ledge_w - clr >= 0.8, "ledge under the board too narrow")
+check(hook_t >= 0.87, "board hook under two perimeter lines")
 check(ledge_h <= clip_h + under_clr, "ledge taller than the room under the board")
 check(split_z + orient_mark_h / 2 <= total_h - lid_top_r, "orientation rib runs into the lid top chamfer")
 
 
 def bx(x):
-    return wall + clr + board_w - x
+    return wall + side_clr + board_w - x
 
 
 def by(y):
@@ -166,6 +179,7 @@ def cyl(x, y, z0, d, h):
 outer_sk = rrect(outer_w, outer_h, outer_r)
 inner_sk = rrect(inner_w, inner_h, inner_r, wall, wall)
 mid_sk = rrect(inner_w + wall, inner_h + wall, inner_r + wall / 2, wall / 2, wall / 2)
+board_sk = rrect(board_w, board_h, board_r, bx(board_w), by(0))
 
 # Snap finger bands (case-Y range of each finger) on the left (x = 0) and right wall
 finger_bands = [(fy - finger_l / 2, fy + finger_l / 2) for fy in snap_fingers_y]
@@ -188,31 +202,35 @@ def finger_boxes(margin, z0, h):
 
 
 # Camera plug opening in the back wall: body width + clearance, from the board top up.
-# The base keeps its full wall under it (no rabbet) so the plug has a floor to sit on,
-# like the USB zone on the ESP32 case.
+# Along the whole back wall the base keeps its full wall (no rabbet) and the lid has no
+# tongue: the plug gets a floor to sit on, like the USB zone on the ESP32 case, and with the
+# board hooked into the lid the cell slides out backwards under it.
 conn_x0 = bx(conn_c[0]) - conn_w / 2 - conn_clr
 conn_open_w = conn_w + 2 * conn_clr
 conn_open_h = conn_h + conn_clr
-conn_zone = box(conn_x0 - wall, outer_h - wall - 1, split_z - lap - 1, conn_open_w + 2 * wall, wall + 2, lap + 1)
+back_zone = box(-1, outer_h - wall - 1, split_z - lap - 1, outer_w + 2, wall + 2, lap + 1)
 cut_conn = box(conn_x0, outer_h - wall - 1, split_z - eps, conn_open_w, wall + 2, conn_open_h + eps)
 
 # --- BASE -------------------------------------------------------------------------------------
 base = prism(outer_sk, 0, split_z)
 base -= prism(inner_sk, floor_t, total_h)                               # cavity
-base -= prism(mid_sk, split_z - lap, lap + 1) - conn_zone              # rabbet: outer half only
+base -= prism(mid_sk, split_z - lap, lap + 1) - back_zone              # rabbet: outer half only
 # Board ledge: a wall standing on the floor, ledge_gap inside the lid tongue (above
 # split_z - lap the base wall is only its outer half, so a ledge hung on it would float).
-# Below the tongue the gap is filled so the ledge also joins the wall. Broken on the sides
-# where the clip passes over it and along the back where the cell comes within 1 mm of
-# the board edge.
-ledge_in = offset(inner_sk, -ledge_w)
+# Below the tongue the gap is filled so the ledge also joins the wall. Reaches
+# ledge_w - clr under the board on every side. Broken on the sides where the clip passes
+# over it and the hooks hang, and along the back where the cell comes within 1 mm of the
+# board edge.
+ledge_in = offset(board_sk, -(ledge_w - clr))
 ledge = prism(offset(inner_sk, -ledge_gap) - ledge_in, floor_t - eps, pcb_z - floor_t + eps)
 ledge += prism(offset(inner_sk, 0.5) - ledge_in, floor_t - eps, split_z - lap - floor_t + eps)
 ledge += prism(offset(inner_sk, -ledge_gap), floor_t - eps, pcb_z - floor_t + eps) & box(   # front: bridge the antenna air gap
     0, 0, 0, outer_w, wall + ant_wall_clr + ledge_w, total_h)
-clip_y0, clip_y1 = by(cell_c[1] - clip_w / 2 - 0.7), by(cell_c[1] + clip_w / 2 + 0.7)
-for x0 in (wall - 1, outer_w - wall - ledge_w):
-    ledge -= box(x0, clip_y0, floor_t, ledge_w + 1, clip_y1 - clip_y0, total_h)
+side_y0 = by(min(cell_c[1] - clip_w / 2 - 0.7, hook_y - hook_w / 2 - 0.3))
+side_y1 = by(cell_c[1] + clip_w / 2 + 0.7)
+side_ledge = side_clr + ledge_w - clr
+for x0 in (wall - 1, outer_w - wall - side_ledge):
+    ledge -= box(x0, side_y0, floor_t, side_ledge + 1, side_y1 - side_y0, total_h)
 ledge -= box(bx(cell_c[0]) - cell_d / 2 - 0.7, outer_h - wall - ledge_w, floor_t, cell_d + 1.4, ledge_w + 1, total_h)
 base += ledge
 base += orient_mark_rib(split_z - orient_mark_h / 2)
@@ -226,8 +244,7 @@ base -= box(outer_w / 2 - pry_w / 2, -1, split_z - pry_h, pry_w, pry_d + 1, pry_
 # --- LID --------------------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)
 lid = chamfer(lid.edges().group_by(Axis.Z)[-1], lid_top_r)
-lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap) - box(   # tongue, notched where the base keeps its full wall
-    conn_x0 - wall - lap_gap, outer_h - wall - 1, split_z - lap - 1, conn_open_w + 2 * (wall + lap_gap), wall + 2, lap + 1)
+lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap) - back_zone   # tongue: none on the back wall
 bead = prism(offset(mid_sk, -lap_gap + snap_bead) - offset(mid_sk, -lap_gap - 0.4),
              bead_z - bead_h / 2, bead_h) & finger_boxes(0, 0, total_h)
 bead = chamfer(bead.edges().group_by(Axis.Z)[0], bead_ch_in)
@@ -245,6 +262,19 @@ for fy0, fy1 in finger_bands:
 # Hold-down bosses at the board corners
 for cx, cy, d in bosses:
     lid += cyl(bx(cx), by(cy), pcb_top_z, d, ceiling_z - pcb_top_z + eps)
+# Board hooks, built on the x = 0 wall and mirrored. The barb's lower face is a 45 deg lead-in
+# (the board edge pushes the finger out); its upper face holds the board.
+hook_y0, hook_y1 = by(hook_y - hook_w / 2), by(hook_y + hook_w / 2)
+hook_xf = wall + hook_flex + hook_t                  # finger face toward the board
+barb_d = hook_gap + hook_grip
+barb_top = pcb_z - hook_slack
+barb_z0 = barb_top - hook_flat - barb_d
+hook_z0 = barb_z0 - hook_tab
+hook = box(wall + hook_flex, hook_y0, hook_z0, hook_t, hook_y1 - hook_y0, ceiling_z - hook_z0 + eps)
+hook += extrude(Plane.XZ.offset(-hook_y0) * Polygon(
+    (hook_xf - eps, barb_top), (hook_xf + barb_d, barb_top), (hook_xf + barb_d, barb_top - hook_flat),
+    (hook_xf - eps, barb_z0), align=None), amount=hook_y1 - hook_y0, dir=(0, 1, 0))
+lid += hook + mirror(hook, about=Plane.YZ.offset(outer_w / 2))
 # Camera plug opening
 lid -= cut_conn
 # Button: U-slot around a tab hinged at its front end, tab thinned from inside, nub under it
@@ -333,6 +363,8 @@ if lid_text_show:
 for name, p in (("base", base), ("lid", lid), ("lightpipe", lightpipe)):
     check(p.is_valid, f"{name}: invalid solid")
     check(len(p.solids()) == 1, f"{name}: {len(p.solids())} separate bodies, something floats")
+_hb = hook.bounding_box()
+check(abs(_hb.min.Y - hook_y0) < 1e-3 and abs(_hb.max.Y - hook_y1) < 1e-3 and abs(_hb.max.X - (hook_xf + barb_d)) < 1e-3, "board hook misplaced")
 bb = base.bounding_box()
 check(abs(bb.size.X - outer_w) < 1e-3, "base X")
 check(abs(bb.max.Y - outer_h) < 1e-3 and abs(bb.min.Y + orient_mark_d) < 1e-3, "base Y")
@@ -357,16 +389,18 @@ def _clear(solid, keep, what):
 
 
 # Keepouts: the board itself, the cell + clip below it, the parts above it
-_clear(base + lid, prism(rrect(board_w, board_h, board_r, bx(board_w), by(0)), pcb_z + eps, pcb_t - 2 * eps), "board")
-_clear(base, cyl(bx(cell_c[0]), by(cell_c[1]), pcb_z - clip_h - under_clr + eps, cell_d + 1.0, clip_h + under_clr - 2 * eps), "cell")
-_clear(base, box(bx(cell_c[0]) - clip_l / 2 - 0.3, by(cell_c[1]) - clip_w / 2 - 0.3, pcb_z - clip_h - under_clr + eps,
-                 clip_l + 0.6, clip_w + 0.6, clip_h + under_clr - 2 * eps), "clip")
+_clear(base + lid, prism(board_sk, pcb_z + eps, pcb_t - 2 * eps), "board")
+_clear(base + lid, cyl(bx(cell_c[0]), by(cell_c[1]), pcb_z - clip_h - under_clr + eps, cell_d + 1.0, clip_h + under_clr - 2 * eps), "cell")
+_clear(base + lid, box(bx(cell_c[0]) - clip_l / 2 - 0.3, by(cell_c[1]) - clip_w / 2 - 0.3, pcb_z - clip_h - under_clr + eps,
+                       clip_l + 0.6, clip_w + 0.6, clip_strap_h + under_clr), "clip strap")
+_clear(base + lid, box(bx(cell_c[0]) - clip_l / 2 - 0.3, by(cell_c[1]) - clip_leg_w / 2 - 0.3, pcb_z - clip_h - under_clr + eps,
+                       clip_l + 0.6, clip_leg_w + 0.6, clip_h + under_clr - 2 * eps), "clip legs")
 _clear(lid, box(bx(module[2]), by(module[1]), pcb_top_z, module[2] - module[0], module[3] - module[1], module[4] + 0.3), "module")
 _clear(lid, box(bx(conn_c[0]) - conn_w / 2 - 0.3, by(conn_c[1]) - 2.5, pcb_top_z, conn_w + 0.6, 2.5 + conn_mouth + clr + 1, conn_h + 0.3), "connector")
 _clear(lid, cyl(bx(led_c[0]), by(led_c[1]), pcb_top_z, 2.4, 0.9), "LED")
 _clear(lid, cyl(bx(sw_c[0]), by(sw_c[1]), pcb_top_z, 3.6, sw_h + 0.1), "switch")
 # the whole board top stays free up to the tallest part, except under the bosses and the nub
-_free = prism(rrect(board_w, board_h, board_r, bx(board_w), by(0)), pcb_top_z, max_part_h - eps) - cyl(tx, ty, pcb_top_z, nub_d + 0.5, max_part_h)
+_free = prism(board_sk, pcb_top_z, max_part_h - eps) - cyl(tx, ty, pcb_top_z, nub_d + 0.5, max_part_h)
 for cx, cy, d in bosses:
     _free -= cyl(bx(cx), by(cy), pcb_top_z - 1, d + 0.2, max_part_h + 2)
 _free -= cyl(lx, ly, pcb_top_z - 1, collar_d + 0.2, max_part_h + 2)
@@ -405,6 +439,16 @@ _open(lid, cyl(lx, ly, collar_z - 0.5, led_stem_d + led_pipe_clr - 0.1, total_h 
 _clear(lid, lightpipe, "light pipe")
 _open(lid, box(tab_x0 - tab_slot + 0.1, tab_y0 + tab_l + 0.1, ceiling_z - 0.5, tab_w + 2 * tab_slot - 0.2, tab_slot - 0.2, lid_top_t + 1), "button slot")
 _clear(base, lid, "lid")
+# Board hooks: clear of the snap finger slots, air behind each finger, the barbs reach under
+# the board by hook_grip, and the cell slides out backwards past the lid with the board in it
+for fy0, fy1 in finger_bands:
+    check(hook_y1 <= fy0 - finger_slot - 0.3 or hook_y0 >= fy1 + finger_slot + 0.3, "board hook on a snap finger slot")
+for x0 in (wall, outer_w - wall - hook_flex):
+    _open(lid, box(x0 + eps, hook_y0, hook_z0, hook_flex - 2 * eps, hook_y1 - hook_y0, ceiling_z - hook_z0 - 0.5), "air behind a board hook")
+_hold = (lid & prism(board_sk, barb_top - hook_flat + eps, hook_flat - 2 * eps)).volume
+check(_hold > 0.9 * 2 * hook_grip * hook_w * (hook_flat - 2 * eps), f"board hooks do not reach under the board ({_hold:.2f} mm3)")
+_cx, _cy, _cz0 = bx(cell_c[0]), by(cell_c[1]), pcb_z - cell_t - 0.1
+_open(lid, cyl(_cx, _cy, _cz0, cell_d, cell_t) + box(_cx - cell_d / 2, _cy, _cz0, cell_d, outer_h - _cy + 1, cell_t), "cell exit (board in the lid)")
 # Ledge actually supports the board along the front and back edges
 check((base & box(bx(board_w - 5), by(-clr), pcb_z - ledge_h + 0.1, board_w - 10, clr + 0.8, ledge_h - 0.2)).volume > 0.5 * (board_w - 10) * (clr + 0.8) * (ledge_h - 0.2), "front ledge missing")
 
