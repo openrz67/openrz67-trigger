@@ -33,6 +33,7 @@ LOG_MODULE_REGISTER(openrz67, LOG_LEVEL_INF);
 #define S1_LEAD_MS       10     /* S1 before S2, lets the camera wake its meter */
 #define DEFAULT_COUNTDOWN_MS 10000
 #define LED_HOLD_MS      2000   /* LED on after a trigger */
+#define LONG_PRESS       K_SECONDS(3)   /* button held this long: power off */
 
 /* --- Pins (devicetree, see boards/openrz67/openrz67_nrf/openrz67_nrf.dts) ---------- */
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
@@ -277,7 +278,7 @@ static void led_tick(int64_t now)
 	gpio_pin_set_dt(&led, on);
 }
 
-/* --- Button: a press while awake restarts advertising (and wakes from System OFF) --- */
+/* --- Button: a press wakes from System OFF and restarts advertising; held 3 s, power off --- */
 static void adv_work_fn(struct k_work *work)
 {
 	if (current_conn == NULL) {
@@ -285,10 +286,29 @@ static void adv_work_fn(struct k_work *work)
 	}
 }
 static K_WORK_DEFINE(adv_work, adv_work_fn);
+
+static void long_press_fn(struct k_work *work)
+{
+	if (!gpio_pin_get_dt(&button)) {
+		return;
+	}
+	/* a button still held would wake System OFF at once */
+	while (gpio_pin_get_dt(&button)) {
+		k_msleep(20);
+	}
+	if (current_conn) {
+		bt_conn_disconnect(current_conn, BT_HCI_ERR_REMOTE_POWER_OFF);
+		k_msleep(100);   /* let the disconnect go out so the app sees it at once */
+	}
+	power_off();
+}
+static K_WORK_DELAYABLE_DEFINE(long_press, long_press_fn);
+
 static struct gpio_callback button_cb;
 static void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
 	k_work_submit(&adv_work);   /* bt_le_adv_start is not ISR-safe */
+	k_work_reschedule(&long_press, LONG_PRESS);
 }
 
 /* How long the main loop may sleep before the LED or the countdown needs it */

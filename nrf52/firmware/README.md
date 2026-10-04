@@ -19,6 +19,8 @@ SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
   connection in that time: System OFF (about 0.5 µA), the button wakes it.
 - Connected: stays on as long as the app holds the link. After a disconnect it advertises
   5 minutes again (started from the `recycled` connection callback), then sleeps.
+- Button held 3 s: off. It disconnects the app, waits for the button to be released (a held
+  button would wake it again at once) and goes to System OFF. A press wakes it.
 - Commands on the command characteristic, write without response:
   - 1 byte `button * 10 + state`: button 1 trigger, 2 bulb, 3 countdown; state 1 start, 0 stop.
   - 3 bytes `[3, seconds, state]`: countdown with its duration.
