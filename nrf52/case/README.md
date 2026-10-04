@@ -56,10 +56,14 @@ board. They run on every export.
 
 ```sh
 cd nrf52/case
-uv run openrz67_nrf_case.py          # base + lid -> stl/
-SNAP_TEST=true uv run openrz67_nrf_case.py   # also a cropped corner pair
+./export.sh                          # base + lid -> stl/, then openrz67-nrf-case.3mf
+SNAP_TEST=true ./export.sh           # also a cropped corner pair (not in the .3mf)
 ```
 
 Requires [uv](https://docs.astral.sh/uv/); the script carries its own dependency header.
-No slicer project yet: open the two STLs in QIDI Studio (lid upside-down, base floor-down,
-elephant-foot compensation on).
+
+`openrz67-nrf-case.3mf` is the QIDI Studio project: plate 1, base floor-down, lid upside-down,
+ABS profile. `../../case/make_3mf.py` builds it by swapping the fresh STLs into
+`qidi-template.3mf`, so the slicer settings survive every re-export. To change settings or the
+plate layout: open the project in QIDI Studio, change it, save, and copy it over
+`qidi-template.3mf`.

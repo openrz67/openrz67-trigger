@@ -61,3 +61,5 @@ __pycache__/
 # KiCad per-user view settings
 *.kicad_prl
 *-backups/
+# Generert slicer-prosjekt fra nrf52/case/export.sh (bygges fra qidi-template.3mf)
+nrf52/case/openrz67-nrf-case.3mf

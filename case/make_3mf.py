@@ -23,7 +23,7 @@ filament/extruder mapping.
 
 Usage:
     python3 make_3mf.py [--template bambu-template.3mf] [--stl-dir stl]
-                        [--out openrz67-case.3mf]
+                        [--out openrz67-case.3mf] [--objects a.stl,b.stl]
 
 Pure stdlib (no numpy). ASCII STL in, project .3mf out.
 """
@@ -43,7 +43,8 @@ import zipfile
 # not (it is stored per triangle, and we replace the mesh), and QIDI Studio segfaults on a
 # saved height-range modifier. Missing sub-part STLs are skipped (LID_TEXT_SHOW=false).
 SUB_PARTS = {"openrz67-lid.stl": [("openrz67-lid-text.stl", 2)]}
-# The template's objects, by name: exactly these get their mesh swapped (SNAP_TEST pieces are not in it)
+# The template's objects, by name: exactly these get their mesh swapped (SNAP_TEST pieces are
+# not in it). --objects overrides it for another case's template (nrf52/case/export.sh).
 OBJECTS = {"openrz67-base.stl", "openrz67-lid.stl", "openrz67-lightpipe.stl"}
 BED = 256.0            # Bambu P2S; plates sit in a row, stride = 1.2 * bed (LOGICAL_PART_PLATE_GAP)
 
@@ -107,7 +108,7 @@ def mesh_xml(verts, tris, offset):
     return "\n".join(out)
 
 
-def build_mapping(model_settings, dmodel):
+def build_mapping(model_settings, dmodel, objects, template):
     """object id -> dict(name, offset, model_path), joined across the two files."""
     objs = {}
     for m in re.finditer(r'<object id="(\d+)">(.*?)</object>', model_settings, re.S):
@@ -130,9 +131,9 @@ def build_mapping(model_settings, dmodel):
         if oid in objs:
             objs[oid]["model_path"] = path.lstrip("/")
     names = {o["name"] for o in objs.values() if "model_path" in o}
-    if len(objs) != len(OBJECTS) or names != OBJECTS:
+    if len(objs) != len(objects) or names != objects:
         sys.exit(f"template objects {sorted(o['name'] for o in objs.values())} (with a mesh: {sorted(names)}) "
-                 f"!= {sorted(OBJECTS)}: re-save bambu-template.3mf or update OBJECTS")
+                 f"!= {sorted(objects)}: re-save {os.path.basename(template)} or update --objects")
     return objs
 
 
@@ -225,6 +226,8 @@ def main():
     ap.add_argument("--template", default=os.path.join(here, "bambu-template.3mf"))
     ap.add_argument("--stl-dir", default=os.path.join(here, "stl"))
     ap.add_argument("--out", default=os.path.join(here, "openrz67-case.3mf"))
+    ap.add_argument("--objects", default=",".join(sorted(OBJECTS)),
+                    help="comma-separated STL names, exactly the template's objects")
     args = ap.parse_args()
 
     if not os.path.isfile(args.template):
@@ -241,7 +244,7 @@ def main():
         model_settings = open(ms_path).read()
         dmodel = open(dm_path).read()
         dmodel, model_settings = strip_sub_parts(work, dmodel, model_settings)
-        mapping = build_mapping(model_settings, dmodel)
+        mapping = build_mapping(model_settings, dmodel, set(args.objects.split(",")), args.template)
         next_id = max(int(i) for i in re.findall(r'<object id="(\d+)"', dmodel)
                       + re.findall(r'<part id="(\d+)"', model_settings)) + 1
 
