@@ -136,7 +136,7 @@ A second-opinion review of the board and the firmware. Applied:
   and the back-layer copper was solder mask. Nothing but mask now sits under that rim; inside
   the ring the GND pour stays, it is the same potential as the cell face on it. The VDD loop
   that tied the clip feet at y = 10 ran under the cell and moved to y = 6.5.
-- **GND vias on the back under the module** (6.0, 10.0), (20.8, 8.8), (21.0, 5.2), (13.4, 16.9):
+- **GND vias on the back under the module** (6.0, 10.0), (20.8, 8.8), (21.0, 5.2), (7.0, 19.7):
   the VDD loop and the ring had cut the back pour into islands that the filler removed, so
   the module had no ground under it on the back.
 - **PhotoMOS pins at high drive** (`NRF_GPIO_DRIVE_S0H1`): standard drive guarantees only

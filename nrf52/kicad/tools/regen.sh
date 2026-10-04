@@ -38,6 +38,25 @@ rm -f out/openrz67-nrf-gerber.zip
 echo "==> position file"
 "$KICAD_CLI" pcb export pos --format csv --units mm --side both --use-drill-file-origin \
   --exclude-dnp -o out/openrz67-nrf-pos.csv "$PCB" >/dev/null
+# JLCPCB's CPL parser rejects KiCad's header names; rewrite to the layout the main board's
+# file was accepted in (pcb/kicad/tools/regen.sh).
+"$KICAD_PY" - out/openrz67-nrf-pos.csv <<'PY'
+import csv, sys
+p = sys.argv[1]
+# Rotation added where JLCPCB's library orientation differs from the KiCad footprint.
+# The TLP172AM offset is the one measured on the main board's order preview.
+ROT_FIX = {
+    "SMD-4_L4.6-W3.7-P2.54-LS7.0-BR": 90,
+}
+rows = list(csv.DictReader(open(p, newline="", encoding="utf-8")))
+with open(p, "w", newline="") as f:
+    w = csv.writer(f)
+    w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
+    for r in rows:
+        rot = float(r["Rot"]) + ROT_FIX.get(r["Package"], 0)
+        w.writerow([r["Ref"], f'{float(r["PosX"]):.3f}mm', f'{float(r["PosY"]):.3f}mm',
+                    r["Side"].capitalize(), f'{rot % 360:g}'])
+PY
 
 echo "==> bill of materials"
 "$KICAD_CLI" sch export bom \

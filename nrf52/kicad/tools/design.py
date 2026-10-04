@@ -110,7 +110,7 @@ VIAS = [
     ("LED_DRV", 2.3, 25.3),
     ("LED_DRV", 14.3, 28.4),
     ("GND", 3.8, 22.8),
-    ("GND", 13.4, 16.9),   # ties the GND disc under the cell to the top
+    ("GND", 7.0, 19.7),    # ties the GND disc under the cell to the top; off the contact pad, which gets paste
     ("GND", 21.0, 5.2),    # back-side GND north of the VDD loop, under the module
     ("GND", 20.8, 8.8),    # back-side GND between the VDD loop and the cell ring
     ("GND", 6.0, 10.0),
