@@ -20,6 +20,7 @@ build/
 cmake-build-*/
 CMakeListsPrivate.txt
 CMakeLists.txt
+!nrf52/firmware/CMakeLists.txt
 
 # Genererte STL-filer fra case/export.sh
 case/stl/

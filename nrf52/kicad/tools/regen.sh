@@ -21,7 +21,8 @@ mkdir -p out/gerber
 
 echo "==> schematic + board from tools/design.py"
 python3 tools/gen_sch.py >/dev/null
-"$KICAD_PY" tools/gen_pcb.py 2>&1 | grep -v wxApp || true
+log=$("$KICAD_PY" tools/gen_pcb.py 2>&1) || { printf '%s\n' "$log" | grep -v wxApp >&2; exit 1; }
+printf '%s\n' "$log" | grep -v wxApp || true
 
 echo "==> gerbers + drill"
 rm -f out/gerber/*
