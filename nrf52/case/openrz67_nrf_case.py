@@ -24,7 +24,8 @@ Run (exports STLs to stl/ and checks the assertions):
     uv run openrz67_nrf_case.py
 
 Env overrides: PCB_T, OUTDIR (STL directory, default stl/), SNAP_TEST=true (also export a
-cropped corner pair for tuning snap_bead / lap_gap).
+cropped corner pair for tuning snap_bead / lap_gap), LID_TEXT_SHOW=false, LID_TEXT,
+LID_TEXT_SIZE.
 """
 
 import os
@@ -74,6 +75,17 @@ nub_d, nub_gap = 2.4, 0.3  # nub diameter, air over the switch cap at rest
 led_hole_d = 1.6
 conn_clr = 0.5            # around the connector body in the wall opening
 pry_w, pry_d, pry_h = 10.0, 1.0, 1.2
+# Lid text: debossed in the top, filled by an inlay part on filament 2 (make_3mf.py), as on
+# the ESP32 case (../../case/openrz67_case.py has the reasoning). Centred on the lid; the
+# checks keep it clear of the front edge chamfer and the button tab. (text, font size, letter tracking)
+lid_text_show = os.environ.get("LID_TEXT_SHOW", "true") == "true"
+lid_font = "Futura"
+lid_texts = [(os.environ.get("LID_TEXT", "OpenRZ67"), float(os.environ.get("LID_TEXT_SIZE", 5.0)), 0.0),
+             ("TRIGGER", 3.2, 0.8)]
+lid_text_gap, lid_text_min_stroke, lid_text_depth = 1.0, 0.6, 0.8
+# At the size this lid allows, Futura Bold's thinnest strokes ("e", "pn") are 0.45 mm; every
+# glyph outline is grown by this much per side to clear lid_text_min_stroke.
+lid_text_bold = 0.1
 
 # Snap (geometry proven on the ESP32 case, see ../../case/notes/design-history.md)
 snap_bead = 0.55
@@ -221,6 +233,55 @@ lid += cyl(tx, ty, nub_z0, nub_d, (ceiling_z + lid_top_t - tab_t) - nub_z0 + eps
 # LED light hole
 lid -= cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 1, led_hole_d, lid_top_t + 2)
 
+
+def grow(f, d):
+    """Offset a glyph face by d (negative shrinks). By hand: build123d 0.11's offset()
+    crashes on glyphs with holes."""
+    g = Face(f.outer_wire().offset_2d(d))
+    for w in f.inner_wires():
+        g = g.cut(Face(w.offset_2d(-d)))
+    return g.faces() if hasattr(g, "faces") else [g]
+
+
+def tracked_text(txt, size, tracking):
+    """Text sketch, each glyph emboldened by lid_text_bold and shifted by `tracking` per
+    glyph (glyphs sorted by X, one face each). The stroke check runs on the raw glyph: OCCT
+    cannot reliably shrink an outline it has just grown."""
+    sk = Text(txt, font=lid_font, font_size=size, font_style=FontStyle.BOLD)
+    glyphs = []
+    for i, f in enumerate(sorted(sk.faces(), key=lambda f: f.center().X)):
+        # every stroke >= lid_text_min_stroke once grown: shrinking the raw glyph by half of
+        # the rest must keep it one face
+        try:
+            n = len(grow(f, -(lid_text_min_stroke / 2 - lid_text_bold)))
+        except Exception:   # the wire collapsed: stroke too thin
+            n = 0
+        check(n == 1, f"'{txt}' has strokes under {lid_text_min_stroke} mm (a glyph -> {n} faces)")
+        glyphs += [Pos(i * tracking, 0) * x for x in grow(f, lid_text_bold)]
+    return Sketch(glyphs)
+
+
+lid_text = None            # the inlay: exactly the pocket volume, printed in filament 2
+if lid_text_show:
+    text_cut = None
+    lines = [tracked_text(*t) for t in lid_texts]
+    heights = [l.bounding_box().size.Y for l in lines]
+    block_h = sum(heights) + lid_text_gap * (len(lines) - 1)
+    band_y0, band_y1 = lid_top_r, tab_y0 - tab_slot
+    y = outer_h / 2 + block_h / 2      # top of the block: centred on the lid
+    for (txt, *_), sk, h in zip(lid_texts, lines, heights):
+        tb = sk.bounding_box()
+        sk = Pos(outer_w / 2 - (tb.min.X + tb.max.X) / 2, y - h - tb.min.Y) * sk
+        tb = sk.bounding_box()
+        check(tb.min.X > lid_top_r + 1 and tb.max.X < outer_w - lid_top_r - 1, f"'{txt}' too wide ({tb.size.X:.1f}mm)")
+        check(tb.max.Y < band_y1 - 1, f"'{txt}' hits the button tab")
+        check(tb.min.Y > band_y0 + 0.5, f"'{txt}' runs into the top-edge chamfer")
+        c = prism(sk, total_h - lid_text_depth, lid_text_depth + eps)
+        text_cut = c if text_cut is None else text_cut + c
+        y -= h + lid_text_gap
+    lid_text = lid & text_cut
+    lid -= text_cut
+
 # --- Assertions --------------------------------------------------------------------------------
 for name, p in (("base", base), ("lid", lid)):
     check(p.is_valid, f"{name}: invalid solid")
@@ -230,6 +291,11 @@ check(abs(bb.size.X - outer_w) < 1e-3 and abs(bb.size.Y - outer_h) < 1e-3, "base
 check(abs(bb.max.Z - split_z) < 1e-3, f"base Z {bb.max.Z}")
 lb = lid.bounding_box()
 check(abs(lb.min.Z - (split_z - lap)) < 1e-3 and abs(lb.max.Z - total_h) < 1e-3, "lid Z")
+if lid_text is not None:
+    check(lid_text.is_valid and lid_text.volume > 1e-3, "lid text inlay: empty or invalid")
+    tb = lid_text.bounding_box()
+    check(abs(tb.max.Z - total_h) < 1e-3 and tb.min.Z > total_h - lid_text_depth - 1e-3, "inlay not in the pocket")
+    check((lid & lid_text).volume < 1e-6, "inlay overlaps the lid")
 
 
 def _open(solid, probe, what):
@@ -269,6 +335,11 @@ if __name__ == "__main__":
     out = Path(os.environ.get("OUTDIR", Path(__file__).resolve().parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
     parts = [("openrz67-nrf-base", base), ("openrz67-nrf-lid", lid)]
+    stale = out / "openrz67-nrf-lid-text.stl"
+    if lid_text is not None:
+        parts.append(("openrz67-nrf-lid-text", lid_text))
+    elif stale.exists():
+        stale.unlink()     # make_3mf.py would otherwise add an old inlay
     if os.environ.get("SNAP_TEST", "false") == "true":
         crop = box(-2, -2, -1, 14, 20, total_h + 2)
         parts += [("openrz67-nrf-snaptest-base", base & crop), ("openrz67-nrf-snaptest-lid", lid & crop)]

@@ -39,6 +39,11 @@ Y toward the back wall). Values come from `../kicad/tools/design.py` and the par
     hinged at its front end, thinned to `tab_t` (1.0) from the inside, with a Ø`nub_d` (2.4)
     nub that stops `nub_gap` (0.3) above the switch cap.
   - **LED**: Ø`led_hole_d` (1.6) hole straight through the top over `D1`.
+  - **Text**: "OpenRZ67" over a tracked "TRIGGER", Futura Bold grown `lid_text_bold` (0.1)
+    per side so every stroke is at least 0.6 mm, debossed `lid_text_depth`
+    (0.8) into the top, centred on the lid. The pockets are filled by
+    `openrz67-nrf-lid-text.stl`, a second part of the lid on filament 2 in the .3mf.
+    `LID_TEXT_SHOW=false` turns it off; `LID_TEXT` / `LID_TEXT_SIZE` change the name line.
   - **Plug opening**: connector width + 2 × `conn_clr` (0.5), from the board top up
     `conn_h + conn_clr`, open to the seam, so the lid lifts off with the plug in place. The base
     keeps a full-thickness wall under it and one `wall` to each side; the lid tongue is
@@ -63,7 +68,7 @@ SNAP_TEST=true ./export.sh           # also a cropped corner pair (not in the .3
 Requires [uv](https://docs.astral.sh/uv/); the script carries its own dependency header.
 
 `openrz67-nrf-case.3mf` is the QIDI Studio project: plate 1, base floor-down, lid upside-down,
-ABS profile. `../../case/make_3mf.py` builds it by swapping the fresh STLs into
+ABS profile, lid text on filament 2. `../../case/make_3mf.py` builds it by swapping the fresh STLs into
 `qidi-template.3mf`, so the slicer settings survive every re-export. To change settings or the
 plate layout: open the project in QIDI Studio, change it, save, and copy it over
 `qidi-template.3mf`.

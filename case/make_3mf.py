@@ -42,7 +42,8 @@ import zipfile
 # the colour lives on the part, so it survives every re-export. Slicer colour painting does
 # not (it is stored per triangle, and we replace the mesh), and QIDI Studio segfaults on a
 # saved height-range modifier. Missing sub-part STLs are skipped (LID_TEXT_SHOW=false).
-SUB_PARTS = {"openrz67-lid.stl": [("openrz67-lid-text.stl", 2)]}
+SUB_PARTS = {"openrz67-lid.stl": [("openrz67-lid-text.stl", 2)],
+             "openrz67-nrf-lid.stl": [("openrz67-nrf-lid-text.stl", 2)]}
 # The template's objects, by name: exactly these get their mesh swapped (SNAP_TEST pieces are
 # not in it). --objects overrides it for another case's template (nrf52/case/export.sh).
 OBJECTS = {"openrz67-base.stl", "openrz67-lid.stl", "openrz67-lightpipe.stl"}
