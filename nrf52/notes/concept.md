@@ -277,3 +277,12 @@ overhang, like the snap bead's retention face.
 Polarity marking: the nRF52 has no reverse protection, and a cell put in upside down puts
 -3 V on VDD. There is a "+" in the base floor under the cell and `CR2032  + SIDE OUT` on
 B.SilkS in the strip between the front edge and the cell (`CELL_LABEL` in design.py).
+
+## Visual pass (2026-10-04)
+
+- Lid text printed fuzzy. "TRIGGER" at 3.2 was too small for a 0.4 nozzle, and the 0.1 bold
+  growth closed the counters in "OpenRZ67". Now 5.3 / 4.0 with 0.07 growth. The name line is
+  near the width the lid allows, so it cannot grow much more.
+- The ESP32 case's rail added: from the left side into the LED seat. It cannot run past the
+  LED as on the ESP32 case: the button tab sits on the same row.
+- Base bottom edge got the lid's 1 mm chamfer; the button tab's free end got round corners.

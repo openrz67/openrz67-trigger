@@ -37,7 +37,8 @@ runs right to left in the case: the module sits front-right, the camera plug bac
   within 1 mm of the board edge. The base keeps its full wall along the whole back. A 10 mm
   "+" is debossed 0.4 into the floor under the cell: the cell's + side faces the floor. The front
   ledge bridges `ant_wall_clr` (1.0 mm of air in front of the antenna end). Flat closed
-  floor. Pry slot on the front wall at the seam.
+  floor. Pry slot on the front wall at the seam. The bottom edge has the same 1 mm 45°
+  chamfer (`edge_r`) as the lid's top edge.
 - **Orientation rib** (`orient_mark_*`): a 2.5 × 0.8 rib on the front wall, 7 tall, split at
   the seam between base and lid. The halves line up only when the lid is on the right way
   around. Off-centre at board x 4, clear of the pry slot.
@@ -45,7 +46,7 @@ runs right to left in the case: the module sits front-right, the camera plug bac
   back wall carries the plug opening). Hold-down bosses (`bosses`, board x/y/Ø) at four free
   spots: the module owns the board's (0, 0) corner and `C1` + `J1` the (27, 29) one.
   - **Button**: a `tab_w × tab_l` (6 × 7.45) cantilever tab cut free by a `tab_slot` (0.7)
-    U-slot, hinged at its front end, thinned to `tab_t` (0.8) from the inside, with a
+    U-slot with `tab_r` (1.5) corners at the free end, hinged at its front end, thinned to `tab_t` (0.8) from the inside, with a
     Ø`nub_d` (2.4) nub that stops `nub_gap` (0.3) above the switch cap. The free end is
     `tab_tip` (1.45) past the switch centre, so it ends over the cavity, not over the wall.
   - **LED light pipe**: a top hat over `D1`, as on the ESP32 case. Ø`led_stem_d` (2.2) stem,
@@ -53,10 +54,12 @@ runs right to left in the case: the module sits front-right, the camera plug bac
     that a collar off the ceiling lengthens down to the pipe's lower end. The head tapers out
     by `led_head_lip` (0.7) over `led_head_t` (1.4), 26.6° from vertical, into a matching
     funnel in the top, so it self-centres and nothing needs support. Glued.
-  - **Text**: "OpenRZ67" over a tracked "TRIGGER", Futura Bold grown `lid_text_bold` (0.1)
-    per side so every stroke is at least 0.6 mm, debossed `lid_text_depth`
-    (0.8) into the top, centred on the lid. The pockets are filled by
-    `openrz67-nrf-lid-text.stl`, a second part of the lid on filament 2 in the .3mf.
+  - **Text**: "OpenRZ67" (5.3) over a tracked "TRIGGER" (4.0), Futura Bold grown
+    `lid_text_bold` (0.07) per side so every stroke is at least 0.6 mm, debossed
+    `lid_text_depth` (0.8) into the top. Centred in X, and in Y between the front chamfer and
+    the LED. A 0.9 mm rail runs from the left side into the LED seat, as on the ESP32 case.
+    The pockets are filled by
+    `openrz67-nrf-lid-text.stl` (text and rail), a second part of the lid on filament 2 in the .3mf.
     `LID_TEXT_SHOW=false` turns it off; `LID_TEXT` / `LID_TEXT_SIZE` change the name line.
   - **Board hooks** (`hook_*`): a 1.0 × 3.4 finger off the ceiling on each side wall, at
     board y 13.45, between the snap fingers and in front of the clip's solder legs. The barb

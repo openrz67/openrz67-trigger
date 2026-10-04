@@ -65,7 +65,7 @@ clr = 0.4                 # board front/back edge to inner wall
 wall = 3.2                # splits into two 1.6 mm lap halves (snap needs >= 3.14, see checks)
 floor_t = 1.6
 lid_top_t = 1.6
-lid_top_r = 1.0           # 45 deg chamfer on the lid's top edge (bed side)
+edge_r = 1.0              # 45 deg chamfer on the lid top edge and the base bottom edge (both bed side)
 under_clr = 0.55          # air under the clip
 over_clr = 0.6            # air over the tallest part
 ledge_w = 1.4             # board ledge, measured from the inner wall (1.0 under the board)
@@ -85,7 +85,7 @@ hook_flat, hook_slack, hook_tab = 0.3, 0.1, 1.5  # flat retention face, board pl
 side_clr = hook_flex + hook_t + hook_gap      # board side edge to inner wall
 
 # Button: cantilever tab in the lid top over SW1, nub underneath
-tab_w, tab_l, tab_slot = 6.0, 7.45, 0.7
+tab_w, tab_l, tab_slot, tab_r = 6.0, 7.45, 0.7, 1.5   # tab_r: free-end corners
 tab_tip = 1.45            # switch centre to the tab's free end: the tip stays over the cavity
 tab_t = 0.8               # tab thinned from the inside to this: about 5 N to press (8 N at 1.0)
 nub_d, nub_gap = 2.4, 0.3  # nub diameter, air over the switch cap at rest
@@ -103,16 +103,20 @@ pry_w, pry_d, pry_h = 10.0, 1.0, 1.2
 # up only when the lid is on the right way around. Off-centre, clear of the pry slot.
 orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 4.0, 2.5, 0.8, 7.0
 # Lid text: debossed in the top, filled by an inlay part on filament 2 (make_3mf.py), as on
-# the ESP32 case (../../case/openrz67_case.py has the reasoning). Centred on the lid; the
-# checks keep it clear of the front edge chamfer and the button tab. (text, font size, letter tracking)
+# the ESP32 case (../../case/openrz67_case.py has the reasoning). Centred in X, and in Y
+# between the front edge chamfer and the LED seat. A rail runs from the left wall into the
+# light-pipe seat, as on the ESP32 case: the LED reads as an indicator on a line.
+# (text, font size, letter tracking)
 lid_text_show = os.environ.get("LID_TEXT_SHOW", "true") == "true"
 lid_font = "Futura"
-lid_texts = [(os.environ.get("LID_TEXT", "OpenRZ67"), float(os.environ.get("LID_TEXT_SIZE", 5.0)), 0.0),
-             ("TRIGGER", 3.2, 0.8)]
-lid_text_gap, lid_text_min_stroke, lid_text_depth = 1.0, 0.6, 0.8
-# At the size this lid allows, Futura Bold's thinnest strokes ("e", "pn") are 0.45 mm; every
-# glyph outline is grown by this much per side to clear lid_text_min_stroke.
-lid_text_bold = 0.1
+lid_texts = [(os.environ.get("LID_TEXT", "OpenRZ67"), float(os.environ.get("LID_TEXT_SIZE", 5.3)), 0.0),
+             ("TRIGGER", 4.0, 0.6)]
+lid_text_gap, lid_text_min_stroke, lid_text_depth = 1.2, 0.6, 0.8
+# At the size this lid allows, Futura Bold's thinnest strokes ("e", "pn") are 0.48 mm; every
+# glyph outline is grown by this much per side to clear lid_text_min_stroke. No more: it
+# closes the counters.
+lid_text_bold = 0.07
+lid_rail_w, lid_rail_end, lid_rail_gap = 0.9, 4.0, 1.2   # width, inset from the left wall, air to the LED seat
 
 # Snap (geometry proven on the ESP32 case, see ../../case/notes/design-history.md)
 snap_bead = 0.55
@@ -140,7 +144,7 @@ bead_z = split_z - lap + bead_tip_h
 snap_fingers_y = [wall + 7.0, outer_h - wall - 7.0]     # finger centres (case-Y) on the left and right wall
 
 check(lap <= split_z - floor_t, "lid lip would reach the floor")
-check(lid_top_r <= min(wall, lid_top_t) and lid_top_r < inner_r + wall, "lid top chamfer too big")
+check(edge_r <= min(wall, lid_top_t) and edge_r < inner_r + wall, "lid top chamfer too big")
 check(split_z - lap <= bead_z - bead_h / 2 and bead_z + (bead_h + pocket_extra_h) / 2 < split_z,
       "snap bead/pocket outside the lap zone")
 check(wall / 2 - (snap_bead + pocket_extra_d) >= 0.87, "base lip behind the snap pocket under two lines")
@@ -150,7 +154,7 @@ check(ledge_w - clr >= 0.8, "ledge under the board too narrow")
 check(hook_t >= 0.87, "board hook under two perimeter lines")
 check(floor_t - cell_mark_d >= 1.0, "floor under the + mark too thin")
 check(ledge_h <= clip_h + under_clr, "ledge taller than the room under the board")
-check(split_z + orient_mark_h / 2 <= total_h - lid_top_r, "orientation rib runs into the lid top chamfer")
+check(split_z + orient_mark_h / 2 <= total_h - edge_r, "orientation rib runs into the lid top chamfer")
 
 
 def bx(x):
@@ -215,6 +219,7 @@ cut_conn = box(conn_x0, outer_h - wall - 1, split_z - eps, conn_open_w, wall + 2
 
 # --- BASE -------------------------------------------------------------------------------------
 base = prism(outer_sk, 0, split_z)
+base = chamfer(base.edges().group_by(Axis.Z)[0], edge_r)
 base -= prism(inner_sk, floor_t, total_h)                               # cavity
 base -= prism(mid_sk, split_z - lap, lap + 1) - back_zone              # rabbet: outer half only
 # Board ledge: a wall standing on the floor, ledge_gap inside the lid tongue (above
@@ -248,7 +253,7 @@ base -= box(outer_w / 2 - pry_w / 2, -1, split_z - pry_h, pry_w, pry_d + 1, pry_
 
 # --- LID --------------------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)
-lid = chamfer(lid.edges().group_by(Axis.Z)[-1], lid_top_r)
+lid = chamfer(lid.edges().group_by(Axis.Z)[-1], edge_r)
 lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap) - back_zone   # tongue: none on the back wall
 bead = prism(offset(mid_sk, -lap_gap + snap_bead) - offset(mid_sk, -lap_gap - 0.4),
              bead_z - bead_h / 2, bead_h) & finger_boxes(0, 0, total_h)
@@ -286,10 +291,11 @@ lid -= cut_conn
 tx, ty = bx(sw_c[0]), by(sw_c[1])
 tab_y0 = ty - (tab_l - tab_tip)
 tab_x0 = tx - tab_w / 2
-slot = box(tab_x0 - tab_slot, tab_y0, ceiling_z - 1, tab_w + 2 * tab_slot, tab_l + tab_slot, lid_top_t + 2)
-slot -= box(tab_x0, tab_y0 - 1, ceiling_z - 2, tab_w, tab_l + 1, lid_top_t + 4)
-lid -= slot
-lid -= box(tab_x0, tab_y0, ceiling_z - eps, tab_w, tab_l, lid_top_t - tab_t + eps)   # thin the tab
+tab_sk = rrect(tab_w, tab_l, tab_r, tab_x0, tab_y0) + Pos(tx, tab_y0 + tab_l / 4) * Rectangle(tab_w, tab_l / 2)
+slot_sk = (rrect(tab_w + 2 * tab_slot, tab_l + tab_slot, tab_r + tab_slot, tab_x0 - tab_slot, tab_y0)
+           + Pos(tx, tab_y0 + tab_l / 4) * Rectangle(tab_w + 2 * tab_slot, tab_l / 2))
+lid -= prism(slot_sk - tab_sk, ceiling_z - 1, lid_top_t + 2)
+lid -= prism(tab_sk, ceiling_z - eps, lid_top_t - tab_t + eps)   # thin the tab
 nub_z0 = pcb_top_z + sw_h + nub_gap
 lid += orient_mark_rib(split_z)
 lid += cyl(tx, ty, nub_z0, nub_d, (ceiling_z + lid_top_t - tab_t) - nub_z0 + eps)
@@ -349,18 +355,22 @@ if lid_text_show:
     lines = [tracked_text(*t) for t in lid_texts]
     heights = [l.bounding_box().size.Y for l in lines]
     block_h = sum(heights) + lid_text_gap * (len(lines) - 1)
-    band_y0, band_y1 = lid_top_r, tab_y0 - tab_slot
-    y = outer_h / 2 + block_h / 2      # top of the block: centred on the lid
+    band_y0, band_y1 = edge_r, tab_y0 - tab_slot
+    led_seat_r = (led_stem_d + led_pipe_clr) / 2 + led_head_lip
+    y = (band_y0 + ly - led_seat_r) / 2 + block_h / 2      # top of the block
     for (txt, *_), sk, h in zip(lid_texts, lines, heights):
         tb = sk.bounding_box()
         sk = Pos(outer_w / 2 - (tb.min.X + tb.max.X) / 2, y - h - tb.min.Y) * sk
         tb = sk.bounding_box()
-        check(tb.min.X > lid_top_r + 1 and tb.max.X < outer_w - lid_top_r - 1, f"'{txt}' too wide ({tb.size.X:.1f}mm)")
+        check(tb.min.X > edge_r + 1 and tb.max.X < outer_w - edge_r - 1, f"'{txt}' too wide ({tb.size.X:.1f}mm)")
         check(tb.max.Y < band_y1 - 1, f"'{txt}' hits the button tab")
         check(tb.min.Y > band_y0 + 0.5, f"'{txt}' runs into the top-edge chamfer")
         c = prism(sk, total_h - lid_text_depth, lid_text_depth + eps)
         text_cut = c if text_cut is None else text_cut + c
         y -= h + lid_text_gap
+    rail_x1 = lx - led_seat_r - lid_rail_gap
+    check(rail_x1 - lid_rail_end > 5, "rail too short")
+    text_cut += box(lid_rail_end, ly - lid_rail_w / 2, total_h - lid_text_depth, rail_x1 - lid_rail_end, lid_rail_w, lid_text_depth + eps)
     lid_text = lid & text_cut
     lid -= text_cut
 
@@ -442,7 +452,9 @@ check(ty + nub_d / 2 <= tab_y0 + tab_l - 0.2, "nub overhangs the tab tip")
 _open(base + lid, box(conn_x0 + 0.2, outer_h - wall - 0.5, split_z + 0.1, conn_open_w - 0.4, wall + 1, conn_open_h - 0.3), "plug opening")
 _open(lid, cyl(lx, ly, collar_z - 0.5, led_stem_d + led_pipe_clr - 0.1, total_h - collar_z + 1), "light-pipe window")
 _clear(lid, lightpipe, "light pipe")
-_open(lid, box(tab_x0 - tab_slot + 0.1, tab_y0 + tab_l + 0.1, ceiling_z - 0.5, tab_w + 2 * tab_slot - 0.2, tab_slot - 0.2, lid_top_t + 1), "button slot")
+_open(lid, box(tab_x0 + tab_r, tab_y0 + tab_l + 0.1, ceiling_z - 0.5, tab_w - 2 * tab_r, tab_slot - 0.2, lid_top_t + 1), "button slot")
+for x0 in (tab_x0 - tab_slot + 0.1, tab_x0 + tab_w + 0.1):
+    _open(lid, box(x0, tab_y0 + 0.1, ceiling_z - 0.5, tab_slot - 0.2, tab_l - tab_r, lid_top_t + 1), "button slot side")
 _clear(base, lid, "lid")
 # Board hooks: clear of the snap finger slots, air behind each finger, the barbs reach under
 # the board by hook_grip, and the cell slides out backwards past the lid with the board in it
