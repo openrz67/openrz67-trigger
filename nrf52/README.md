@@ -19,7 +19,7 @@ Nothing is soldered by hand. The board comes assembled, everything else plugs in
 | Assembled board | JLCPCB, upload `kicad/out/openrz67-nrf-gerber.zip` + BOM + pos from `kicad/out/` | ENIG finish (the bare cell pad), assembly on both sides |
 | CR2032 | anywhere | one per board |
 | SH1.0 4P to Dupont female cable (Qwiic / STEMMA QT pigtail) | AliExpress | three: one camera cable (`J1`), one for flashing (`J2`), one spare |
-| Raspberry Pi Pico H | any Pi reseller | the flashing probe; H = headers pre-soldered. Load Raspberry Pi's `debugprobe` firmware on it |
+| Raspberry Pi Pico 2 WH | any Pi reseller | the flashing probe; H = headers pre-soldered, W is irrelevant here. Load Raspberry Pi's `debugprobe_on_pico2.uf2` on it; a Pico H (`debugprobe_on_pico.uf2`) works the same |
 
 The camera end of the `J1` cable goes to the RZ67 socket as today (GND, S1, S2). Wiring for
-`J2` to the Pico H is in [`firmware/README.md`](firmware/README.md).
+`J2` to the Pico is in [`firmware/README.md`](firmware/README.md).

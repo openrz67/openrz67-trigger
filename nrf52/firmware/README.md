@@ -69,8 +69,9 @@ west build --no-sysbuild -b openrz67_nrf -s $FW -d $FW/build -- -DBOARD_ROOT=$FW
 The image is `build/zephyr/zephyr.hex`.
 
 Flashing is over SWD through `J2`, a JST SH 1.0 mm connector: a Qwiic / STEMMA QT cable with
-female Dupont ends goes straight onto a Raspberry Pi Pico H (pre-soldered headers) running
-Raspberry Pi's `debugprobe` firmware (CMSIS-DAP), no soldering anywhere. pyOCD drives it; a
+female Dupont ends goes straight onto a Raspberry Pi Pico 2 WH (pre-soldered headers) running
+Raspberry Pi's `debugprobe_on_pico2.uf2` (CMSIS-DAP; `debugprobe_on_pico.uf2` on a Pico H),
+no soldering anywhere. pyOCD drives it; a
 J-Link works through its own runner:
 
 ```sh
@@ -79,7 +80,7 @@ west flash -d $FW/build --runner pyocd
 west flash -d $FW/build --runner jlink
 ```
 
-| `J2` pin | Qwiic wire | Pico H pin |
+| `J2` pin | Qwiic wire | Pico pin |
 |---|---|---|
 | 1 GND | black | GND (pin 3) |
 | 2 VDD | red | not connected; the board runs from its cell while flashing |
