@@ -227,12 +227,16 @@ static void trigger_shutter(void)
 	close_shutter();
 }
 
+/* Same semantics as handleCommand() in the ESP32 firmware: only 1 starts, a start
+ * cancels a pending countdown, a stop leaves it running. */
 static void handle(const struct command *c)
 {
+	bool start = c->value == 1;
+
 	switch (c->button) {
 	case 1:
-		countdown_active = false;
-		if (c->value) {
+		if (start) {
+			countdown_active = false;
 			trigger_shutter();
 			led_hold_until = k_uptime_get() + LED_HOLD_MS;
 		} else {
@@ -240,8 +244,8 @@ static void handle(const struct command *c)
 		}
 		break;
 	case 2:
-		countdown_active = false;
-		if (c->value) {
+		if (start) {
+			countdown_active = false;
 			bulb_active = true;
 			open_shutter();
 		} else {
@@ -250,10 +254,12 @@ static void handle(const struct command *c)
 		}
 		break;
 	case 3:
-		bulb_active = false;
-		close_shutter();
-		countdown_active = c->value;
-		countdown_end = k_uptime_get() + c->duration_ms;
+		if (start) {
+			bulb_active = false;
+			close_shutter();
+			countdown_end = k_uptime_get() + c->duration_ms;
+		}
+		countdown_active = start;
 		break;
 	default:
 		LOG_WRN("unknown button %u", c->button);
@@ -292,9 +298,10 @@ static void long_press_fn(struct k_work *work)
 	if (!gpio_pin_get_dt(&button)) {
 		return;
 	}
-	/* a button still held would wake System OFF at once */
-	while (gpio_pin_get_dt(&button)) {
+	/* a button still held, or bouncing on release, would wake System OFF at once */
+	for (int released = 0; released < 3;) {
 		k_msleep(20);
+		released = gpio_pin_get_dt(&button) ? 0 : released + 1;
 	}
 	if (current_conn) {
 		bt_conn_disconnect(current_conn, BT_HCI_ERR_REMOTE_POWER_OFF);

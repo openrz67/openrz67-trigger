@@ -85,7 +85,7 @@ west flash -d $FW/build --runner jlink
 | `J2` pin | Qwiic wire | Pico pin |
 |---|---|---|
 | 1 GND | black | GND (pin 3) |
-| 2 VDD | red | not connected; the board runs from its cell while flashing. Never feed power into this pin, it would charge the CR2032 |
+| 2 VDD | red | 3V3(OUT) (pin 36), with the cell **out**: the probe powers the board, so both sides run at 3.3 V. Never with the cell in, it would charge the CR2032 |
 | 3 SWCLK | blue | GP2 (pin 4) |
 | 4 SWDIO | yellow | GP3 (pin 5) |
 
