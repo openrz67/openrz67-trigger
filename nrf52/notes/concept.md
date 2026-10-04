@@ -167,8 +167,8 @@ Noted, not changed:
   and see if the chip stays up. Without the inductor the core rail collapses and it resets,
   which is harmless. The gain is about 10 µA connected and 70 µA while advertising, not a
   battery-life question for a 220 mAh cell.
-- `J2` pin 2 is the cell voltage. Documented as sense-only; a powered Qwiic device plugged in
-  there would charge the cell. There is no silkscreen room for a warning.
+- `J2` pin 2 is the cell voltage; a powered Qwiic device plugged in there with the cell in
+  would charge it. There is no silkscreen room for a warning.
 - `J1`'s mouth sits about 1.7 mm inside the board edge, so the plug reaches through the case
   wall; the case opening is sized for it.
 - `S2_DRV` runs at y = 2.3 beside the antenna keepout, and copper fills the top-right corner
@@ -191,3 +191,52 @@ Noted, not changed:
   session. The board has no serial pins.
 - **Battery from VDD** on the SAADC's internal channel, no divider. 2.5 to 3.0 V = 0 to
   100 % on the Battery Service, raw mV on the custom characteristic.
+
+## Second review (2026-10-04)
+
+Datasheet pass over every part (all pins and footprints matched) plus firmware and case.
+Board changes:
+
+- **No paste on the cell's negative pad.** A 10 mm paste disc reflows to an uneven dome with
+  flux on the contact surface; ENIG alone is the contact.
+- **`VBUS` (pad 27) to GND**, as in nRF52840 PS reference config 6 (supply on VDD, no USB).
+  It floated before.
+- **Two vias out of pads**: the VDD via sat in both `C1`'s pad and the clip foot, the GND via
+  beside `SW1` in its pad. Both wick solder; they now sit beside the pads.
+- **Flashing powers the board from the probe, cell out.** The Pico's SWD lines are 3.3 V; on
+  a cell at 2.8–3.0 V that is past the nRF52's VDD + 0.3 V limit. With the cell out and the
+  red wire on the Pico's 3V3, both sides run at 3.3 V.
+
+Checked and left: P0.09/P0.10 are "standard drive, low frequency I/O only" in the PS; high
+drive at DC works and is what the PhotoMOS needs. NFC pins leak up to 10 µA when at
+different levels; both idle low. The 100 µF X5R is about 58 µF at 3 V and may leak up to
+6 µA by spec; measure sleep current on the first board.
+
+Case changes:
+
+- **Board X mirrored.** `bx()` mapped board X straight into case X while board Y (down in
+  KiCad) went toward the back wall: that is a mirror image, not a rotation. Tab, LED hole,
+  plug opening and bosses sat over the wrong parts, and the tongue notch lets the lid on one
+  way only. Every keepout used the same mapping, so no check saw it. Now `bx` mirrors, and a
+  check pins the plug opening to the left half.
+- **Button tab tip off the wall.** The tip ended 0.2 mm over the inner wall with 0.6 mm of
+  air; the nub needs 0.45 mm (gap 0.3 + B3U travel 0.15), which at the tip is 0.6 mm. The tip
+  now ends 0.35 mm inside the cavity (`tab_tip` 1.45).
+- **Tab 0.8 thick, not 1.0.** At 1.0 the tab alone takes about 6 N to bend 0.45 mm, 8 N with
+  the switch; at 0.8 it is about 5 N. The "0.3 mm the switch needs" above was 0.45.
+- **Bosses checked against every top-side part** (footprint bounding boxes); the board-wide
+  keepout cut them out, so only a few parts were seen before.
+
+Firmware changes:
+
+- **Long-press power-off waits for a steady release** (three 20 ms reads in a row). It
+  stopped at the first released read; a bounce after that pulled the SENSE pin low and woke
+  the chip straight out of System OFF.
+- **Commands follow the ESP32's `handleCommand()` exactly**: only value 1 starts, `10`/`20` no
+  longer cancel a countdown and `30` no longer ends a bulb exposure. The apps never send
+  these, but the GATT is meant to be the same device.
+- **GAP preferred supervision timeout 4 s** (`BT_PERIPHERAL_PREF_TIMEOUT`), the same as the
+  update request; the default was 420 ms until that request goes out 5 s after connecting.
+
+Left as is: a link lost during bulb ends in power-off after the 5 min advertising window,
+which closes the shutter. The camera closes it after about 60 s on its own anyway.

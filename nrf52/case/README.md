@@ -13,7 +13,8 @@ turn the base over: the board drops out, and the cell slides sideways out of the
 ## Source data
 
 Board coordinates are the KiCad coordinates of `openrz67-nrf.kicad_pcb` (origin top-left,
-Y toward the back wall). Values come from `../kicad/tools/design.py` and the part datasheets:
+Y toward the back wall). KiCad's view turned 180° puts the antenna at the front, so board X
+runs right to left in the case: the module sits front-right, the camera plug back-left. Values come from `../kicad/tools/design.py` and the part datasheets:
 
 | What | Value |
 |---|---|
@@ -37,10 +38,11 @@ Y toward the back wall). Values come from `../kicad/tools/design.py` and the par
   around. Off-centre at board x 4, clear of the pry slot.
 - **Lid**: telescoping tongue (`lap` 5) with four snap fingers on the **side** walls (the
   back wall carries the plug opening). Hold-down bosses (`bosses`, board x/y/Ø) at four free
-  spots: the module owns the front-left corner and `C1` + `J1` the back-right one.
-  - **Button**: a `tab_w × tab_l` (6 × 8) cantilever tab cut free by a `tab_slot` (0.7) U-slot,
-    hinged at its front end, thinned to `tab_t` (1.0) from the inside, with a Ø`nub_d` (2.4)
-    nub that stops `nub_gap` (0.3) above the switch cap.
+  spots: the module owns the board's (0, 0) corner and `C1` + `J1` the (27, 29) one.
+  - **Button**: a `tab_w × tab_l` (6 × 7.45) cantilever tab cut free by a `tab_slot` (0.7)
+    U-slot, hinged at its front end, thinned to `tab_t` (0.8) from the inside, with a
+    Ø`nub_d` (2.4) nub that stops `nub_gap` (0.3) above the switch cap. The free end is
+    `tab_tip` (1.45) past the switch centre, so it ends over the cavity, not over the wall.
   - **LED**: Ø`led_hole_d` (1.6) hole straight through the top over `D1`.
   - **Text**: "OpenRZ67" over a tracked "TRIGGER", Futura Bold grown `lid_text_bold` (0.1)
     per side so every stroke is at least 0.6 mm, debossed `lid_text_depth`
@@ -57,7 +59,8 @@ Y toward the back wall). Values come from `../kicad/tools/design.py` and the par
 
 The script carries module-level assertions: each part is one body, base and lid do not
 overlap, outer dimensions, the board / cell / clip / module / connector / switch / LED
-keepouts, every opening breaking through, the orientation rib clear of the pry slot and the
+keepouts, the bosses clear of every top-side part, the button tab tip over the cavity, the
+camera plug opening on the left (a board mapped without the mirror fails here), every opening breaking through, the orientation rib clear of the pry slot and the
 lid chamfer, and the front ledge actually being under the
 board. They run on every export.
 

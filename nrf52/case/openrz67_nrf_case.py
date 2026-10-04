@@ -17,7 +17,9 @@ Print orientation: base floor-down, lid upside-down. No supports.
 Coordinate system: case coords, origin at the outer box's front-left-bottom corner.
 Board coords are the KiCad coords of ../kicad/openrz67-nrf.kicad_pcb (origin top-left of
 the board, Y down in KiCad = toward the back wall here). bx()/by() map them into case
-coords. Antenna end of the module at the front wall (board y = 0), camera connector mouth
+coords. KiCad shows the board from above with the antenna at the top of the screen; with
+the antenna at the front wall that view is turned 180 degrees, so board X runs right to
+left in case coords (bx mirrors it) while board Y keeps its direction. Antenna end of the module at the front wall (board y = 0), camera connector mouth
 at the back wall (board y = 29).
 
 Run (exports STLs to stl/ and checks the assertions):
@@ -69,8 +71,9 @@ bosses = [(1.3, 21.2, 2.4), (25.5, 1.5, 2.4), (1.5, 27.5, 2.4), (26.0, 23.0, 2.0
 ant_wall_clr = 1.0        # air in front of the antenna end (board y 0)
 
 # Button: cantilever tab in the lid top over SW1, nub underneath
-tab_w, tab_l, tab_slot = 6.0, 8.0, 0.7
-tab_t = 1.0               # tab thinned from the inside to this
+tab_w, tab_l, tab_slot = 6.0, 7.45, 0.7
+tab_tip = 1.45            # switch centre to the tab's free end: the tip stays over the cavity
+tab_t = 0.8               # tab thinned from the inside to this: about 5 N to press (8 N at 1.0)
 nub_d, nub_gap = 2.4, 0.3  # nub diameter, air over the switch cap at rest
 led_hole_d = 1.6
 conn_clr = 0.5            # around the connector body in the wall opening
@@ -128,7 +131,7 @@ check(split_z + orient_mark_h / 2 <= total_h - lid_top_r, "orientation rib runs 
 
 
 def bx(x):
-    return wall + clr + x
+    return wall + clr + board_w - x
 
 
 def by(y):
@@ -166,7 +169,8 @@ def orient_mark_rib(z0):
                orient_mark_w, orient_mark_d + 0.2, orient_mark_h / 2)
 
 
-check(outer_r < bx(orient_mark_x) - orient_mark_w / 2 and bx(orient_mark_x) + orient_mark_w / 2 < outer_w / 2 - pry_w / 2,
+check(outer_r < bx(orient_mark_x) - orient_mark_w / 2 and bx(orient_mark_x) + orient_mark_w / 2 < outer_w - outer_r
+      and abs(bx(orient_mark_x) - outer_w / 2) > (pry_w + orient_mark_w) / 2,
       "orientation rib off the flat front wall or on the pry slot")
 
 
@@ -201,7 +205,7 @@ ledge += prism(offset(inner_sk, -ledge_gap), floor_t - eps, pcb_z - floor_t + ep
 clip_y0, clip_y1 = by(cell_c[1] - clip_w / 2 - 0.7), by(cell_c[1] + clip_w / 2 + 0.7)
 for x0 in (wall - 1, outer_w - wall - ledge_w):
     ledge -= box(x0, clip_y0, floor_t, ledge_w + 1, clip_y1 - clip_y0, total_h)
-ledge -= box(bx(cell_c[0] - cell_d / 2 - 0.7), outer_h - wall - ledge_w, floor_t, cell_d + 1.4, ledge_w + 1, total_h)
+ledge -= box(bx(cell_c[0]) - cell_d / 2 - 0.7, outer_h - wall - ledge_w, floor_t, cell_d + 1.4, ledge_w + 1, total_h)
 base += ledge
 base += orient_mark_rib(split_z - orient_mark_h / 2)
 # Snap pockets in the base lip, only where the lid fingers are
@@ -237,7 +241,7 @@ for cx, cy, d in bosses:
 lid -= cut_conn
 # Button: U-slot around a tab hinged at its front end, tab thinned from inside, nub under it
 tx, ty = bx(sw_c[0]), by(sw_c[1])
-tab_y0 = ty - (tab_l - 2.0)          # the switch sits 2 mm from the free (back) end
+tab_y0 = ty - (tab_l - tab_tip)
 tab_x0 = tx - tab_w / 2
 slot = box(tab_x0 - tab_slot, tab_y0, ceiling_z - 1, tab_w + 2 * tab_slot, tab_l + tab_slot, lid_top_t + 2)
 slot -= box(tab_x0, tab_y0 - 1, ceiling_z - 2, tab_w, tab_l + 1, lid_top_t + 4)
@@ -326,26 +330,41 @@ def _clear(solid, keep, what):
 
 
 # Keepouts: the board itself, the cell + clip below it, the parts above it
-_clear(base + lid, prism(rrect(board_w, board_h, board_r, bx(0), by(0)), pcb_z + eps, pcb_t - 2 * eps), "board")
+_clear(base + lid, prism(rrect(board_w, board_h, board_r, bx(board_w), by(0)), pcb_z + eps, pcb_t - 2 * eps), "board")
 _clear(base, cyl(bx(cell_c[0]), by(cell_c[1]), pcb_z - clip_h - under_clr + eps, cell_d + 1.0, clip_h + under_clr - 2 * eps), "cell")
 _clear(base, box(bx(cell_c[0]) - clip_l / 2 - 0.3, by(cell_c[1]) - clip_w / 2 - 0.3, pcb_z - clip_h - under_clr + eps,
                  clip_l + 0.6, clip_w + 0.6, clip_h + under_clr - 2 * eps), "clip")
-_clear(lid, box(bx(module[0]), by(module[1]), pcb_top_z, module[2] - module[0], module[3] - module[1], module[4] + 0.3), "module")
+_clear(lid, box(bx(module[2]), by(module[1]), pcb_top_z, module[2] - module[0], module[3] - module[1], module[4] + 0.3), "module")
 _clear(lid, box(bx(conn_c[0]) - conn_w / 2 - 0.3, by(conn_c[1]) - 2.5, pcb_top_z, conn_w + 0.6, 2.5 + conn_mouth + clr + 1, conn_h + 0.3), "connector")
 _clear(lid, cyl(bx(led_c[0]), by(led_c[1]), pcb_top_z, 2.4, 0.9), "LED")
 _clear(lid, cyl(bx(sw_c[0]), by(sw_c[1]), pcb_top_z, 3.6, sw_h + 0.1), "switch")
 # the whole board top stays free up to the tallest part, except under the bosses and the nub
-_free = prism(rrect(board_w, board_h, board_r, bx(0), by(0)), pcb_top_z, max_part_h - eps) - cyl(tx, ty, pcb_top_z, nub_d + 0.5, max_part_h)
+_free = prism(rrect(board_w, board_h, board_r, bx(board_w), by(0)), pcb_top_z, max_part_h - eps) - cyl(tx, ty, pcb_top_z, nub_d + 0.5, max_part_h)
 for cx, cy, d in bosses:
     _free -= cyl(bx(cx), by(cy), pcb_top_z - 1, d + 0.2, max_part_h + 2)
 _clear(lid, _free, "parts under the lid")
+# Bosses press on bare board: clear of every top-side part (KiCad footprint bboxes, board coords)
+top_parts = {"U1": (0.5, 0.17, 15.5, 19.31), "U2": (16.68, 5.67, 21.0, 14.32), "U3": (21.07, 5.67, 25.4, 14.32),
+             "R1": (18.85, 3.43, 20.89, 4.57), "R2": (22.82, 3.43, 24.86, 4.57), "R3": (13.33, 26.38, 14.47, 28.42),
+             "C1": (24.43, 14.37, 26.77, 19.64), "C2": (8.03, 19.73, 10.51, 20.87), "D1": (14.33, 26.78, 17.36, 28.43),
+             "J1": (17.9, 21.98, 24.7, 27.54), "J2": (7.79, 20.9, 13.34, 27.7), "SW1": (3.38, 26.22, 8.62, 28.98)}
+for cx, cy, d in bosses:
+    for ref, (x0, y0, x1, y1) in top_parts.items():
+        gap = ((max(x0 - cx, 0, cx - x1)) ** 2 + (max(y0 - cy, 0, cy - y1)) ** 2) ** 0.5 - d / 2
+        check(gap >= 0.2, f"boss at ({cx}, {cy}) within {gap:.2f} mm of {ref}")
+# J1 sits at board x 21.3, right of centre in KiCad: seen from above with the antenna at the
+# front it is on the left. Catches a board mapped without the mirror.
+check(conn_x0 + conn_open_w / 2 < outer_w / 2, "camera plug opening not on the left: board mirrored?")
+# Button tab: the tip ends over the cavity (no wall under it to bottom out on), the nub sits on the tab
+check(tab_y0 + tab_l <= by(board_h + clr) - 0.3, "button tab tip over the wall")
+check(ty + nub_d / 2 <= tab_y0 + tab_l - 0.2, "nub overhangs the tab tip")
 # Openings break through
 _open(base + lid, box(conn_x0 + 0.2, outer_h - wall - 0.5, split_z + 0.1, conn_open_w - 0.4, wall + 1, conn_open_h - 0.3), "plug opening")
 _open(lid, cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 0.5, led_hole_d - 0.2, lid_top_t + 1), "LED hole")
 _open(lid, box(tab_x0 - tab_slot + 0.1, tab_y0 + tab_l + 0.1, ceiling_z - 0.5, tab_w + 2 * tab_slot - 0.2, tab_slot - 0.2, lid_top_t + 1), "button slot")
 _clear(base, lid, "lid")
 # Ledge actually supports the board along the front and back edges
-check((base & box(bx(5), by(-clr), pcb_z - ledge_h + 0.1, board_w - 10, clr + 0.8, ledge_h - 0.2)).volume > 0.5 * (board_w - 10) * (clr + 0.8) * (ledge_h - 0.2), "front ledge missing")
+check((base & box(bx(board_w - 5), by(-clr), pcb_z - ledge_h + 0.1, board_w - 10, clr + 0.8, ledge_h - 0.2)).volume > 0.5 * (board_w - 10) * (clr + 0.8) * (ledge_h - 0.2), "front ledge missing")
 
 # --- Export -------------------------------------------------------------------------------------
 if __name__ == "__main__":
