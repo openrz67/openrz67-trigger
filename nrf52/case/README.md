@@ -32,6 +32,9 @@ Y toward the back wall). Values come from `../kicad/tools/design.py` and the par
   passes and along the back where the cell comes within 1 mm of the board edge. The front
   ledge bridges `ant_wall_clr` (1.0 mm of air in front of the antenna end). Flat closed
   floor. Pry slot on the front wall at the seam.
+- **Orientation rib** (`orient_mark_*`): a 2.5 × 0.8 rib on the front wall, 7 tall, split at
+  the seam between base and lid. The halves line up only when the lid is on the right way
+  around. Off-centre at board x 4, clear of the pry slot.
 - **Lid**: telescoping tongue (`lap` 5) with four snap fingers on the **side** walls (the
   back wall carries the plug opening). Hold-down bosses (`bosses`, board x/y/Ø) at four free
   spots: the module owns the front-left corner and `C1` + `J1` the back-right one.
@@ -54,7 +57,8 @@ Y toward the back wall). Values come from `../kicad/tools/design.py` and the par
 
 The script carries module-level assertions: each part is one body, base and lid do not
 overlap, outer dimensions, the board / cell / clip / module / connector / switch / LED
-keepouts, every opening breaking through, and the front ledge actually being under the
+keepouts, every opening breaking through, the orientation rib clear of the pry slot and the
+lid chamfer, and the front ledge actually being under the
 board. They run on every export.
 
 ## Usage

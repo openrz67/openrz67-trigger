@@ -75,6 +75,9 @@ nub_d, nub_gap = 2.4, 0.3  # nub diameter, air over the switch cap at rest
 led_hole_d = 1.6
 conn_clr = 0.5            # around the connector body in the wall opening
 pry_w, pry_d, pry_h = 10.0, 1.0, 1.2
+# Orientation rib on the front wall, half on the base and half on the lid: the halves line
+# up only when the lid is on the right way around. Off-centre, clear of the pry slot.
+orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 4.0, 2.5, 0.8, 7.0
 # Lid text: debossed in the top, filled by an inlay part on filament 2 (make_3mf.py), as on
 # the ESP32 case (../../case/openrz67_case.py has the reasoning). Centred on the lid; the
 # checks keep it clear of the front edge chamfer and the button tab. (text, font size, letter tracking)
@@ -121,6 +124,7 @@ check(wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines")
 check(0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness")
 check(ledge_w - clr >= 0.8, "ledge under the board too narrow")
 check(ledge_h <= clip_h + under_clr, "ledge taller than the room under the board")
+check(split_z + orient_mark_h / 2 <= total_h - lid_top_r, "orientation rib runs into the lid top chamfer")
 
 
 def bx(x):
@@ -156,6 +160,16 @@ mid_sk = rrect(inner_w + wall, inner_h + wall, inner_r + wall / 2, wall / 2, wal
 finger_bands = [(fy - finger_l / 2, fy + finger_l / 2) for fy in snap_fingers_y]
 
 
+def orient_mark_rib(z0):
+    """Half of the front-wall orientation rib (base: lower, lid: upper). Overlaps 0.2 into the wall."""
+    return box(bx(orient_mark_x) - orient_mark_w / 2, -orient_mark_d, z0,
+               orient_mark_w, orient_mark_d + 0.2, orient_mark_h / 2)
+
+
+check(outer_r < bx(orient_mark_x) - orient_mark_w / 2 and bx(orient_mark_x) + orient_mark_w / 2 < outer_w / 2 - pry_w / 2,
+      "orientation rib off the flat front wall or on the pry slot")
+
+
 def finger_boxes(margin, z0, h):
     return Part() + [box(-1, fy0 - margin, z0, outer_w + 2, fy1 - fy0 + 2 * margin, h)
                      for fy0, fy1 in finger_bands]
@@ -189,6 +203,7 @@ for x0 in (wall - 1, outer_w - wall - ledge_w):
     ledge -= box(x0, clip_y0, floor_t, ledge_w + 1, clip_y1 - clip_y0, total_h)
 ledge -= box(bx(cell_c[0] - cell_d / 2 - 0.7), outer_h - wall - ledge_w, floor_t, cell_d + 1.4, ledge_w + 1, total_h)
 base += ledge
+base += orient_mark_rib(split_z - orient_mark_h / 2)
 # Snap pockets in the base lip, only where the lid fingers are
 groove = prism(offset(mid_sk, snap_bead + pocket_extra_d) - offset(mid_sk, -lap_gap - 0.25),
                split_z - lap - eps, bead_z + (bead_h + pocket_extra_h) / 2 - (split_z - lap) + eps) & finger_boxes(0.5, 0, total_h)
@@ -229,6 +244,7 @@ slot -= box(tab_x0, tab_y0 - 1, ceiling_z - 2, tab_w, tab_l + 1, lid_top_t + 4)
 lid -= slot
 lid -= box(tab_x0, tab_y0, ceiling_z - eps, tab_w, tab_l, lid_top_t - tab_t + eps)   # thin the tab
 nub_z0 = pcb_top_z + sw_h + nub_gap
+lid += orient_mark_rib(split_z)
 lid += cyl(tx, ty, nub_z0, nub_d, (ceiling_z + lid_top_t - tab_t) - nub_z0 + eps)
 # LED light hole
 lid -= cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 1, led_hole_d, lid_top_t + 2)
@@ -287,7 +303,8 @@ for name, p in (("base", base), ("lid", lid)):
     check(p.is_valid, f"{name}: invalid solid")
     check(len(p.solids()) == 1, f"{name}: {len(p.solids())} separate bodies, something floats")
 bb = base.bounding_box()
-check(abs(bb.size.X - outer_w) < 1e-3 and abs(bb.size.Y - outer_h) < 1e-3, "base XY")
+check(abs(bb.size.X - outer_w) < 1e-3, "base X")
+check(abs(bb.max.Y - outer_h) < 1e-3 and abs(bb.min.Y + orient_mark_d) < 1e-3, "base Y")
 check(abs(bb.max.Z - split_z) < 1e-3, f"base Z {bb.max.Z}")
 lb = lid.bounding_box()
 check(abs(lb.min.Z - (split_z - lap)) < 1e-3 and abs(lb.max.Z - total_h) < 1e-3, "lid Z")
