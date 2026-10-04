@@ -8,7 +8,8 @@ Two-part snap-fit box for the coin-cell board in ../kicad/ (27 x 29 mm, CR2032 c
 the back). The board rests on a ledge around the base cavity with the cell hanging below
 it; the lid presses it down with four corner bosses. The lid carries a cantilever button
 tab over SW1, a light hole over D1 and the opening for the JST SH camera plug in its back
-wall. A hole in the floor lets a finger push the board out for a cell change.
+wall. The floor is flat and closed for velcro; for a cell change the lid comes off and the
+board drops out when the base is turned over.
 
 Parts: base (tub) and lid (telescoping tongue with four snap fingers on the side walls).
 Print orientation: base floor-down, lid upside-down. No supports.
@@ -60,7 +61,7 @@ under_clr = 0.55          # air under the clip
 over_clr = 0.6            # air over the tallest part
 ledge_w = 1.4             # board ledge, measured from the inner wall (1.0 under the board)
 ledge_h = 1.2
-floor_hole_d = 14.0       # push the board out from below
+ledge_gap = 0.2           # air between the ledge wall and the lid tongue
 # lid hold-down bosses: (board x, y, diameter). Not at the board corners: the module owns
 # the front-left one and C1 + J1 the back-right one
 bosses = [(1.3, 21.2, 2.4), (25.5, 1.5, 2.4), (1.5, 27.5, 2.4), (26.0, 23.0, 2.0)]
@@ -161,16 +162,21 @@ cut_conn = box(conn_x0, outer_h - wall - 1, split_z - eps, conn_open_w, wall + 2
 base = prism(outer_sk, 0, split_z)
 base -= prism(inner_sk, floor_t, total_h)                               # cavity
 base -= prism(mid_sk, split_z - lap, lap + 1) - conn_zone              # rabbet: outer half only
-# Board ledge: a ring around the cavity, broken on the sides where the clip passes over
-# it and along the back where the cell comes within 1 mm of the board edge
-ledge = prism(inner_sk - offset(inner_sk, -ledge_w), pcb_z - ledge_h, ledge_h)
-ledge += box(wall, wall, pcb_z - ledge_h, inner_w, ant_wall_clr + ledge_w, ledge_h)   # front: bridge the antenna air gap
+# Board ledge: a wall standing on the floor, ledge_gap inside the lid tongue (above
+# split_z - lap the base wall is only its outer half, so a ledge hung on it would float).
+# Below the tongue the gap is filled so the ledge also joins the wall. Broken on the sides
+# where the clip passes over it and along the back where the cell comes within 1 mm of
+# the board edge.
+ledge_in = offset(inner_sk, -ledge_w)
+ledge = prism(offset(inner_sk, -ledge_gap) - ledge_in, floor_t - eps, pcb_z - floor_t + eps)
+ledge += prism(offset(inner_sk, 0.5) - ledge_in, floor_t - eps, split_z - lap - floor_t + eps)
+ledge += prism(offset(inner_sk, -ledge_gap), floor_t - eps, pcb_z - floor_t + eps) & box(   # front: bridge the antenna air gap
+    0, 0, 0, outer_w, wall + ant_wall_clr + ledge_w, total_h)
 clip_y0, clip_y1 = by(cell_c[1] - clip_w / 2 - 0.7), by(cell_c[1] + clip_w / 2 + 0.7)
 for x0 in (wall - 1, outer_w - wall - ledge_w):
-    ledge -= box(x0, clip_y0, pcb_z - ledge_h - eps, ledge_w + 1, clip_y1 - clip_y0, ledge_h + 2 * eps)
-ledge -= box(bx(cell_c[0] - cell_d / 2 - 0.7), outer_h - wall - ledge_w, pcb_z - ledge_h - eps, cell_d + 1.4, ledge_w + 1, ledge_h + 2 * eps)
+    ledge -= box(x0, clip_y0, floor_t, ledge_w + 1, clip_y1 - clip_y0, total_h)
+ledge -= box(bx(cell_c[0] - cell_d / 2 - 0.7), outer_h - wall - ledge_w, floor_t, cell_d + 1.4, ledge_w + 1, total_h)
 base += ledge
-base -= cyl(bx(cell_c[0]), by(cell_c[1]), -1, floor_hole_d, floor_t + 2)   # push-out hole
 # Snap pockets in the base lip, only where the lid fingers are
 groove = prism(offset(mid_sk, snap_bead + pocket_extra_d) - offset(mid_sk, -lap_gap - 0.25),
                split_z - lap - eps, bead_z + (bead_h + pocket_extra_h) / 2 - (split_z - lap) + eps) & finger_boxes(0.5, 0, total_h)
@@ -181,8 +187,8 @@ base -= box(outer_w / 2 - pry_w / 2, -1, split_z - pry_h, pry_w, pry_d + 1, pry_
 # --- LID --------------------------------------------------------------------------------------
 lid = prism(outer_sk, split_z, lid_h)
 lid = chamfer(lid.edges().group_by(Axis.Z)[-1], lid_top_r)
-lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap) - box(   # tongue, notched at the plug
-    conn_x0 - lap_gap, outer_h - wall - 1, split_z - lap - 1, conn_open_w + 2 * lap_gap, wall + 2, lap + 1)
+lid += prism(offset(mid_sk, -lap_gap) - inner_sk, split_z - lap, lap) - box(   # tongue, notched where the base keeps its full wall
+    conn_x0 - wall - lap_gap, outer_h - wall - 1, split_z - lap - 1, conn_open_w + 2 * (wall + lap_gap), wall + 2, lap + 1)
 bead = prism(offset(mid_sk, -lap_gap + snap_bead) - offset(mid_sk, -lap_gap - 0.4),
              bead_z - bead_h / 2, bead_h) & finger_boxes(0, 0, total_h)
 bead = chamfer(bead.edges().group_by(Axis.Z)[0], bead_ch_in)
@@ -218,6 +224,7 @@ lid -= cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 1, led_hole_d, lid_top_t + 2)
 # --- Assertions --------------------------------------------------------------------------------
 for name, p in (("base", base), ("lid", lid)):
     check(p.is_valid, f"{name}: invalid solid")
+    check(len(p.solids()) == 1, f"{name}: {len(p.solids())} separate bodies, something floats")
 bb = base.bounding_box()
 check(abs(bb.size.X - outer_w) < 1e-3 and abs(bb.size.Y - outer_h) < 1e-3, "base XY")
 check(abs(bb.max.Z - split_z) < 1e-3, f"base Z {bb.max.Z}")
@@ -253,7 +260,7 @@ _clear(lid, _free, "parts under the lid")
 _open(base + lid, box(conn_x0 + 0.2, outer_h - wall - 0.5, split_z + 0.1, conn_open_w - 0.4, wall + 1, conn_open_h - 0.3), "plug opening")
 _open(lid, cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 0.5, led_hole_d - 0.2, lid_top_t + 1), "LED hole")
 _open(lid, box(tab_x0 - tab_slot + 0.1, tab_y0 + tab_l + 0.1, ceiling_z - 0.5, tab_w + 2 * tab_slot - 0.2, tab_slot - 0.2, lid_top_t + 1), "button slot")
-_open(base, cyl(bx(cell_c[0]), by(cell_c[1]), -0.5, floor_hole_d - 0.2, floor_t + 1), "floor hole")
+_clear(base, lid, "lid")
 # Ledge actually supports the board along the front and back edges
 check((base & box(bx(5), by(-clr), pcb_z - ledge_h + 0.1, board_w - 10, clr + 0.8, ledge_h - 0.2)).volume > 0.5 * (board_w - 10) * (clr + 0.8) * (ledge_h - 0.2), "front ledge missing")
 

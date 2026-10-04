@@ -110,8 +110,15 @@ XH connector, as today.
 ## Case decisions (case/, first pass)
 
 - **Board on a ledge, cell hanging below, component side up.** The button and LED must face
-  the lid, and the cell only needs the board lifted out to be changed. A floor hole under
-  the cell is the "eject": push the cell, the board comes up.
+  the lid, and the cell only needs the board lifted out to be changed: lid off, base turned
+  over, the board drops out. (The first pass had a Ø14 push-out hole in the floor; it went
+  so the floor stays flat for velcro on the camera, as on the ESP32 case.)
+- **Ledge stands on the floor.** Above `split_z - lap` the base wall is only its outer half,
+  the lid tongue fills the inner half, so the first-pass ledge hung on the wall was two
+  floating bodies in the STL. It is now a wall from the floor up, 0.2 mm inside the tongue.
+  The same check found the lid tongue overlapping the base's full-thickness wall beside the
+  plug opening (the tongue notch was narrower than the zone the base keeps); the notch now
+  spans it. Both are module-level checks now: one body per part, no base/lid overlap.
 - **Snap fingers moved to the side walls.** The back wall carries the plug opening, the
   front wall faces the antenna end; the ESP32 case's finger geometry is reused unchanged,
   which is why the wall stays 3.2 mm on a box this small.
