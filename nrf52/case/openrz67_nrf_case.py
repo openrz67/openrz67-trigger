@@ -97,6 +97,7 @@ led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # ga
 led_collar_w = 0.87       # two perimeter lines
 low_part_h = 0.6          # D1 (0603 LED); R3 (0402) is lower
 conn_clr = 0.5            # around the connector body in the wall opening
+cell_mark_l, cell_mark_w, cell_mark_d = 10.0, 1.5, 0.4   # "+" debossed in the floor under the cell: its + side faces the floor
 pry_w, pry_d, pry_h = 10.0, 1.0, 1.2
 # Orientation rib on the front wall, half on the base and half on the lid: the halves line
 # up only when the lid is on the right way around. Off-centre, clear of the pry slot.
@@ -147,6 +148,7 @@ check(wall / 2 - lap_gap >= 0.87, "lid tongue under two perimeter lines")
 check(0.87 <= finger_t <= wall / 2 - lap_gap, "snap finger thickness")
 check(ledge_w - clr >= 0.8, "ledge under the board too narrow")
 check(hook_t >= 0.87, "board hook under two perimeter lines")
+check(floor_t - cell_mark_d >= 1.0, "floor under the + mark too thin")
 check(ledge_h <= clip_h + under_clr, "ledge taller than the room under the board")
 check(split_z + orient_mark_h / 2 <= total_h - lid_top_r, "orientation rib runs into the lid top chamfer")
 
@@ -238,6 +240,9 @@ base += orient_mark_rib(split_z - orient_mark_h / 2)
 groove = prism(offset(mid_sk, snap_bead + pocket_extra_d) - offset(mid_sk, -lap_gap - 0.25),
                split_z - lap - eps, bead_z + (bead_h + pocket_extra_h) / 2 - (split_z - lap) + eps) & finger_boxes(0.5, 0, total_h)
 base -= chamfer(groove.edges().group_by(Axis.Z)[-1].filter_by(Axis.Y), pocket_ch)
+# "+" in the floor under the cell
+for dx, dy in ((cell_mark_l, cell_mark_w), (cell_mark_w, cell_mark_l)):
+    base -= box(bx(cell_c[0]) - dx / 2, by(cell_c[1]) - dy / 2, floor_t - cell_mark_d, dx, dy, cell_mark_d + eps)
 # Pry slot on the front wall at the seam
 base -= box(outer_w / 2 - pry_w / 2, -1, split_z - pry_h, pry_w, pry_d + 1, pry_h + 1)
 
@@ -449,6 +454,8 @@ _hold = (lid & prism(board_sk, barb_top - hook_flat + eps, hook_flat - 2 * eps))
 check(_hold > 0.9 * 2 * hook_grip * hook_w * (hook_flat - 2 * eps), f"board hooks do not reach under the board ({_hold:.2f} mm3)")
 _cx, _cy, _cz0 = bx(cell_c[0]), by(cell_c[1]), pcb_z - cell_t - 0.1
 _open(lid, cyl(_cx, _cy, _cz0, cell_d, cell_t) + box(_cx - cell_d / 2, _cy, _cz0, cell_d, outer_h - _cy + 1, cell_t), "cell exit (board in the lid)")
+_open(base, box(bx(cell_c[0]) - cell_mark_l / 2 + 0.1, by(cell_c[1]) - cell_mark_w / 2 + 0.1, floor_t - cell_mark_d + 0.05,
+                cell_mark_l - 0.2, cell_mark_w - 0.2, cell_mark_d), "+ mark in the floor")
 # Ledge actually supports the board along the front and back edges
 check((base & box(bx(board_w - 5), by(-clr), pcb_z - ledge_h + 0.1, board_w - 10, clr + 0.8, ledge_h - 0.2)).volume > 0.5 * (board_w - 10) * (clr + 0.8) * (ledge_h - 0.2), "front ledge missing")
 

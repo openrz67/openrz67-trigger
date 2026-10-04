@@ -34,7 +34,8 @@ runs right to left in the case: the module sits front-right, the camera plug bac
   (0.2) inside the lid tongue, reaching 1.0 under the board on every side (`ledge_w` 1.4
   from the front and back walls). Below the tongue it joins the outer wall. Broken on both
   sides where the clip passes and the hooks hang, and along the back where the cell comes
-  within 1 mm of the board edge. The base keeps its full wall along the whole back. The front
+  within 1 mm of the board edge. The base keeps its full wall along the whole back. A 10 mm
+  "+" is debossed 0.4 into the floor under the cell: the cell's + side faces the floor. The front
   ledge bridges `ant_wall_clr` (1.0 mm of air in front of the antenna end). Flat closed
   floor. Pry slot on the front wall at the seam.
 - **Orientation rib** (`orient_mark_*`): a 2.5 × 0.8 rib on the front wall, 7 tall, split at

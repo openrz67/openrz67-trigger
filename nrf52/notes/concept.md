@@ -274,3 +274,6 @@ plus legs, and the hooks sit in front of the legs.
 Untested: the hook click and release force, and the barb's flat face. It prints as a 0.7 mm
 overhang, like the snap bead's retention face.
 
+Polarity marking: the nRF52 has no reverse protection, and a cell put in upside down puts
+-3 V on VDD. There is a "+" in the base floor under the cell and `CR2032  + SIDE OUT` on
+B.SilkS in the strip between the front edge and the cell (`CELL_LABEL` in design.py).
