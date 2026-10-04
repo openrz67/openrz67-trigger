@@ -7,12 +7,13 @@
 Two-part snap-fit box for the coin-cell board in ../kicad/ (27 x 29 mm, CR2032 clip on
 the back). The board rests on a ledge around the base cavity with the cell hanging below
 it; the lid presses it down with four corner bosses. The lid carries a cantilever button
-tab over SW1, a light hole over D1 and the opening for the JST SH camera plug in its back
+tab over SW1, a light pipe over D1 and the opening for the JST SH camera plug in its back
 wall. The floor is flat and closed for velcro; for a cell change the lid comes off and the
 board drops out when the base is turned over.
 
-Parts: base (tub) and lid (telescoping tongue with four snap fingers on the side walls).
-Print orientation: base floor-down, lid upside-down. No supports.
+Parts: base (tub), lid (telescoping tongue with four snap fingers on the side walls) and
+light pipe (clear filament, glued into the lid). Print orientation: base floor-down, lid
+upside-down, light pipe head-down. No supports.
 
 Coordinate system: case coords, origin at the outer box's front-left-bottom corner.
 Board coords are the KiCad coords of ../kicad/openrz67-nrf.kicad_pcb (origin top-left of
@@ -30,6 +31,7 @@ cropped corner pair for tuning snap_bead / lap_gap), LID_TEXT_SHOW=false, LID_TE
 LID_TEXT_SIZE.
 """
 
+import math
 import os
 from pathlib import Path
 
@@ -75,7 +77,13 @@ tab_w, tab_l, tab_slot = 6.0, 7.45, 0.7
 tab_tip = 1.45            # switch centre to the tab's free end: the tip stays over the cavity
 tab_t = 0.8               # tab thinned from the inside to this: about 5 N to press (8 N at 1.0)
 nub_d, nub_gap = 2.4, 0.3  # nub diameter, air over the switch cap at rest
-led_hole_d = 1.6
+# Light pipe: top hat as on the ESP32 case (../../case/openrz67_case.py has the history):
+# tapered head in a funnel, stem in a slip-fit window, glued. The collar off the ceiling
+# keeps it from tilting; only D1 and R3 sit under its ring, both under low_part_h.
+led_stem_d = 2.2
+led_head_lip, led_head_t, led_pipe_clr, led_pipe_gap = 0.7, 1.4, 0.2, 0.8   # gap from the board top
+led_collar_w = 0.87       # two perimeter lines
+low_part_h = 0.6          # D1 (0603 LED); R3 (0402) is lower
 conn_clr = 0.5            # around the connector body in the wall opening
 pry_w, pry_d, pry_h = 10.0, 1.0, 1.2
 # Orientation rib on the front wall, half on the base and half on the lid: the halves line
@@ -250,8 +258,27 @@ lid -= box(tab_x0, tab_y0, ceiling_z - eps, tab_w, tab_l, lid_top_t - tab_t + ep
 nub_z0 = pcb_top_z + sw_h + nub_gap
 lid += orient_mark_rib(split_z)
 lid += cyl(tx, ty, nub_z0, nub_d, (ceiling_z + lid_top_t - tab_t) - nub_z0 + eps)
-# LED light hole
-lid -= cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 1, led_hole_d, lid_top_t + 2)
+# LED light pipe: collar off the ceiling, stem window through plate + collar, funnel for the head
+lx, ly = bx(led_c[0]), by(led_c[1])
+led_taper = math.degrees(math.atan(led_head_lip / led_head_t))
+check(led_taper <= 28, f"light-pipe head taper {led_taper:.1f} deg would get slicer support (30 deg threshold)")
+check(led_head_t < lid_top_t, "light-pipe head seat goes through the top plate")
+pipe_z0 = pcb_top_z + led_pipe_gap
+collar_z = pipe_z0
+collar_d = led_stem_d + led_pipe_clr + 2 * led_collar_w
+check(collar_z - pcb_top_z >= low_part_h + 0.2, "light-pipe collar sits on D1/R3")
+
+
+def led_head(clr, extra=0.0):
+    """Frustum: stem-window size at z = total_h - led_head_t, growing by the lip to the top."""
+    return extrude(Plane.XY.offset(total_h - led_head_t) * Pos(lx, ly) * Circle((led_stem_d + clr) / 2),
+                   amount=led_head_t + extra, taper=-led_taper)
+
+
+lid += cyl(lx, ly, collar_z, collar_d, ceiling_z - collar_z + eps)
+lid -= cyl(lx, ly, collar_z - eps, led_stem_d + led_pipe_clr, total_h - collar_z + 2 * eps)
+lid -= led_head(led_pipe_clr, eps)
+lightpipe = led_head(0.0) + cyl(lx, ly, pipe_z0, led_stem_d, total_h - led_head_t - pipe_z0 + eps)
 
 
 def grow(f, d):
@@ -303,7 +330,7 @@ if lid_text_show:
     lid -= text_cut
 
 # --- Assertions --------------------------------------------------------------------------------
-for name, p in (("base", base), ("lid", lid)):
+for name, p in (("base", base), ("lid", lid), ("lightpipe", lightpipe)):
     check(p.is_valid, f"{name}: invalid solid")
     check(len(p.solids()) == 1, f"{name}: {len(p.solids())} separate bodies, something floats")
 bb = base.bounding_box()
@@ -342,16 +369,30 @@ _clear(lid, cyl(bx(sw_c[0]), by(sw_c[1]), pcb_top_z, 3.6, sw_h + 0.1), "switch")
 _free = prism(rrect(board_w, board_h, board_r, bx(board_w), by(0)), pcb_top_z, max_part_h - eps) - cyl(tx, ty, pcb_top_z, nub_d + 0.5, max_part_h)
 for cx, cy, d in bosses:
     _free -= cyl(bx(cx), by(cy), pcb_top_z - 1, d + 0.2, max_part_h + 2)
+_free -= cyl(lx, ly, pcb_top_z - 1, collar_d + 0.2, max_part_h + 2)
 _clear(lid, _free, "parts under the lid")
 # Bosses press on bare board: clear of every top-side part (KiCad footprint bboxes, board coords)
 top_parts = {"U1": (0.5, 0.17, 15.5, 19.31), "U2": (16.68, 5.67, 21.0, 14.32), "U3": (21.07, 5.67, 25.4, 14.32),
              "R1": (18.85, 3.43, 20.89, 4.57), "R2": (22.82, 3.43, 24.86, 4.57), "R3": (13.33, 26.38, 14.47, 28.42),
              "C1": (24.43, 14.37, 26.77, 19.64), "C2": (8.03, 19.73, 10.51, 20.87), "D1": (14.33, 26.78, 17.36, 28.43),
              "J1": (17.9, 21.98, 24.7, 27.54), "J2": (7.79, 20.9, 13.34, 27.7), "SW1": (3.38, 26.22, 8.62, 28.98)}
+
+
+def plan_gap(cx, cy, d, x0, y0, x1, y1):
+    return ((max(x0 - cx, 0, cx - x1)) ** 2 + (max(y0 - cy, 0, cy - y1)) ** 2) ** 0.5 - d / 2
+
+
 for cx, cy, d in bosses:
-    for ref, (x0, y0, x1, y1) in top_parts.items():
-        gap = ((max(x0 - cx, 0, cx - x1)) ** 2 + (max(y0 - cy, 0, cy - y1)) ** 2) ** 0.5 - d / 2
+    for ref, bb in top_parts.items():
+        gap = plan_gap(cx, cy, d, *bb)
         check(gap >= 0.2, f"boss at ({cx}, {cy}) within {gap:.2f} mm of {ref}")
+# Light-pipe collar: clear of the tall parts in plan. J1 by its body: the footprint bbox
+# includes the flat side pads, which the collar passes over.
+_tall = {r: bb for r, bb in top_parts.items() if r not in ("D1", "R3")}
+_tall["J1"] = (conn_c[0] - conn_w / 2, top_parts["J1"][1], conn_c[0] + conn_w / 2, top_parts["J1"][3])
+for ref, bb in _tall.items():
+    gap = plan_gap(*led_c, collar_d, *bb)
+    check(gap >= 0.2, f"light-pipe collar within {gap:.2f} mm of {ref}")
 # J1 sits at board x 21.3, right of centre in KiCad: seen from above with the antenna at the
 # front it is on the left. Catches a board mapped without the mirror.
 check(conn_x0 + conn_open_w / 2 < outer_w / 2, "camera plug opening not on the left: board mirrored?")
@@ -360,7 +401,8 @@ check(tab_y0 + tab_l <= by(board_h + clr) - 0.3, "button tab tip over the wall")
 check(ty + nub_d / 2 <= tab_y0 + tab_l - 0.2, "nub overhangs the tab tip")
 # Openings break through
 _open(base + lid, box(conn_x0 + 0.2, outer_h - wall - 0.5, split_z + 0.1, conn_open_w - 0.4, wall + 1, conn_open_h - 0.3), "plug opening")
-_open(lid, cyl(bx(led_c[0]), by(led_c[1]), ceiling_z - 0.5, led_hole_d - 0.2, lid_top_t + 1), "LED hole")
+_open(lid, cyl(lx, ly, collar_z - 0.5, led_stem_d + led_pipe_clr - 0.1, total_h - collar_z + 1), "light-pipe window")
+_clear(lid, lightpipe, "light pipe")
 _open(lid, box(tab_x0 - tab_slot + 0.1, tab_y0 + tab_l + 0.1, ceiling_z - 0.5, tab_w + 2 * tab_slot - 0.2, tab_slot - 0.2, lid_top_t + 1), "button slot")
 _clear(base, lid, "lid")
 # Ledge actually supports the board along the front and back edges
@@ -370,7 +412,7 @@ check((base & box(bx(board_w - 5), by(-clr), pcb_z - ledge_h + 0.1, board_w - 10
 if __name__ == "__main__":
     out = Path(os.environ.get("OUTDIR", Path(__file__).resolve().parent / "stl"))
     out.mkdir(parents=True, exist_ok=True)
-    parts = [("openrz67-nrf-base", base), ("openrz67-nrf-lid", lid)]
+    parts = [("openrz67-nrf-base", base), ("openrz67-nrf-lid", lid), ("openrz67-nrf-lightpipe", lightpipe)]
     stale = out / "openrz67-nrf-lid-text.stl"
     if lid_text is not None:
         parts.append(("openrz67-nrf-lid-text", lid_text))

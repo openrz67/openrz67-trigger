@@ -1,12 +1,13 @@
 # Parametric enclosure for the nRF52 board (build123d)
 
-`openrz67_nrf_case.py` is a two-part snap-fit box for the coin-cell board in
+`openrz67_nrf_case.py` is a two-part snap-fit box, plus a light pipe, for the coin-cell board in
 [`../kicad/`](../kicad/). Outer size with default values: **34.2 × 37.2 × 12.6 mm**. Printed in
-ABS, lid upside-down, base floor-down, no supports.
+ABS, lid upside-down, base floor-down, no supports. The light pipe prints in clear filament,
+head-down, and is glued into the lid.
 
 Layout: the board rests on a 1 mm ledge around the base cavity, component side up, with the
 CR2032 and its clip hanging below it. The lid presses the board onto the ledge with four
-bosses and carries the button tab, the LED hole and the opening for the camera plug. The
+bosses and carries the button tab, the LED light pipe and the opening for the camera plug. The
 floor is flat and closed, for velcro on the camera. To change the cell, take the lid off and
 turn the base over: the board drops out, and the cell slides sideways out of the clip.
 
@@ -43,7 +44,11 @@ runs right to left in the case: the module sits front-right, the camera plug bac
     U-slot, hinged at its front end, thinned to `tab_t` (0.8) from the inside, with a
     Ø`nub_d` (2.4) nub that stops `nub_gap` (0.3) above the switch cap. The free end is
     `tab_tip` (1.45) past the switch centre, so it ends over the cavity, not over the wall.
-  - **LED**: Ø`led_hole_d` (1.6) hole straight through the top over `D1`.
+  - **LED light pipe**: a top hat over `D1`, as on the ESP32 case. Ø`led_stem_d` (2.2) stem,
+    ending `led_pipe_gap` (0.8) above the board, in a slip-fit window (`led_pipe_clr` 0.2)
+    that a collar off the ceiling lengthens down to the pipe's lower end. The head tapers out
+    by `led_head_lip` (0.7) over `led_head_t` (1.4), 26.6° from vertical, into a matching
+    funnel in the top, so it self-centres and nothing needs support. Glued.
   - **Text**: "OpenRZ67" over a tracked "TRIGGER", Futura Bold grown `lid_text_bold` (0.1)
     per side so every stroke is at least 0.6 mm, debossed `lid_text_depth`
     (0.8) into the top, centred on the lid. The pockets are filled by
@@ -59,7 +64,8 @@ runs right to left in the case: the module sits front-right, the camera plug bac
 
 The script carries module-level assertions: each part is one body, base and lid do not
 overlap, outer dimensions, the board / cell / clip / module / connector / switch / LED
-keepouts, the bosses clear of every top-side part, the button tab tip over the cavity, the
+keepouts, the bosses and the light-pipe collar clear of every top-side part, the light pipe
+clear of the lid, the button tab tip over the cavity, the
 camera plug opening on the left (a board mapped without the mirror fails here), every opening breaking through, the orientation rib clear of the pry slot and the
 lid chamfer, and the front ledge actually being under the
 board. They run on every export.
@@ -68,14 +74,15 @@ board. They run on every export.
 
 ```sh
 cd nrf52/case
-./export.sh                          # base + lid -> stl/, then openrz67-nrf-case.3mf
+./export.sh                          # base + lid + light pipe -> stl/, then openrz67-nrf-case.3mf
 SNAP_TEST=true ./export.sh           # also a cropped corner pair (not in the .3mf)
 ```
 
 Requires [uv](https://docs.astral.sh/uv/); the script carries its own dependency header.
 
-`openrz67-nrf-case.3mf` is the QIDI Studio project: plate 1, base floor-down, lid upside-down,
-ABS profile, lid text on filament 2. `../../case/make_3mf.py` builds it by swapping the fresh STLs into
+`openrz67-nrf-case.3mf` is the QIDI Studio project: plate 1 base floor-down and lid upside-down
+(ABS profile, lid text on filament 2), plate 2 the light pipe head-down on filament 3 (clear,
+0.28 mm layers, 100 % infill, 20 mm/s). The template has the ESP32 case's settings. `../../case/make_3mf.py` builds it by swapping the fresh STLs into
 `qidi-template.3mf`, so the slicer settings survive every re-export. To change settings or the
 plate layout: open the project in QIDI Studio, change it, save, and copy it over
 `qidi-template.3mf`.

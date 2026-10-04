@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Export base + lid to stl/ and rebuild the slicer project openrz67-nrf-case.3mf from
+# Export base + lid + light pipe to stl/ and rebuild the slicer project openrz67-nrf-case.3mf from
 # qidi-template.3mf (print profile and plate layout kept, meshes swapped by ../../case/make_3mf.py).
 #
 # Usage:
@@ -11,4 +11,4 @@ command -v uv >/dev/null 2>&1 || { echo "uv not found (https://docs.astral.sh/uv
 
 OUTDIR=stl uv run openrz67_nrf_case.py
 python3 ../../case/make_3mf.py --template qidi-template.3mf --stl-dir stl --out openrz67-nrf-case.3mf \
-  --objects openrz67-nrf-base.stl,openrz67-nrf-lid.stl
+  --objects openrz67-nrf-base.stl,openrz67-nrf-lid.stl,openrz67-nrf-lightpipe.stl

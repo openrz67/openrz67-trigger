@@ -124,7 +124,7 @@ XH connector, as today.
   which is why the wall stays 3.2 mm on a box this small.
 - **Button as a cantilever tab in the lid**, not a separate cap: nothing to lose, no extra
   part, and ABS at 1.0 mm over an 8 mm tab flexes the 0.3 mm the switch needs. Untested.
-- **No light pipe.** A Ø1.6 hole 3 mm above a 0603 LED shows the light; a pipe can be glued
+- **No light pipe** (first pass; replaced, see below). A Ø1.6 hole 3 mm above a 0603 LED shows the light; a pipe can be glued
   in later if it is too dim. `D1` was moved 1.6 mm away from `SW1` on the board so the hole
   clears the tab's slot.
 - **The clip feet are tied on the back layer outside the cell**, up at y = 6.5 and down the
@@ -240,3 +240,13 @@ Firmware changes:
 
 Left as is: a link lost during bulb ends in power-off after the 5 min advertising window,
 which closes the shutter. The camera closes it after about 60 s on its own anyway.
+
+## Light pipe (2026-10-04)
+
+The bare Ø1.6 hole was replaced by a printed clear light pipe, the ESP32 case's top hat made
+round. The LED top is 4.5 mm under the lid surface and the advertising blink is 40 ms, so
+through a hole it shows only from straight above and is easy to miss in daylight. The collar
+ends at the pipe's lower end, 0.8 above the board: only `D1` and `R3` (both under 0.6) are
+under its ring, `J1`'s body is 0.4 away. `qidi-template.3mf` was rebuilt from the ESP32
+case's template (identical print settings) with the objects renamed, so the pipe keeps its
+plate 2 / clear filament / per-object profile.
