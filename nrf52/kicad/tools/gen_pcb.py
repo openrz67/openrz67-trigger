@@ -133,6 +133,13 @@ def zones(b, nets):
     b.Add(c)
 
 
+def silk(b):
+    text, x, y, h = D.CELL_LABEL
+    t = pcbnew.PCB_TEXT(b); t.SetText(text); t.SetLayer(pcbnew.B_SilkS); t.SetMirrored(True)
+    t.SetTextSize(pcbnew.VECTOR2I(MM(h), MM(h))); t.SetTextThickness(MM(0.18))
+    t.SetPosition(V(x, y)); b.Add(t)
+
+
 def route(b, nets):
     for net, layer, width, pts in D.TRACKS:
         for a, c in zip(pts, pts[1:]):
@@ -150,7 +157,7 @@ def main():
     tb = b.GetTitleBlock(); tb.SetTitle("OpenRZ67 trigger, nRF52 / coin cell"); tb.SetRevision("A")
     rules(b); edge(b)
     nets, fps = place(b)
-    zones(b, nets); route(b, nets)
+    zones(b, nets); route(b, nets); silk(b)
     b.Save(PCB)
     b = pcbnew.LoadBoard(PCB)          # refill with the saved rules compiled
     pcbnew.ZONE_FILLER(b).Fill(b.Zones())

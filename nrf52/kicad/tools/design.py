@@ -59,6 +59,10 @@ NETS = {
     "CAM_GND": [("U2", "3"), ("U3", "3"), ("J1", "1")],
 }
 
+# B.SilkS label in the free strip between the front edge and the cell: the cell's + side
+# faces away from the board. (text, x, y, height)
+CELL_LABEL = ("CR2032  + SIDE OUT", 13.5, 4.0, 1.2)
+
 # copper-free band under the module antenna (both layers)
 ANTENNA_KEEPOUT = (0.0, 0.0, 16.5, 3.8)  # x0, y0, x1, y1
 # B.Cu ring under the rim of the CR2032 (its + can wraps over the edge): no copper of any
