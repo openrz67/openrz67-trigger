@@ -2,7 +2,7 @@
 
 KiCad 10 project for the coin-cell trigger: 27 × 29 mm, 2 layers, Ebyte E73-2G4M08S1C
 (nRF52840) module, CR2032 clip on the back, two TLP172AM PhotoMOS relays, JST SH 1.0 mm
-side-entry camera connector, four SWD pads, one button, one LED. No regulator, no charger, no power
+side-entry camera connector, a second SH connector for SWD, one button, one LED. No regulator, no charger, no power
 switch. Concept stage, not fabricated.
 
 The schematic and the board are **generated**: `tools/design.py` holds parts, placement,
@@ -19,7 +19,7 @@ run overwrites them.
 | `tools/fetch_3d.sh` | downloads STEP+WRL models for every LCSC part in the BOM into `openrz67-nrf.3dshapes/` |
 | `tools/export_step.sh` | board STEP to `out/openrz67-nrf.step` (gitignored); fetches missing part models first |
 | `openrz67-nrf.3dshapes/` | 3D models; `.wrl` committed (renders), `.step` gitignored |
-| `openrz67-nrf.kicad_sym`, `openrz67-nrf.pretty/` | project libraries: LCSC/EasyEDA imports via easyeda2kicad, KiCad's `R`, and the own `SWD_1x04_P2.54` pad footprint |
+| `openrz67-nrf.kicad_sym`, `openrz67-nrf.pretty/` | project libraries: LCSC/EasyEDA imports via easyeda2kicad and KiCad's `R` |
 | `out/` | generated: Gerber+drill zip, position file, BOM with LCSC numbers, schematic PDF, top/bottom renders, DRC/ERC reports |
 
 ## Regenerate
@@ -45,7 +45,7 @@ is a separate net from the cell's `GND`.
 | P0.00 (XL1) | 11 | status LED through 1 kΩ (LFCLK runs from the internal RC) |
 | P0.09 (NFC1) | 41 | S1 PhotoMOS LED through 330 Ω |
 | P0.10 (NFC2) | 43 | S2 PhotoMOS LED through 330 Ω |
-| SWDIO / SWCLK | 37 / 39 | `J2` pads 2 / 3 |
+| SWDIO / SWCLK | 37 / 39 | `J2` pins 4 / 3 |
 | P0.18 (RESET) | 26 | not brought out; reset over SWD |
 
 NFC pins need `CONFIG_NFCT_PINS_AS_GPIOS=y`; P0.00 needs the 32 kHz clock source set to RC.
@@ -58,10 +58,10 @@ Connectors:
 | | 2 | not connected |
 | | 3 | S1 (blue) |
 | | 4 | S2 (yellow) |
-| `J2` SWD pads, 2.54 mm | 1 | VDD |
-| | 2 | SWDIO |
-| | 3 | SWCLK |
-| | 4 | GND |
+| `J2` SWD, SH 1.0 mm (Qwiic cable to the probe) | 1 | GND (black) |
+| | 2 | VDD (red) |
+| | 3 | SWCLK (blue) |
+| | 4 | SWDIO (yellow) |
 
 ## Design rules
 
@@ -83,13 +83,13 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 
 Outline 27 × 29 mm, R0.8 corners, no mounting holes. All parts on top except the cell clip
 on the back. Module antenna end is flush with the top edge (y = 0); the camera connector
-mouth faces the bottom edge (y = 29); SWD pads and the button sit bottom-left, the LED
-between them and the connector.
+mouth faces the bottom edge (y = 29); the SWD connector's mouth faces +x, inside the box
+(flash with the lid off); the button sits bottom-left, the LED right of the SWD connector.
 
 | Part | Height over the board |
 |---|---|
 | CR2032 clip `BT1` (back) | 3.75 mm, the cell under it; cell centre (13.5, 18), slides in from either long side |
-| Camera connector `J1` | 2.9 mm, body 6.0 × 4.3 |
+| `J1` camera and `J2` SWD connectors | 2.9 mm, body 6.0 × 4.3 each |
 | Module `U1` | about 2 mm (not verified) |
 
 `BT1` is only the positive clip (MYOUNG drawing: "TERMINAL(+)"). The cell's negative face

@@ -90,9 +90,11 @@ XH connector, as today.
 - **Connector at the bottom edge, module at the top.** With the connector on the right edge
   there was no corridor for the SWD and drive traces between the module pads and the
   connector pads.
-- **Four plain SWD pads instead of Tag-Connect.** The TC2030-NL footprint with its three
-  locating holes did not fit next to the connector tab, and the reset line is not needed:
-  pyOCD / J-Link reset the nRF52 over SWD.
+- **SWD on a second JST SH connector (`J2`)**, not Tag-Connect and not bare pads. The
+  user does not want to solder: a Qwiic cable onto a Pico H is a zero-solder probe. Pin 1
+  GND so the cable's black wire is ground, like `J1`. Reset is not brought out: pyOCD /
+  J-Link reset the nRF52 over SWD. (Tag-Connect's locating holes did not fit anyway.) The
+  mouth faces into the board, so flashing needs the lid off.
 - **GPIO choice is dictated by the module footprint.** Only the outer pad rows can be
   routed on the top layer (the inner row is boxed in). Button on P0.30 (last pad of the left
   column), LED on P0.00/XL1 (first pad of the bottom row), S1/S2 on the NFC pins P0.09/P0.10.
@@ -116,6 +118,8 @@ XH connector, as today.
 - **No light pipe.** A Ø1.6 hole 3 mm above a 0603 LED shows the light; a pipe can be glued
   in later if it is too dim. `D1` was moved 1.6 mm away from `SW1` on the board so the hole
   clears the tab's slot.
+- **The clip feet are tied on the back layer above the cell pad**, not below it: the LED
+  drive had to cross to the back to get under `J2`, and a loop under the cell blocked it.
 - **Lid bosses sit on free copper, not on the board corners.** The module fills the
   front-left corner and `C1` + `J1` the back-right one; `J1` moved 0.7 mm and `C1` 2.8 mm
   on the board to free a spot.

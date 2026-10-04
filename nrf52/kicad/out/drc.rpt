@@ -1,8 +1,12 @@
 ** Drc report for openrz67-nrf.kicad_pcb **
-** Created on 2026-10-03T23:30:57 **
+** Created on 2026-10-04T00:11:56 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 11 DRC violations **
+** Found 12 DRC violations **
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(8.0400 mm, 27.3000 mm): Circle of J2 on F.Silkscreen
+    @(7.7000 mm, 27.6000 mm): Pad 2 [GND] of SW1 on F.Cu
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(7.2700 mm, 19.1100 mm): Arc of BT1 on B.Silkscreen

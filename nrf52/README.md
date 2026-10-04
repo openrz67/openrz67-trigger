@@ -1,0 +1,25 @@
+# nRF52 coin-cell trigger
+
+Second board design for the RZ67 trigger: an nRF52840 module on a CR2032, no regulator,
+charger or power switch. Concept stage, nothing ordered or printed.
+
+| Directory | What |
+|---|---|
+| `kicad/` | the board, generated from `tools/design.py`; fab files in `out/` |
+| `case/` | build123d snap-fit box |
+| `firmware/` | Zephyr application, builds on nRF Connect SDK v3.4.1 |
+| `notes/` | reasoning and history |
+
+## Parts to buy
+
+Nothing is soldered by hand. The board comes assembled, everything else plugs in.
+
+| What | Where | Note |
+|---|---|---|
+| Assembled board | JLCPCB, upload `kicad/out/openrz67-nrf-gerber.zip` + BOM + pos from `kicad/out/` | ENIG finish (the bare cell pad), assembly on both sides |
+| CR2032 | anywhere | one per board |
+| SH1.0 4P to Dupont female cable (Qwiic / STEMMA QT pigtail) | AliExpress | three: one camera cable (`J1`), one for flashing (`J2`), one spare |
+| Raspberry Pi Pico H | any Pi reseller | the flashing probe; H = headers pre-soldered. Load Raspberry Pi's `debugprobe` firmware on it |
+
+The camera end of the `J1` cable goes to the RZ67 socket as today (GND, S1, S2). Wiring for
+`J2` to the Pico H is in [`firmware/README.md`](firmware/README.md).
