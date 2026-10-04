@@ -43,7 +43,7 @@ S1_DRV_PAD, S2_DRV_PAD = "41", "43"   # P0.09, P0.10 (NFC pins as GPIO)
 
 NETS = {
     "VDD": [("BT1", "1"), ("BT1", "2"), ("U1", "19"), ("U1", "23"), ("C1", "1"), ("C2", "1"), ("J2", "2")],
-    "GND": [("BT1", "3"), ("U1", "5"), ("U1", "21"), ("U1", "24"), ("C1", "2"), ("C2", "2"),
+    "GND": [("BT1", "3"), ("U1", "5"), ("U1", "21"), ("U1", "24"), ("U1", "27"), ("C1", "2"), ("C2", "2"),
             ("J2", "1"), ("SW1", "2"), ("D1", "1"), ("U2", "2"), ("U3", "2")],
     "S1_DRV": [("U1", S1_DRV_PAD), ("R1", "1")],
     "S1_LED": [("R1", "2"), ("U2", "1")],
@@ -77,7 +77,8 @@ TRACKS = [
     ("VDD", "F", P, [(5.09, 21.2), (5.09, 24.8), (7.78, 24.8)]),
     # VDD: both clip feet tied on the back, above the cell pad; right foot -> C1
     ("VDD", "B", 0.3, [(1.5, 17.0), (1.5, 6.5), (24.95, 6.5), (24.95, 15.8)]),
-    ("VDD", "F", P, [(25.6, 15.9), (25.6, 15.41)]),
+    ("VDD", "B", P, [(24.95, 14.1), (25.6, 14.1)]),
+    ("VDD", "F", P, [(25.6, 14.1), (25.6, 15.41)]),
     ("GND", "F", T, [(25.6, 18.59), (25.6, 21.0)]),
     # GND stubs
     ("GND", "F", T, [(9.81, 20.3), (9.9, 18.31)]),
@@ -104,16 +105,16 @@ TRACKS = [
 # (net, x, y)
 VIAS = [
     ("VDD", 3.0, 20.3),
-    ("VDD", 25.6, 15.9),
+    ("VDD", 25.6, 14.1),     # off C1 and the clip foot, so no solder wicks down it
     ("GND", 6.3, 25.8),
     ("GND", 16.6, 28.3),
     ("LED_DRV", 2.3, 25.3),
     ("LED_DRV", 14.3, 28.4),
     ("GND", 3.8, 22.8),
-    ("GND", 7.0, 19.7),    # ties the GND disc under the cell to the top; off the contact pad, which gets paste
+    ("GND", 7.0, 19.7),    # ties the GND disc under the cell to the top
     ("GND", 21.0, 5.2),    # back-side GND north of the VDD loop, under the module
     ("GND", 20.8, 8.8),    # back-side GND between the VDD loop and the cell ring
     ("GND", 6.0, 10.0),
-    ("GND", 7.7, 27.0),
+    ("GND", 6.8, 26.5),      # beside SW1, not in its pad; outside the cell rim
     ("GND", 25.6, 21.0),
 ]

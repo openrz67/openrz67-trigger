@@ -34,7 +34,8 @@ Close KiCad first. Needs `kicad-cli` and KiCad's bundled python (for pcbnew); ov
 ## Circuit
 
 The cell feeds the module directly (`VDD` = `VDDH`, `DCCH` floating: nRF52840 normal-voltage
-mode, 1.7–3.6 V). 100 µF sits at the clip terminal, 100 nF at the module. Each PhotoMOS LED
+mode, 1.7–3.6 V). `VBUS` is tied to GND, as in Nordic's reference circuit for a supply on
+VDD without USB. 100 µF sits at the clip terminal, 100 nF at the module. Each PhotoMOS LED
 is driven from a GPIO through 330 Ω (about 5 mA at 3.0 V, above the 3 mA trigger maximum
 down to 2.5 V). The PhotoMOS outputs go to the camera connector; camera ground (`CAM_GND`)
 is a separate net from the cell's `GND`.
@@ -60,7 +61,7 @@ Connectors:
 | | 3 | S1 (blue) |
 | | 4 | S2 (yellow) |
 | `J2` SWD, SH 1.0 mm (Qwiic cable to the probe) | 1 | GND (black) |
-| | 2 | VDD (red), target voltage sense only. Never feed power in here: it would charge the CR2032 |
+| | 2 | VDD (red). With the cell out, the probe's 3.3 V powers the board here. Never with the cell in: it would charge the CR2032 |
 | | 3 | SWCLK (blue) |
 | | 4 | SWDIO (yellow) |
 
@@ -77,7 +78,7 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 
 | Check | Count | What |
 |---|---|---|
-| ERC `endpoint_off_grid` | 15 | Pins of the imported symbols are not on the 1.27 mm grid. Connectivity is by label; verified by the schematic-parity DRC. |
+| ERC `endpoint_off_grid` | 16 | Pins of the imported symbols are not on the 1.27 mm grid. Connectivity is by label; verified by the schematic-parity DRC. |
 | `silk_over_copper` | 11 | The holder footprint's own silkscreen crosses its centre pad. Fab clips it. |
 
 ## Mechanical
@@ -95,7 +96,7 @@ mouth faces the bottom edge (y = 29); the SWD connector's mouth faces +x, inside
 
 `BT1` is only the positive clip (MYOUNG drawing: "TERMINAL(+)"). The cell's negative face
 rests on the Ø10 mm bare pad in the middle of the back; order the board with ENIG so that
-pad does not oxidise. On the back a copper-free ring 7.5 to 10.2 mm from the cell centre lies
+pad does not oxidise. It has no paste: the cell rests on flat gold, not on a solder dome with flux on it. On the back a copper-free ring 7.5 to 10.2 mm from the cell centre lies
 under the cell's rim, where the + can wraps over the edge; inside the ring only GND copper,
 the same potential as the cell face resting on it. Ebyte's manual gives no antenna keepout figure, only "keep copper and
 noisy traces away from the antenna end"; the 3.8 mm rule area is this project's choice.
