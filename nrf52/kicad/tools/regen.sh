@@ -47,6 +47,8 @@ p = sys.argv[1]
 # The TLP172AM offset is the one measured on the main board's order preview.
 ROT_FIX = {
     "SMD-4_L4.6-W3.7-P2.54-LS7.0-BR": 90,
+    # MY-2032-16 (BT1): preview put the wide notched foot on the 3.5 mm pad; datasheet has it on the 5.0 mm one
+    "BAT-SMD_MY-2032-16": 180,
 }
 rows = list(csv.DictReader(open(p, newline="", encoding="utf-8")))
 with open(p, "w", newline="") as f:
