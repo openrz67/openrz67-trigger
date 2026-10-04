@@ -48,7 +48,8 @@ is a separate net from the cell's `GND`.
 | SWDIO / SWCLK | 37 / 39 | `J2` pins 4 / 3 |
 | P0.18 (RESET) | 26 | not brought out; reset over SWD |
 
-NFC pins need `CONFIG_NFCT_PINS_AS_GPIOS=y`; P0.00 needs the 32 kHz clock source set to RC.
+NFC pins need `nfct-pins-as-gpios` in the board devicetree; P0.00 needs the 32 kHz clock source
+set to RC. P0.09/P0.10 run at high drive strength (S0H1) so the PhotoMOS LEDs get their 5 mA.
 
 Connectors:
 
@@ -59,7 +60,7 @@ Connectors:
 | | 3 | S1 (blue) |
 | | 4 | S2 (yellow) |
 | `J2` SWD, SH 1.0 mm (Qwiic cable to the probe) | 1 | GND (black) |
-| | 2 | VDD (red) |
+| | 2 | VDD (red), target voltage sense only. Never feed power in here: it would charge the CR2032 |
 | | 3 | SWCLK (blue) |
 | | 4 | SWDIO (yellow) |
 
@@ -94,5 +95,7 @@ mouth faces the bottom edge (y = 29); the SWD connector's mouth faces +x, inside
 
 `BT1` is only the positive clip (MYOUNG drawing: "TERMINAL(+)"). The cell's negative face
 rests on the Ø10 mm bare pad in the middle of the back; order the board with ENIG so that
-pad does not oxidise. Ebyte's manual gives no antenna keepout figure, only "keep copper and
+pad does not oxidise. On the back a copper-free ring 7.5 to 10.2 mm from the cell centre lies
+under the cell's rim, where the + can wraps over the edge; inside the ring only GND copper,
+the same potential as the cell face resting on it. Ebyte's manual gives no antenna keepout figure, only "keep copper and
 noisy traces away from the antenna end"; the 3.8 mm rule area is this project's choice.

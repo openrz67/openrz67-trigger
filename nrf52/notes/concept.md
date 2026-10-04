@@ -18,12 +18,12 @@ design cannot do: live on a coin cell with no power switch, no charger and no re
 | TPS63031 + 7 × 6.5 mm inductor + 6 × 10 µF | nRF52 runs 1.7–3.6 V straight off the cell |
 | BQ25185, USB-C, NTC, reverse-battery FET, LiPo + JST PH | primary cell, replaced not charged |
 | KCD11 rocker + SW_SYS divider | System OFF is ~0.5 µA; the button is the power button |
-| Bare ESP32-C3 + 2 crystals + matching + U.FL + FPC antenna | module with PCB antenna |
+| Bare ESP32-C3 + 2 crystals + matching + U.FL + FPC antenna | module with ceramic antenna |
 | VBAT divider | nRF52 ADC measures VDD internally |
 
 ## Board
 
-- **MCU**: nRF52840 module with PCB antenna. Candidate Ebyte E73-2G4M08S1C (13 × 18 mm, LCSC
+- **MCU**: nRF52840 module with ceramic antenna. Candidate Ebyte E73-2G4M08S1C (13 × 18 mm, LCSC
   stock, JLC-assemblable). Smaller alternative Raytac MDBT50Q-1MV2 (10.5 × 15.5 mm, not at LCSC).
   nRF52840 over nRF52832 for the USB peripheral: not used now, free option for a USB-flash variant later.
 - **Cell**: CR2032 in an SMD holder. 220 mAh, 20 mm. CR2450 (620 mAh, 24.5 mm) if the case
@@ -46,13 +46,15 @@ design cannot do: live on a coin cell with no power switch, no charger and no re
 | State | Current | Note |
 |---|---|---|
 | System OFF, button wake | ~0.5 µA | default state |
-| Advertising, 1 s interval | ~15 µA | 5 min after a press or a disconnect, then OFF |
-| Connected, idle | ~10 µA | no timeout, lasts as long as the app holds the link |
+| Advertising, 30–60 ms interval | ~150 µA (estimate) | 5 min after a press or a disconnect, then OFF |
+| Connected, idle, 30–50 ms interval | ~25 µA (estimate) | no timeout, lasts as long as the app holds the link |
 | Shutter held | 5 mA per channel | 1 min bulb = 0.1 mAh |
 
 A press wakes it and it advertises for 5 min. Once the app connects the timer no longer
 applies. After a disconnect it advertises for another 5 min so the app can reconnect
-unattended, then goes back to OFF. Cell life is set by shelf life, not use.
+unattended, then goes back to OFF. A 5 min advertising window is 0.01 mAh, a whole day connected
+is 0.6 mAh of 220; cell life is set by shelf life, not use. The fast intervals are the ESP32
+firmware's values, kept so the apps behave the same; slowing them is a tuning item for later.
 
 ## Firmware
 
@@ -118,11 +120,54 @@ XH connector, as today.
 - **No light pipe.** A Ø1.6 hole 3 mm above a 0603 LED shows the light; a pipe can be glued
   in later if it is too dim. `D1` was moved 1.6 mm away from `SW1` on the board so the hole
   clears the tab's slot.
-- **The clip feet are tied on the back layer above the cell pad**, not below it: the LED
-  drive had to cross to the back to get under `J2`, and a loop under the cell blocked it.
+- **The clip feet are tied on the back layer outside the cell**, up at y = 6.5 and down the
+  two side edges: the LED drive had to cross to the back to get under `J2`, and nothing but
+  GND may lie under the cell (see the review fixes below).
 - **Lid bosses sit on free copper, not on the board corners.** The module fills the
   front-left corner and `C1` + `J1` the back-right one; `J1` moved 0.7 mm and `C1` 2.8 mm
   on the board to free a spot.
+
+## Review fixes (2026-10-04, before ordering)
+
+A second-opinion review of the board and the firmware. Applied:
+
+- **Copper-free ring under the cell rim** (`CELL_KEEPOUT`, B.Cu rule area, r 7.5 to 10.2 mm):
+  the CR2032's + can wraps over the edge of its negative face, and the only thing between it
+  and the back-layer copper was solder mask. Nothing but mask now sits under that rim; inside
+  the ring the GND pour stays, it is the same potential as the cell face on it. The VDD loop
+  that tied the clip feet at y = 10 ran under the cell and moved to y = 6.5.
+- **GND vias on the back under the module** (6.0, 10.0), (20.8, 8.8), (21.0, 5.2), (13.4, 16.9):
+  the VDD loop and the ring had cut the back pour into islands that the filler removed, so
+  the module had no ground under it on the back.
+- **PhotoMOS pins at high drive** (`NRF_GPIO_DRIVE_S0H1`): standard drive guarantees only
+  about 2 mA at 3 V, the TLP172AM needs up to 3 mA; the 330 Ω asks for 5.
+- **Advertising restarts from `recycled`**, not from `disconnected`: with one connection slot
+  the object is still held in `disconnected()` and `bt_le_adv_start` returns -ENOMEM, which
+  would have left the board unreachable until it slept.
+- **Button on SENSE** (`sense-edge-mask`), not a GPIOTE channel, so the idle current while
+  awake stays at the sleep figure.
+- **PhotoMOS 3D model**: LCSC ships a 6-pin SOP model for C2152276; the board now uses the
+  main board's `SMD-4_L3.7-W4.6-H2.2-LS7.0-P2.54` model, so the STEP export (and the case
+  that reads it) sees the real 4-pin body.
+
+Noted, not changed:
+
+- **DC/DC regulator stays off.** It would halve the radio current, but it needs an inductor on
+  the nRF52840's DCC pin, and that pin is inside the module. Ebyte's user manual (checked
+  2026-10-04) lists DCCH (pad 25, "DC/DC converter output") but no DCC and says nothing about
+  an inductor, so whether REG1 can run as DC/DC is unknown. First thing to try on hardware,
+  with the probe attached: set `regulator-initial-mode = <NRF5X_REG_MODE_DCDC>` on `&reg1`
+  and see if the chip stays up. Without the inductor the core rail collapses and it resets,
+  which is harmless. The gain is about 10 µA connected and 70 µA while advertising, not a
+  battery-life question for a 220 mAh cell.
+- `J2` pin 2 is the cell voltage. Documented as sense-only; a powered Qwiic device plugged in
+  there would charge the cell. There is no silkscreen room for a warning.
+- `J1`'s mouth sits about 1.7 mm inside the board edge, so the plug reaches through the case
+  wall; the case opening is sized for it.
+- `S2_DRV` runs at y = 2.3 beside the antenna keepout, and copper fills the top-right corner
+  from y = 0. Slight range cost at most; left as is.
+- `BT1` on the back means two-sided assembly at JLCPCB (or hand-soldering the clip).
+- The power table above was corrected to the intervals the code actually uses.
 
 ## Firmware decisions (firmware/, builds, not flashed)
 

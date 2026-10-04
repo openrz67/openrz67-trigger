@@ -148,8 +148,7 @@ static void adv_timeout_fn(struct k_work *work)
 static void connected(struct bt_conn *conn, uint8_t err)
 {
 	if (err) {
-		start_advertising();
-		return;
+		return;   /* recycled() restarts advertising */
 	}
 	current_conn = bt_conn_ref(conn);
 	k_work_cancel_delayable(&adv_timeout);
@@ -163,12 +162,19 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 		bt_conn_unref(current_conn);
 		current_conn = NULL;
 	}
+}
+
+/* With BT_MAX_CONN=1 the connection object is still held in disconnected(), so
+ * bt_le_adv_start fails there with -ENOMEM. It is free once recycled() runs. */
+static void recycled(void)
+{
 	start_advertising();   /* ADV_TIMEOUT to reconnect, then sleep */
 }
 
 BT_CONN_CB_DEFINE(conn_cb) = {
 	.connected = connected,
 	.disconnected = disconnected,
+	.recycled = recycled,
 };
 
 /* --- Battery ----------------------------------------------------------------------- */

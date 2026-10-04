@@ -18,7 +18,7 @@ SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
 - Power on (or a button press from sleep): advertises as `OpenRZ67` for 5 minutes. No
   connection in that time: System OFF (about 0.5 µA), the button wakes it.
 - Connected: stays on as long as the app holds the link. After a disconnect it advertises
-  5 minutes again, then sleeps.
+  5 minutes again (started from the `recycled` connection callback), then sleeps.
 - Commands on the command characteristic, write without response:
   - 1 byte `button * 10 + state`: button 1 trigger, 2 bulb, 3 countdown; state 1 start, 0 stop.
   - 3 bytes `[3, seconds, state]`: countdown with its duration.
@@ -33,10 +33,10 @@ SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
 
 | Function | nRF52840 | Module pad |
 |---|---|---|
-| S1 PhotoMOS LED | P0.09 | 41 |
-| S2 PhotoMOS LED | P0.10 | 43 |
+| S1 PhotoMOS LED, high drive | P0.09 | 41 |
+| S2 PhotoMOS LED, high drive | P0.10 | 43 |
 | Status LED | P0.00 | 11 |
-| Button, to GND | P0.30 | 10 |
+| Button, to GND (SENSE, no GPIOTE channel) | P0.30 | 10 |
 | SWDIO / SWCLK | | 37 / 39, `J2` pins 4 / 3 |
 
 The module has no 32 kHz crystal, so the low-frequency clock runs from the calibrated RC
@@ -83,7 +83,7 @@ west flash -d $FW/build --runner jlink
 | `J2` pin | Qwiic wire | Pico pin |
 |---|---|---|
 | 1 GND | black | GND (pin 3) |
-| 2 VDD | red | not connected; the board runs from its cell while flashing |
+| 2 VDD | red | not connected; the board runs from its cell while flashing. Never feed power into this pin, it would charge the CR2032 |
 | 3 SWCLK | blue | GP2 (pin 4) |
 | 4 SWDIO | yellow | GP3 (pin 5) |
 

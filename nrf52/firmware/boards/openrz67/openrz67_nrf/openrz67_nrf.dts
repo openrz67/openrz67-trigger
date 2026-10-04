@@ -3,6 +3,7 @@
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 #include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/adc/nrf-adc.h>
+#include <zephyr/dt-bindings/gpio/nordic-nrf-gpio.h>
 
 / {
 	model = "OpenRZ67 nRF52 trigger";
@@ -22,11 +23,11 @@
 			label = "status LED";
 		};
 		s1_drv: s1 {
-			gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;	/* U2 PhotoMOS LED through R1, pad 41 (NFC1) */
+			gpios = <&gpio0 9 (GPIO_ACTIVE_HIGH | NRF_GPIO_DRIVE_S0H1)>;	/* U2 PhotoMOS LED through R1, pad 41 (NFC1); high drive, 5 mA */
 			label = "camera S1";
 		};
 		s2_drv: s2 {
-			gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;	/* U3 PhotoMOS LED through R2, pad 43 (NFC2) */
+			gpios = <&gpio0 10 (GPIO_ACTIVE_HIGH | NRF_GPIO_DRIVE_S0H1)>;	/* U3 PhotoMOS LED through R2, pad 43 (NFC2); high drive, 5 mA */
 			label = "camera S2";
 		};
 	};
@@ -67,6 +68,7 @@
 
 &gpio0 {
 	status = "okay";
+	sense-edge-mask = <(1 << 30)>;	/* button via SENSE, not a GPIOTE channel */
 };
 
 &gpio1 {

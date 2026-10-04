@@ -21,5 +21,6 @@ Nothing is soldered by hand. The board comes assembled, everything else plugs in
 | SH1.0 4P to Dupont female cable (Qwiic / STEMMA QT pigtail) | AliExpress | three: one camera cable (`J1`), one for flashing (`J2`), one spare |
 | Raspberry Pi Pico 2 WH | any Pi reseller | the flashing probe; H = headers pre-soldered, W is irrelevant here. Load Raspberry Pi's `debugprobe_on_pico2.uf2` on it; a Pico H (`debugprobe_on_pico.uf2`) works the same |
 
-The camera end of the `J1` cable goes to the RZ67 socket as today (GND, S1, S2). Wiring for
+`J2` pin 2 carries the cell voltage out. Never plug a powered Qwiic device into `J2`; only the
+probe cable belongs there. The camera end of the `J1` cable goes to the RZ67 socket as today (GND, S1, S2). Wiring for
 `J2` to the Pico is in [`firmware/README.md`](firmware/README.md).

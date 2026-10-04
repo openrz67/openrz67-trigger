@@ -5,6 +5,7 @@ Run with KiCad's bundled python from nrf52/kicad/:
 --dump prints every pad position after placement (used while routing).
 """
 import os, sys
+import math
 import pcbnew
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -116,6 +117,20 @@ def zones(b, nets):
     for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
         k.AppendCorner(V(x, y), -1)
     b.Add(k)
+    cx, cy, r_in, r_out = D.CELL_KEEPOUT
+    c = pcbnew.ZONE(b); c.SetIsRuleArea(True); c.SetLayer(pcbnew.B_Cu)
+    c.SetDoNotAllowZoneFills(True); c.SetDoNotAllowTracks(True); c.SetDoNotAllowVias(True)
+    c.SetDoNotAllowPads(False); c.SetDoNotAllowFootprints(False)
+    c.SetZoneName("cell rim")
+    c.Outline().NewOutline()
+    for i in range(72):
+        a = math.tau * i / 72
+        c.AppendCorner(V(cx + r_out * math.cos(a), cy + r_out * math.sin(a)), -1)
+    hole = c.Outline().NewHole(0)
+    for i in range(72):
+        a = -math.tau * i / 72
+        c.AppendCorner(V(cx + r_in * math.cos(a), cy + r_in * math.sin(a)), hole)
+    b.Add(c)
 
 
 def route(b, nets):
