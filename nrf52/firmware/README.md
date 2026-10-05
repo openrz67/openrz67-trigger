@@ -24,8 +24,9 @@ SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
 - Commands on the command characteristic, write without response:
   - 1 byte `button * 10 + state`: button 1 trigger, 2 bulb, 3 countdown; state 1 start, 0 stop.
   - 3 bytes `[3, seconds, state]`: countdown with its duration.
-- Trigger: S1 on, 10 ms, S2 on, 100 ms, both off. Bulb: S1 then S2 on until stop. Countdown:
-  fast LED blink, then a trigger.
+- Trigger: S1 on, 10 ms, S2 on, 100 ms, both off. Bulb: S1 then S2 on until stop or a
+  disconnect. Countdown: fast LED blink, then a trigger.
+- Watchdog: 5 s. A hung main loop resets the chip, which releases S1/S2.
 - LED: solid while the shutter is held or for 2 s after a trigger, fast blink in a
   countdown, a short blink every 2 s while advertising, off when connected and idle.
 - Battery: VDD measured on the internal ADC channel every 60 s; mV on the custom

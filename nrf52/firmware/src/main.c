@@ -16,6 +16,7 @@
 #include <zephyr/sys/poweroff.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/adc.h>
+#include <zephyr/drivers/watchdog.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
@@ -34,6 +35,7 @@ LOG_MODULE_REGISTER(openrz67, LOG_LEVEL_INF);
 #define DEFAULT_COUNTDOWN_MS 10000
 #define LED_HOLD_MS      2000   /* LED on after a trigger */
 #define LONG_PRESS       K_SECONDS(3)   /* button held this long: power off */
+#define WDT_TIMEOUT_MS   5000   /* the main loop wakes at least every 2 s */
 
 /* --- Pins (devicetree, see boards/openrz67/openrz67_nrf/openrz67_nrf.dts) ---------- */
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
@@ -41,6 +43,7 @@ static const struct gpio_dt_spec s1 = GPIO_DT_SPEC_GET(DT_NODELABEL(s1_drv), gpi
 static const struct gpio_dt_spec s2 = GPIO_DT_SPEC_GET(DT_NODELABEL(s2_drv), gpios);
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);
 static const struct adc_dt_spec vdd_adc = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 0);
+static const struct device *const wdt = DEVICE_DT_GET(DT_NODELABEL(wdt0));
 
 /* --- GATT ------------------------------------------------------------------------- */
 #define UUID_SERVICE BT_UUID_128_ENCODE(0xc9239c9e, 0x6fc9, 0x4168, 0xb3aa, 0x53105eb990b0)
@@ -159,6 +162,9 @@ static void connected(struct bt_conn *conn, uint8_t err)
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
+	/* the app can no longer send the stop: end a bulb here so the outputs do not stay on */
+	struct command stop = {.button = 2, .value = 0};
+	k_msgq_put(&commands, &stop, K_NO_WAIT);
 	if (current_conn) {
 		bt_conn_unref(current_conn);
 		current_conn = NULL;
@@ -342,6 +348,14 @@ int main(void)
 	gpio_add_callback(button.port, &button_cb);
 	adc_channel_setup_dt(&vdd_adc);
 
+	/* a hung loop resets the chip, and reset releases S1/S2 */
+	struct wdt_timeout_cfg wdt_cfg = {
+		.window.max = WDT_TIMEOUT_MS,
+		.flags = WDT_FLAG_RESET_SOC,
+	};
+	int wdt_ch = wdt_install_timeout(wdt, &wdt_cfg);
+	wdt_setup(wdt, WDT_OPT_PAUSE_HALTED_BY_DBG);
+
 	int err = bt_enable(NULL);
 	if (err) {
 		LOG_ERR("bt_enable %d", err);
@@ -361,6 +375,7 @@ int main(void)
 			trigger_shutter();
 		}
 		led_tick(now);
+		wdt_feed(wdt, wdt_ch);
 	}
 	return 0;
 }
