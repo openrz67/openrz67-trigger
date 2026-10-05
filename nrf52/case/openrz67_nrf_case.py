@@ -109,13 +109,13 @@ orient_mark_x, orient_mark_w, orient_mark_d, orient_mark_h = 4.0, 2.5, 0.8, 7.0
 # (text, font size, letter tracking)
 lid_text_show = os.environ.get("LID_TEXT_SHOW", "true") == "true"
 lid_font = "Futura"
-lid_texts = [(os.environ.get("LID_TEXT", "OpenRZ67"), float(os.environ.get("LID_TEXT_SIZE", 5.3)), 0.0),
+lid_texts = [(os.environ.get("LID_TEXT", "OpenRZ67"), float(os.environ.get("LID_TEXT_SIZE", 5.8)), 0.0),
              ("TRIGGER", 4.0, 0.6)]
 lid_text_gap, lid_text_min_stroke, lid_text_depth = 1.2, 0.6, 0.8
-# At the size this lid allows, Futura Bold's thinnest strokes ("e", "pn") are 0.48 mm; every
+# At the size this lid allows, Futura Bold's thinnest strokes ("e", "pn") are 0.52 mm; every
 # glyph outline is grown by this much per side to clear lid_text_min_stroke. No more: it
 # closes the counters.
-lid_text_bold = 0.07
+lid_text_bold = 0.05
 lid_rail_w, lid_rail_end, lid_rail_gap = 0.9, 4.0, 1.2   # width, inset from the left wall, air to the LED seat
 
 # Snap (geometry proven on the ESP32 case, see ../../case/notes/design-history.md)

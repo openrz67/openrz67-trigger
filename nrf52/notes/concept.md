@@ -281,8 +281,11 @@ B.SilkS in the strip between the front edge and the cell (`CELL_LABEL` in design
 ## Visual pass (2026-10-04)
 
 - Lid text printed fuzzy. "TRIGGER" at 3.2 was too small for a 0.4 nozzle, and the 0.1 bold
-  growth closed the counters in "OpenRZ67". Now 5.3 / 4.0 with 0.07 growth. The name line is
-  near the width the lid allows, so it cannot grow much more.
+  growth closed the counters in "OpenRZ67". Now 5.8 / 4.0 with 0.05 growth. 5.8 is the
+  widest the lid allows: caps 4.4 mm, at the ~4.4 mm legibility limit for a 0.4 nozzle;
+  lowercase is 3.0. DIN Condensed Bold would give 7.0 / 5.0 at the same width, but Futura
+  keeps the ESP32 case's look. Avenir Next Condensed was in between; Futura Condensed
+  ExtraBold breaks OCCT's offset. A diagonal text line gains nothing with two lines.
 - The ESP32 case's rail added: from the left side into the LED seat. It cannot run past the
   LED as on the ESP32 case: the button tab sits on the same row.
 - Base bottom edge got the lid's 1 mm chamfer; the button tab's free end got round corners.

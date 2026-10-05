@@ -54,8 +54,8 @@ runs right to left in the case: the module sits front-right, the camera plug bac
     that a collar off the ceiling lengthens down to the pipe's lower end. The head tapers out
     by `led_head_lip` (0.7) over `led_head_t` (1.4), 26.6° from vertical, into a matching
     funnel in the top, so it self-centres and nothing needs support. Glued.
-  - **Text**: "OpenRZ67" (5.3) over a tracked "TRIGGER" (4.0), Futura Bold grown
-    `lid_text_bold` (0.07) per side so every stroke is at least 0.6 mm, debossed
+  - **Text**: "OpenRZ67" (5.8) over a tracked "TRIGGER" (4.0), Futura Bold grown
+    `lid_text_bold` (0.05) per side so every stroke is at least 0.6 mm, debossed
     `lid_text_depth` (0.8) into the top. Centred in X, and in Y between the front chamfer and
     the LED. A 0.9 mm rail runs from the left side into the LED seat, as on the ESP32 case.
     The pockets are filled by
