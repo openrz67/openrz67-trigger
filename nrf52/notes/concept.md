@@ -289,3 +289,7 @@ B.SilkS in the strip between the front edge and the cell (`CELL_LABEL` in design
 - The ESP32 case's rail added: from the left side into the LED seat. It cannot run past the
   LED as on the ESP32 case: the button tab sits on the same row.
 - Base bottom edge got the lid's 1 mm chamfer; the button tab's free end got round corners.
+- First-layer line width 0.5 -> 0.42 in `qidi-template.3mf`: the lid text is the first layer, and
+  0.5 lines blurred it. It is a print-wide setting in QIDI/Bambu Studio (GCodeConfig), not per
+  object, so the base and light pipe get it too. The textured PEI plate also roughens the text
+  edges; no smooth plate on hand.

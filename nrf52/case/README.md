@@ -97,7 +97,8 @@ Requires [uv](https://docs.astral.sh/uv/); the script carries its own dependency
 
 `openrz67-nrf-case.3mf` is the QIDI Studio project: plate 1 base floor-down and lid upside-down
 (ABS profile, lid text on filament 2), plate 2 the light pipe head-down on filament 3 (clear,
-0.28 mm layers, 100 % infill, 20 mm/s). The template has the ESP32 case's settings. `../../case/make_3mf.py` builds it by swapping the fresh STLs into
+0.28 mm layers, 100 % infill, 20 mm/s). The template has the ESP32 case's settings, except a
+0.42 mm first-layer line width (the lid text is the first layer). `../../case/make_3mf.py` builds it by swapping the fresh STLs into
 `qidi-template.3mf`, so the slicer settings survive every re-export. To change settings or the
 plate layout: open the project in QIDI Studio, change it, save, and copy it over
 `qidi-template.3mf`.
