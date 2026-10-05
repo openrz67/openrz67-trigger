@@ -57,7 +57,7 @@ clip_leg_w, clip_strap_h = 5.0, 1.3
 sw_c, sw_h = (6.0, 27.6), 1.6         # B3U-1000P centre and height
 led_c = (15.8, 27.6)                  # D1
 conn_c, conn_w, conn_h, conn_mouth = (21.3, 24.7), 6.0, 2.9, 2.47   # SM04B-SRSS-TB: centre, body, height, body past the centre toward the mouth
-module = (0.5, 0.0, 15.5, 19.0, 2.0)  # E73 incl. pads: x0, y0, x1, y1, height
+module = (0.5, 0.0, 15.5, 19.0, 3.1)  # E73 incl. pads: x0, y0, x1, y1, height (3.0 ±0.1 per the manual)
 max_part_h = 2.9                      # tallest part above the board (the connector)
 
 # --- Enclosure ---------------------------------------------------------------------------
