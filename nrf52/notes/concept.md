@@ -293,3 +293,19 @@ B.SilkS in the strip between the front edge and the cell (`CELL_LABEL` in design
   0.5 lines blurred it. It is a print-wide setting in QIDI/Bambu Studio (GCodeConfig), not per
   object, so the base and light pipe get it too. The textured PEI plate also roughens the text
   edges; no smooth plate on hand.
+
+## Third review (2026-10-05)
+
+- C2 -> CL05B104KO5NNNC (C1525, basic) and R3 1 kΩ -> 330 Ω (same part as R1/R2): one
+  extended part and one BOM line fewer. The LED gets ~3 mA instead of ~1 mA.
+- Firmware: 5 s watchdog, and a disconnect ends a bulb. Before, a hung loop or a lost link
+  mid-bulb kept S1/S2 on until the cell was pulled.
+- Case: module height 2.0 -> 3.1 (manual: 3.0 ±0.1). Only the lid keepout check uses it;
+  it still passes and the meshes do not change.
+- Kept as is: R1/R2 at 330 Ω. 220 Ω only helps a worst-case VF at an almost empty cell, and
+  costs ~50 % more cell current per channel while the shutter is held. DC/DC off: cell life
+  is set by shelf life, not use (see Power behaviour), so the saving is small and an LDO
+  boots with or without the module's inductor.
+- Cheaper parts checked: LTV-357T-C (C119091) for U2/U3 saves ~1.1 USD per board but conducts
+  one way only; measure S1/S2 polarity on the camera first. No cheaper module fits without a
+  new layout. Everything stays JLC-assembled, BT1 included.

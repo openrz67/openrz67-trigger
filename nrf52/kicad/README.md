@@ -43,7 +43,7 @@ is a separate net from the cell's `GND`.
 | nRF52840 | Module pad | Function |
 |---|---|---|
 | P0.30 | 10 | button to GND, internal pull-up, wake from System OFF |
-| P0.00 (XL1) | 11 | status LED through 1 kΩ (LFCLK runs from the internal RC) |
+| P0.00 (XL1) | 11 | status LED through 330 Ω (LFCLK runs from the internal RC) |
 | P0.09 (NFC1) | 41 | S1 PhotoMOS LED through 330 Ω |
 | P0.10 (NFC2) | 43 | S2 PhotoMOS LED through 330 Ω |
 | SWDIO / SWCLK | 37 / 39 | `J2` pins 4 / 3 |
