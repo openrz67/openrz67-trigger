@@ -59,9 +59,16 @@ NETS = {
     "CAM_GND": [("U2", "3"), ("U3", "3"), ("J1", "1")],
 }
 
-# B.SilkS label in the free strip between the front edge and the cell: the cell's + side
-# faces away from the board. (text, x, y, height)
-CELL_LABEL = ("CR2032  + SIDE OUT", 13.5, 4.0, 1.2)
+# Silkscreen text. The back labels sit in the free strip between the front edge and the cell:
+# the cell's + side faces away from the board. The connector names tell the two identical SH
+# connectors apart (their footprints carry the pin-1 dots).
+# (text, layer, x, y, height)
+SILK = [
+    ("CR2032  + SIDE OUT", "B", 13.5, 4.0, 1.2),
+    ("OpenRZ67 nRF rev A", "B", 13.5, 1.9, 1.0),
+    ("CAM", "F", 21.3, 20.9, 1.0),
+    ("SWD", "F", 5.95, 23.4, 1.0),
+]
 
 # copper-free band under the module antenna (both layers)
 ANTENNA_KEEPOUT = (0.0, 0.0, 16.5, 3.8)  # x0, y0, x1, y1

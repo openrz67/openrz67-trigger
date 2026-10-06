@@ -134,10 +134,11 @@ def zones(b, nets):
 
 
 def silk(b):
-    text, x, y, h = D.CELL_LABEL
-    t = pcbnew.PCB_TEXT(b); t.SetText(text); t.SetLayer(pcbnew.B_SilkS); t.SetMirrored(True)
-    t.SetTextSize(pcbnew.VECTOR2I(MM(h), MM(h))); t.SetTextThickness(MM(0.18))
-    t.SetPosition(V(x, y)); b.Add(t)
+    for text, layer, x, y, h in D.SILK:
+        t = pcbnew.PCB_TEXT(b); t.SetText(text)
+        t.SetLayer(pcbnew.B_SilkS if layer == "B" else pcbnew.F_SilkS); t.SetMirrored(layer == "B")
+        t.SetTextSize(pcbnew.VECTOR2I(MM(h), MM(h))); t.SetTextThickness(MM(0.18))
+        t.SetPosition(V(x, y)); b.Add(t)
 
 
 def route(b, nets):

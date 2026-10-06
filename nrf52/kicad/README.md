@@ -79,7 +79,7 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 | Check | Count | What |
 |---|---|---|
 | ERC `endpoint_off_grid` | 16 | Pins of the imported symbols are not on the 1.27 mm grid. Connectivity is by label; verified by the schematic-parity DRC. |
-| `silk_over_copper` | 11 | The holder footprint's own silkscreen crosses its centre pad. Fab clips it. |
+| `silk_over_copper` | 12 | The holder footprint's own silkscreen crosses its centre pad (11), and `J2`'s pin-1 dot touches an `SW1` pad (1). Fab clips it. |
 
 ## Mechanical
 

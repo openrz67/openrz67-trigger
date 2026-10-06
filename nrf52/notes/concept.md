@@ -276,7 +276,7 @@ overhang, like the snap bead's retention face.
 
 Polarity marking: the nRF52 has no reverse protection, and a cell put in upside down puts
 -3 V on VDD. There is a "+" in the base floor under the cell and `CR2032  + SIDE OUT` on
-B.SilkS in the strip between the front edge and the cell (`CELL_LABEL` in design.py).
+B.SilkS in the strip between the front edge and the cell (`SILK` in design.py).
 
 ## Visual pass (2026-10-04)
 
