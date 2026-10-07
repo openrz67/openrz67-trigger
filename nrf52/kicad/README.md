@@ -2,7 +2,7 @@
 
 KiCad 10 project for the coin-cell trigger: 27 × 29 mm, 2 layers, Ebyte E73-2G4M08S1C
 (nRF52840) module, CR2032 clip on the back, two TLP172AM PhotoMOS relays, JST SH 1.0 mm
-side-entry camera connector, a second SH connector for SWD, one button, one LED. No regulator, no charger, no power
+side-entry camera connector, a second SH connector for SWD, one button, one LED, a P-MOSFET against a reversed cell. No regulator, no charger, no power
 switch. Concept stage, not fabricated.
 
 The schematic and the board are **generated**: `tools/design.py` holds parts, placement,
@@ -33,9 +33,13 @@ Close KiCad first. Needs `kicad-cli` and KiCad's bundled python (for pcbnew); ov
 
 ## Circuit
 
-The cell feeds the module directly (`VDD` = `VDDH`, `DCCH` floating: nRF52840 normal-voltage
+The cell (`VBAT`) feeds the module through `Q1`, an AO3401A P-MOSFET with its drain on the
+clip, source on `VDD` and gate on GND. The right way round the body diode conducts until the
+channel turns on (under 85 mΩ at V<sub>GS</sub> = −2.5 V, about 1 mV at 15 mA). A cell put in upside
+down leaves it off, so `VDD` never goes negative. `VDD` = `VDDH`, `DCCH` floating: nRF52840 normal-voltage
 mode, 1.7–3.6 V). `VBUS` is tied to GND, as in Nordic's reference circuit for a supply on
-VDD without USB. 100 µF sits at the clip terminal, 100 nF at the module. Each PhotoMOS LED
+VDD without USB. 100 µF sits at the clip terminal, ahead of `Q1` (a ceramic, a reversed cell does not harm it),
+100 nF at the module. Each PhotoMOS LED
 is driven from a GPIO through 330 Ω (about 5 mA at 3.0 V; the TLP172AM needs up to 3 mA).
 P0.09/P0.10 are NFC pins that Nordic lists as standard drive, so the margin below 2.7 V is
 not measured. The PhotoMOS outputs go to the camera connector; camera ground (`CAM_GND`)
@@ -79,7 +83,8 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 
 | Check | Count | What |
 |---|---|---|
-| ERC `endpoint_off_grid` | 16 | Pins of the imported symbols are not on the 1.27 mm grid. Connectivity is by label; verified by the schematic-parity DRC. |
+| ERC `endpoint_off_grid` | 17 | Pins of the imported symbols are not on the 1.27 mm grid. Connectivity is by label; verified by the schematic-parity DRC. |
+| ERC `pin_to_pin` | 1 | The module's `VBUS` pin is bidirectional in the imported symbol and sits on GND with the power flag. Intended. |
 | `silk_over_copper` | 12 | The holder footprint's own silkscreen crosses its centre pad (11), and `J2`'s pin-1 dot touches an `SW1` pad (1). Fab clips it. |
 
 ## Mechanical

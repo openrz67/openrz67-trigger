@@ -21,14 +21,14 @@ SYMBOL = {
     "U1": "E73-2G4M08S1C", "BT1": "MY-2032-16", "J1": "SM04B-SRSS-TB",
     "U2": "TLP172AM", "U3": "TLP172AM", "R1": "R", "R2": "R", "R3": "R",
     "C1": "CL31A107MQHNNNE", "C2": "GRM155R71H104KE14D", "J2": "Conn_01x04",
-    "SW1": "B3U-1000P", "D1": "KT-0603R",
+    "SW1": "B3U-1000P", "D1": "KT-0603R", "Q1": "AO3401A",
 }
 # sheet positions (mm), symbol rotation
 PLACE = {
     "U1": (60, 90, 0), "BT1": (150, 40, 0), "C1": (175, 40, 0), "C2": (195, 40, 0),
     "J2": (230, 40, 0), "SW1": (150, 80, 0), "D1": (175, 80, 0), "R3": (195, 80, 0),
     "R1": (150, 120, 0), "U2": (175, 120, 0), "R2": (150, 150, 0), "U3": (175, 150, 0),
-    "J1": (230, 135, 0),
+    "J1": (230, 135, 0), "Q1": (210, 60, 0),
 }
 
 
@@ -154,8 +154,8 @@ def main():
         w('    )')
         w('  )')
 
-    # power flags so ERC sees VDD and GND driven
-    for i, (net, X, Y) in enumerate((("VDD", 150, 20), ("GND", 175, 20))):
+    # power flags so ERC sees the cell, VDD (through Q1) and GND driven
+    for i, (net, X, Y) in enumerate((("VDD", 150, 20), ("GND", 175, 20), ("VBAT", 200, 20))):
         w(f'  (symbol (lib_id "{D.LIB}:PWR_FLAG") (at {X} {Y} 0) (unit 1)')
         w('    (in_bom no) (on_board no) (dnp no)')
         w(f'    (uuid "{u()}")')

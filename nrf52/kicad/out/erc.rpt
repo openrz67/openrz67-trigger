@@ -1,4 +1,4 @@
-ERC report (2026-10-07T00:08:10, Encoding UTF8)
+ERC report (2026-10-08T00:10:13, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
@@ -47,12 +47,18 @@ Report includes: Errors, Warnings, Exclusions
     @(195.00 mm, 76.19 mm): Symbol R3 Pin 1 [Passive, Line]
 [endpoint_off_grid]: Symbol pin or wire end off connection grid
     ; warning
+    @(200.00 mm, 20.00 mm): Symbol #FLG3 Pin 1 [Power output, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(210.00 mm, 65.08 mm): Symbol Q1 Pin 1 [G, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
     @(224.92 mm, 36.19 mm): Symbol J2 Pin 1 [Pin_1, Passive, Line]
 [endpoint_off_grid]: Symbol pin or wire end off connection grid
     ; warning
     @(226.19 mm, 131.19 mm): Symbol J1 Pin 1 [1, Passive, Line]
 
- ** ERC messages: 16  Errors 0  Warnings 16
+ ** ERC messages: 18  Errors 0  Warnings 18
 
  ** Ignored checks:
     - Global label only appears once in the schematic

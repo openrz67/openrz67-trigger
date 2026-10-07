@@ -309,3 +309,18 @@ B.SilkS in the strip between the front edge and the cell (`SILK` in design.py).
 - Cheaper parts checked: LTV-357T-C (C119091) for U2/U3 saves ~1.1 USD per board but conducts
   one way only; measure S1/S2 polarity on the camera first. No cheaper module fits without a
   new layout. Everything stays JLC-assembled, BT1 included.
+
+## Reverse-cell block (2026-10-08)
+
+- `Q1` AO3401A (C15127, basic, the main board's Q3 part and KiCad `SOT-23` footprint) between
+  the clip and `VDD`: drain on the new net `VBAT` (both clip feet, the back loop, `C1`), source
+  on `VDD`, gate on GND. Before, the "+" marks were the only guard and a cell put in upside down
+  put −3 V on the module, a new assembled board. Q1 sits at (5.4, 21.3) rot 90 where the left
+  foot's via fed the module; "SWD" moved to (4.3, 24.4) off its pads.
+- `C1` stays at the clip, on `VBAT`: a ceramic takes −3 V, and moving it would cost a track
+  across the cell rim ring.
+- `J2` pin 2 is on `VDD`. With the cell in, the channel is on, so the probe's 3.3 V still
+  reaches the cell: the README rule (cell out when the probe powers the board) stands.
+- Rotation for JLC: none in `ROT_FIX`. The main board's Q3 with the same footprint matched the
+  order preview on 2026-09-25 without one.
+- Case: `Q1` added to the boss clearance list; all checks pass, meshes unchanged.
