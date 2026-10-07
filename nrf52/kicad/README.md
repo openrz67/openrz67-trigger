@@ -36,8 +36,9 @@ Close KiCad first. Needs `kicad-cli` and KiCad's bundled python (for pcbnew); ov
 The cell feeds the module directly (`VDD` = `VDDH`, `DCCH` floating: nRF52840 normal-voltage
 mode, 1.7–3.6 V). `VBUS` is tied to GND, as in Nordic's reference circuit for a supply on
 VDD without USB. 100 µF sits at the clip terminal, 100 nF at the module. Each PhotoMOS LED
-is driven from a GPIO through 330 Ω (about 5 mA at 3.0 V, above the 3 mA trigger maximum
-down to 2.5 V). The PhotoMOS outputs go to the camera connector; camera ground (`CAM_GND`)
+is driven from a GPIO through 330 Ω (about 5 mA at 3.0 V; the TLP172AM needs up to 3 mA).
+P0.09/P0.10 are NFC pins that Nordic lists as standard drive, so the margin below 2.7 V is
+not measured. The PhotoMOS outputs go to the camera connector; camera ground (`CAM_GND`)
 is a separate net from the cell's `GND`.
 
 | nRF52840 | Module pad | Function |

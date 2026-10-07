@@ -164,6 +164,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
 	/* the app can no longer send the stop: end a bulb here so the outputs do not stay on */
 	struct command stop = {.button = 2, .value = 0};
+	k_msgq_purge(&commands);   /* drop queued starts, make room for the stop */
 	k_msgq_put(&commands, &stop, K_NO_WAIT);
 	if (current_conn) {
 		bt_conn_unref(current_conn);
@@ -272,14 +273,17 @@ static void handle(const struct command *c)
 	}
 }
 
-/* LED: solid while the shutter is held or just fired, fast blink in a countdown,
- * short blink every 2 s while advertising, off when connected and idle. */
+/* LED: solid just after a trigger, slow blink while the shutter is held (saves the cell),
+ * fast blink in a countdown, short blink every 2 s while advertising, off when connected
+ * and idle. */
 static void led_tick(int64_t now)
 {
 	bool on;
 
-	if (bulb_active || now < led_hold_until) {
+	if (now < led_hold_until) {
 		on = true;
+	} else if (bulb_active) {
+		on = (now % 1000) < 100;
 	} else if (countdown_active) {
 		on = (now % 250) < 125;
 	} else if (current_conn == NULL) {
