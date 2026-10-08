@@ -324,3 +324,10 @@ B.SilkS in the strip between the front edge and the cell (`SILK` in design.py).
 - Rotation for JLC: none in `ROT_FIX`. The main board's Q3 with the same footprint matched the
   order preview on 2026-09-25 without one.
 - Case: `Q1` added to the boss clearance list; all checks pass, meshes unchanged.
+
+## Surface finish (2026-10-08)
+
+ENIG is no longer a requirement in the READMEs. The argument was oxidation of the bare cell
+pad, but tin's oxide film is thin enough that the clip pressure breaks through it, and the
+user's other HASL boards show no trouble. Nothing measured says HASL fails here; ENIG stays an
+option if the cell contact ever proves flaky.

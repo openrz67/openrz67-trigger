@@ -101,8 +101,8 @@ mouth faces the bottom edge (y = 29); the SWD connector's mouth faces +x, inside
 | Module `U1` | about 2 mm (not verified) |
 
 `BT1` is only the positive clip (MYOUNG drawing: "TERMINAL(+)"). The cell's negative face
-rests on the Ø10 mm bare pad in the middle of the back; order the board with ENIG so that
-pad does not oxidise. It has no paste: the cell rests on flat gold, not on a solder dome with flux on it. On the back a copper-free ring 7.5 to 10.2 mm from the cell centre lies
+rests on the Ø10 mm bare pad in the middle of the back. It has no paste, so the cell rests on
+the pad's finish, not on a solder dome with flux on it. On the back a copper-free ring 7.5 to 10.2 mm from the cell centre lies
 under the cell's rim, where the + can wraps over the edge; inside the ring only GND copper,
 the same potential as the cell face resting on it. Ebyte's manual gives no antenna keepout figure, only "keep copper and
 noisy traces away from the antenna end"; the 3.8 mm rule area is this project's choice.
