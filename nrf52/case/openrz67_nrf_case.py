@@ -4,7 +4,7 @@
 # ///
 """openrz67 nRF52 trigger enclosure (build123d).
 
-Two-part snap-fit box for the coin-cell board in ../kicad/ (27 x 29 mm, CR2032 clip on
+Two-part snap-fit box for the coin-cell board in ../kicad/ (29.5 x 29 mm, CR2032 clip on
 the back). The board rests on a ledge around the base cavity with the cell hanging below
 it; the lid presses it down with four corner bosses. The lid carries a cantilever button
 tab over SW1, a light pipe over D1 and the opening for the JST SH camera plug in its back
@@ -46,7 +46,7 @@ def check(cond, msg):
 
 
 # --- Board (from ../kicad/tools/design.py) --------------------------------------------
-board_w, board_h, board_r = 27.0, 29.0, 0.8
+board_w, board_h, board_r = 29.5, 29.0, 0.8
 pcb_t = float(os.environ.get("PCB_T", "1.6"))
 cell_c = (13.5, 18.0)                 # CR2032 centre (BT1), on the back
 cell_d, cell_t = 20.0, 3.2
@@ -55,8 +55,9 @@ clip_l, clip_w, clip_h = 25.9, 9.4, 3.75   # MY-2032-16 clip incl. feet; highest
 # are there; the strap and its contact dimples take the lowest clip_strap_h.
 clip_leg_w, clip_strap_h = 5.0, 1.3
 sw_c, sw_h = (6.0, 27.6), 1.6         # B3U-1000P centre and height
-led_c = (15.8, 27.6)                  # D1
-conn_c, conn_w, conn_h, conn_mouth = (21.3, 24.7), 6.0, 2.9, 2.47   # SM04B-SRSS-TB: centre, body, height, body past the centre toward the mouth
+led_c = (18.2, 27.6)                  # D1
+conn_c, conn_w, conn_h, conn_mouth = (23.6, 24.7), 6.0, 2.9, 2.47   # SM04B-SRSS-TB (J1): centre, body, height, body past the centre toward the mouth
+swd_c = (12.3, 24.7)                  # J2, same connector, same mouth direction, no opening (flashing is a lid-off job)
 module = (0.5, 0.0, 15.5, 19.0, 3.1)  # E73 incl. pads: x0, y0, x1, y1, height (3.0 ±0.1 per the manual)
 max_part_h = 2.9                      # tallest part above the board (the connector)
 
@@ -73,7 +74,7 @@ ledge_h = 1.2
 ledge_gap = 0.2           # air between the ledge wall and the lid tongue
 # lid hold-down bosses: (board x, y, diameter). Not at the board corners: the module owns
 # the front-left one and C1 + J1 the back-right one
-bosses = [(1.3, 21.2, 2.4), (25.5, 1.5, 2.4), (1.5, 27.5, 2.4), (26.0, 23.0, 2.0)]
+bosses = [(1.3, 21.2, 2.4), (28.0, 1.5, 2.4), (1.5, 27.5, 2.4), (28.5, 23.0, 2.0)]
 ant_wall_clr = 1.0        # air in front of the antenna end (board y 0)
 # Board hooks: a finger off the lid ceiling on each side wall, its barb under the board's side
 # edge, so the board stays in the lid when the lid comes off. To take the board out, pull the
@@ -422,9 +423,9 @@ _free -= cyl(lx, ly, pcb_top_z - 1, collar_d + 0.2, max_part_h + 2)
 _clear(lid, _free, "parts under the lid")
 # Bosses press on bare board: clear of every top-side part (KiCad footprint bboxes, board coords)
 top_parts = {"U1": (0.5, 0.17, 15.5, 19.31), "U2": (16.68, 5.67, 21.0, 14.32), "U3": (21.07, 5.67, 25.4, 14.32),
-             "R1": (18.85, 3.43, 20.89, 4.57), "R2": (22.82, 3.43, 24.86, 4.57), "R3": (13.33, 26.38, 14.47, 28.42),
-             "C1": (24.43, 14.37, 26.77, 19.64), "C2": (8.03, 19.73, 10.51, 20.87), "D1": (14.33, 26.78, 17.36, 28.43),
-             "J1": (17.9, 21.98, 24.7, 27.54), "J2": (7.79, 20.9, 13.34, 27.7), "SW1": (3.38, 26.22, 8.62, 28.98),
+             "R1": (18.85, 3.43, 20.89, 4.57), "R2": (22.82, 3.43, 24.86, 4.57), "R3": (16.83, 24.38, 17.97, 26.42),
+             "C1": (25.33, 14.37, 27.67, 19.64), "C2": (8.03, 19.73, 10.51, 20.87), "D1": (16.73, 26.78, 19.76, 28.43),
+             "J1": (20.2, 21.98, 27.0, 27.54), "J2": (8.9, 21.98, 15.7, 27.54), "SW1": (3.38, 26.22, 8.62, 28.98),
              "Q1": (3.67, 19.34, 7.12, 23.25)}
 
 
@@ -436,14 +437,15 @@ for cx, cy, d in bosses:
     for ref, bb in top_parts.items():
         gap = plan_gap(cx, cy, d, *bb)
         check(gap >= 0.2, f"boss at ({cx}, {cy}) within {gap:.2f} mm of {ref}")
-# Light-pipe collar: clear of the tall parts in plan. J1 by its body: the footprint bbox
+# Light-pipe collar: clear of the tall parts in plan. J1/J2 by their bodies: the footprint bbox
 # includes the flat side pads, which the collar passes over.
 _tall = {r: bb for r, bb in top_parts.items() if r not in ("D1", "R3")}
-_tall["J1"] = (conn_c[0] - conn_w / 2, top_parts["J1"][1], conn_c[0] + conn_w / 2, top_parts["J1"][3])
+for ref, c in (("J1", conn_c), ("J2", swd_c)):
+    _tall[ref] = (c[0] - conn_w / 2, top_parts[ref][1], c[0] + conn_w / 2, top_parts[ref][3])
 for ref, bb in _tall.items():
     gap = plan_gap(*led_c, collar_d, *bb)
     check(gap >= 0.2, f"light-pipe collar within {gap:.2f} mm of {ref}")
-# J1 sits at board x 21.3, right of centre in KiCad: seen from above with the antenna at the
+# J1 sits at board x 23.6, right of centre in KiCad: seen from above with the antenna at the
 # front it is on the left. Catches a board mapped without the mirror.
 check(conn_x0 + conn_open_w / 2 < outer_w / 2, "camera plug opening not on the left: board mirrored?")
 # Button tab: the tip ends over the cavity (no wall under it to bottom out on), the nub sits on the tab

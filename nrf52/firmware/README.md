@@ -40,7 +40,7 @@ SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
 | S2 PhotoMOS LED, high drive | P0.10 | 43 |
 | Status LED | P0.00 | 11 |
 | Button, to GND (SENSE, no GPIOTE channel) | P0.30 | 10 |
-| SWDIO / SWCLK | | 37 / 39, `J2` pins 4 / 3 |
+| SWDIO / SWCLK | | 37 / 39, `J2` pins 3 / 4 |
 
 The module has no 32 kHz crystal, so the low-frequency clock runs from the calibrated RC
 oscillator. P0.09/P0.10 are NFC pins set to GPIO.
@@ -87,7 +87,7 @@ west flash -d $FW/build --runner jlink
 |---|---|---|
 | 1 GND | black | GND (pin 3) |
 | 2 VDD | red | 3V3(OUT) (pin 36), with the cell **out**: the probe powers the board, so both sides run at 3.3 V. Never with the cell in, it would charge the CR2032 |
-| 3 SWCLK | blue | GP2 (pin 4) |
-| 4 SWDIO | yellow | GP3 (pin 5) |
+| 3 SWDIO | blue | GP3 (pin 5) |
+| 4 SWCLK | yellow | GP2 (pin 4) |
 
 There is no reset line; the probe resets the chip over SWD.

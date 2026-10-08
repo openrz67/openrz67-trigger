@@ -1,7 +1,7 @@
 # Parametric enclosure for the nRF52 board (build123d)
 
 `openrz67_nrf_case.py` is a two-part snap-fit box, plus a light pipe, for the coin-cell board in
-[`../kicad/`](../kicad/). Outer size with default values: **37.2 × 37.2 × 12.6 mm**. Printed in
+[`../kicad/`](../kicad/). Outer size with default values: **39.7 × 37.2 × 12.6 mm**. Printed in
 ABS, lid upside-down, base floor-down, no supports. The light pipe prints in clear filament,
 head-down, and is glued into the lid.
 
@@ -21,11 +21,12 @@ runs right to left in the case: the module sits front-right, the camera plug bac
 
 | What | Value |
 |---|---|
-| Board | 27 × 29 mm, R0.8, 1.6 thick, no mounting holes |
+| Board | 29.5 × 29 mm, R0.8, 1.6 thick, no mounting holes |
 | Cell clip `BT1` (back) | 25.9 × 9.4, 3.75 high, cell Ø20 × 3.2 under it, centre (13.5, 18) |
 | Button `SW1` | B3U-1000P at (6.0, 27.6), 1.6 high |
-| LED `D1` | (15.8, 27.6) |
-| Camera connector `J1` | SM04B-SRSS-TB at (21.3, 24.7), 6.0 wide, 2.9 high, mouth toward board y = 29 |
+| LED `D1` | (18.2, 27.6) |
+| Camera connector `J1` | SM04B-SRSS-TB at (23.6, 24.7), 6.0 wide, 2.9 high, mouth toward board y = 29 |
+| SWD connector `J2` | same part at (12.3, 24.7), same mouth direction, no wall opening |
 | Module `U1` | 15 × 19 × 2.0 incl. pads, antenna end at board y = 0 |
 
 ## Construction
@@ -44,7 +45,7 @@ runs right to left in the case: the module sits front-right, the camera plug bac
   around. Off-centre at board x 4, clear of the pry slot.
 - **Lid**: telescoping tongue (`lap` 5) with four snap fingers on the **side** walls (the
   back wall carries the plug opening). Hold-down bosses (`bosses`, board x/y/Ø) at four free
-  spots: the module owns the board's (0, 0) corner and `C1` + `J1` the (27, 29) one.
+  spots: the module owns the board's (0, 0) corner and `C1` + `J1` the (29.5, 29) one.
   - **Button**: a `tab_w × tab_l` (6 × 7.45) cantilever tab cut free by a `tab_slot` (0.7)
     U-slot with `tab_r` (1.5) corners at the free end, hinged at its front end, thinned to `tab_t` (0.8) from the inside, with a
     Ø`nub_d` (2.4) nub that stops `nub_gap` (0.3) above the switch cap. The free end is

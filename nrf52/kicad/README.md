@@ -1,6 +1,6 @@
 # openrz67 nRF52 PCB — KiCad project
 
-KiCad 10 project for the coin-cell trigger: 27 × 29 mm, 2 layers, Ebyte E73-2G4M08S1C
+KiCad 10 project for the coin-cell trigger: 29.5 × 29 mm, 2 layers, Ebyte E73-2G4M08S1C
 (nRF52840) module, CR2032 clip on the back, two TLP172AM PhotoMOS relays, JST SH 1.0 mm
 side-entry camera connector, a second SH connector for SWD, one button, one LED, a P-MOSFET against a reversed cell. No regulator, no charger, no power
 switch. Concept stage, not fabricated.
@@ -51,7 +51,7 @@ is a separate net from the cell's `GND`.
 | P0.00 (XL1) | 11 | status LED through 330 Ω (LFCLK runs from the internal RC) |
 | P0.09 (NFC1) | 41 | S1 PhotoMOS LED through 330 Ω |
 | P0.10 (NFC2) | 43 | S2 PhotoMOS LED through 330 Ω |
-| SWDIO / SWCLK | 37 / 39 | `J2` pins 4 / 3 |
+| SWDIO / SWCLK | 37 / 39 | `J2` pins 3 / 4 |
 | P0.18 (RESET) | 26 | not brought out; reset over SWD |
 
 NFC pins need `nfct-pins-as-gpios` in the board devicetree; P0.00 needs the 32 kHz clock source
@@ -67,8 +67,8 @@ Connectors:
 | | 4 | S2 (yellow) |
 | `J2` SWD, SH 1.0 mm (Qwiic cable to the probe) | 1 | GND (black) |
 | | 2 | VDD (red). With the cell out, the probe's 3.3 V powers the board here. Never with the cell in: it would charge the CR2032 |
-| | 3 | SWCLK (blue) |
-| | 4 | SWDIO (yellow) |
+| | 3 | SWDIO (blue) |
+| | 4 | SWCLK (yellow) |
 
 ## Design rules
 
@@ -85,14 +85,14 @@ DRC and ERC have **0 errors**. The warnings left in the reports:
 |---|---|---|
 | ERC `endpoint_off_grid` | 17 | Pins of the imported symbols are not on the 1.27 mm grid. Connectivity is by label; verified by the schematic-parity DRC. |
 | ERC `pin_to_pin` | 1 | The module's `VBUS` pin is bidirectional in the imported symbol and sits on GND with the power flag. Intended. |
-| `silk_over_copper` | 12 | The holder footprint's own silkscreen crosses its centre pad (11), and `J2`'s pin-1 dot touches an `SW1` pad (1). Fab clips it. |
+| `silk_over_copper` | 11 | The holder footprint's own silkscreen crosses its centre pad. Fab clips it. |
 
 ## Mechanical
 
-Outline 27 × 29 mm, R0.8 corners, no mounting holes. All parts on top except the cell clip
-on the back. Module antenna end is flush with the top edge (y = 0); the camera connector
-mouth faces the bottom edge (y = 29); the SWD connector's mouth faces +x, inside the box
-(flash with the lid off); the button sits bottom-left, the LED right of the SWD connector.
+Outline 29.5 × 29 mm, R0.8 corners, no mounting holes. All parts on top except the cell clip
+on the back. Module antenna end is flush with the top edge (y = 0); both SH connectors sit along the
+bottom edge with their mouths facing it (y = 29), SWD left of camera (the SWD cable is a
+lid-off job, no wall opening); the button sits bottom-left, the LED between the two connectors.
 
 | Part | Height over the board |
 |---|---|
