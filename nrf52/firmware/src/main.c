@@ -1,4 +1,4 @@
-/* OpenRZ67 trigger, nRF52840 / coin cell. Zephyr (nRF Connect SDK).
+/* OpenRZ67 trigger, nRF54L15 / coin cell. Zephyr (nRF Connect SDK).
  *
  * Same GATT and command protocol as the ESP32-C3 firmware in ../../src/main.cpp, so the
  * Android and iOS apps do not change:
@@ -23,6 +23,8 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/services/bas.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/init.h>
+#include <hal/nrf_regulators.h>
 
 LOG_MODULE_REGISTER(openrz67, LOG_LEVEL_INF);
 
@@ -37,13 +39,13 @@ LOG_MODULE_REGISTER(openrz67, LOG_LEVEL_INF);
 #define LONG_PRESS       K_SECONDS(3)   /* button held this long: power off */
 #define WDT_TIMEOUT_MS   5000   /* the main loop wakes at least every 2 s */
 
-/* --- Pins (devicetree, see boards/openrz67/openrz67_nrf/openrz67_nrf.dts) ---------- */
+/* --- Pins (devicetree, see boards/openrz67/openrz67_nrf/openrz67_nrf_nrf54l15_cpuapp.dts) ---------- */
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static const struct gpio_dt_spec s1 = GPIO_DT_SPEC_GET(DT_NODELABEL(s1_drv), gpios);
 static const struct gpio_dt_spec s2 = GPIO_DT_SPEC_GET(DT_NODELABEL(s2_drv), gpios);
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);
 static const struct adc_dt_spec vdd_adc = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 0);
-static const struct device *const wdt = DEVICE_DT_GET(DT_NODELABEL(wdt0));
+static const struct device *const wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
 
 /* --- GATT ------------------------------------------------------------------------- */
 #define UUID_SERVICE BT_UUID_128_ENCODE(0xc9239c9e, 0x6fc9, 0x4168, 0xb3aa, 0x53105eb990b0)
@@ -340,6 +342,17 @@ static k_timeout_t next_wait(int64_t now)
 	}
 	return K_SECONDS(1);
 }
+
+/* DC/DC roughly halves the radio current, but only with an inductor on DCC, inside the
+ * module. Ebyte does not say whether it is there, so ask the chip before turning it on. */
+static int dcdc_init(void)
+{
+	if (nrf_regulators_inductor_check(NRF_REGULATORS)) {
+		nrf_regulators_vreg_enable_set(NRF_REGULATORS, NRF_REGULATORS_VREG_MAIN, true);
+	}
+	return 0;
+}
+SYS_INIT(dcdc_init, PRE_KERNEL_1, 0);
 
 int main(void)
 {

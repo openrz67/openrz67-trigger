@@ -4,19 +4,19 @@ Zephyr application for the coin-cell trigger in [`../kicad/`](../kicad/). Same B
 services and command bytes as the ESP32-C3 firmware in the repository root, so the
 [Android](https://github.com/openrz67/openrz67-android) and
 [iOS](https://github.com/openrz67/openrz67-ios) apps work unchanged. Builds with nRF Connect
-SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
+SDK v3.4.1 (127 kB flash, 26 kB RAM); not yet flashed on hardware.
 
 | File | What |
 |---|---|
 | `src/main.c` | the application: GATT, advertising, shutter, countdown, LED, battery, sleep |
-| `prj.conf` | Kconfig: Bluetooth peripheral, BAS, DIS, ADC, GPIO, RC 32 kHz clock, no serial |
+| `prj.conf` | Kconfig: Bluetooth peripheral, BAS, DIS, ADC, GPIO, HFINT calibration, no serial |
 | `debug.conf` | add-on: logging over Segger RTT |
 | `boards/openrz67/openrz67_nrf/` | the board: pin map (devicetree), SoC, flash runners |
 
 ## Behaviour
 
 - Power on (or a button press from sleep): advertises as `OpenRZ67` for 5 minutes. No
-  connection in that time: System OFF (about 0.5 µA), the button wakes it.
+  connection in that time: System OFF (about 0.7 µA), the button wakes it.
 - Connected: stays on as long as the app holds the link. After a disconnect it advertises
   5 minutes again (started from the `recycled` connection callback), then sleeps.
 - Button held 3 s: off. It disconnects the app, waits for the button to be released (a held
@@ -34,16 +34,22 @@ SDK v3.4.1 (119 kB flash, 24 kB RAM); not yet flashed on hardware.
 
 ## Pins
 
-| Function | nRF52840 | Module pad |
+| Function | nRF54L15 | Module pad |
 |---|---|---|
-| S1 PhotoMOS LED, high drive | P0.09 | 41 |
-| S2 PhotoMOS LED, high drive | P0.10 | 43 |
-| Status LED | P0.00 | 11 |
-| Button, to GND (SENSE, no GPIOTE channel) | P0.30 | 10 |
-| SWDIO / SWCLK | | 37 / 39, `J2` pins 3 / 4 |
+| S1 PhotoMOS LED, high drive | P2.04 | 27 |
+| S2 PhotoMOS LED, high drive | P2.05 | 28 |
+| Status LED | P2.00 | 18 |
+| Button, to GND (SENSE, latch detect, no GPIOTE channel) | P1.04 | 7 |
+| SWCLK / SWDIO | | 11 / 12, `J2` pins 3 / 4 |
 
-The module has no 32 kHz crystal, so the low-frequency clock runs from the calibrated RC
-oscillator. P0.09/P0.10 are NFC pins set to GPIO.
+Both crystals (32 MHz, 32.768 kHz) are inside the module. Ebyte does not give their load
+capacitance; the devicetree uses the nRF54L15 DK values. At boot the firmware asks the chip
+whether the module has the DC/DC inductor and turns DC/DC on if so (about half the radio
+current); otherwise it stays on the LDO.
+
+Chip anomalies handled: 114 (a bouncing button on a SENSE pin can leave ~300 µA on in idle;
+`latch-detect` on the port), 30 (HFINT drifts in the cold and GRTC wake-ups fail;
+`CONFIG_CLOCK_CONTROL_NRF_HFINT_CALIBRATION`).
 
 ## Build and flash
 
@@ -65,8 +71,8 @@ no bootloader):
 ```sh
 cd ~/ncs && source .venv/bin/activate && export ZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-1.0.1
 FW=/path/to/openrz67-trigger/nrf52/firmware
-west build --no-sysbuild -b openrz67_nrf -s $FW -d $FW/build -- -DBOARD_ROOT=$FW
-west build --no-sysbuild -b openrz67_nrf -s $FW -d $FW/build -- -DBOARD_ROOT=$FW -DEXTRA_CONF_FILE=debug.conf   # RTT logging
+west build --no-sysbuild -b openrz67_nrf/nrf54l15/cpuapp -s $FW -d $FW/build -- -DBOARD_ROOT=$FW
+west build --no-sysbuild -b openrz67_nrf/nrf54l15/cpuapp -s $FW -d $FW/build -- -DBOARD_ROOT=$FW -DEXTRA_CONF_FILE=debug.conf   # RTT logging
 ```
 
 The image is `build/zephyr/zephyr.hex`.
@@ -78,7 +84,7 @@ no soldering anywhere. pyOCD drives it; a
 J-Link works through its own runner:
 
 ```sh
-pip install pyocd && pyocd pack install nrf52840
+pip install 'pyocd>=0.37'    # nrf54l target built in, no pack
 west flash -d $FW/build --runner pyocd
 west flash -d $FW/build --runner jlink
 ```
@@ -87,7 +93,7 @@ west flash -d $FW/build --runner jlink
 |---|---|---|
 | 1 GND | black | GND (pin 3) |
 | 2 VDD | red | 3V3(OUT) (pin 36), with the cell **out**: the probe powers the board, so both sides run at 3.3 V. Never with the cell in, it would charge the CR2032 |
-| 3 SWDIO | blue | GP3 (pin 5) |
-| 4 SWCLK | yellow | GP2 (pin 4) |
+| 3 SWCLK | blue | GP2 (pin 4) |
+| 4 SWDIO | yellow | GP3 (pin 5) |
 
 There is no reset line; the probe resets the chip over SWD.
