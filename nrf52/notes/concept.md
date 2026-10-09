@@ -331,3 +331,34 @@ ENIG is no longer a requirement in the READMEs. The argument was oxidation of th
 pad, but tin's oxide film is thin enough that the clip pressure breaks through it, and the
 user's other HASL boards show no trouble. Nothing measured says HASL fails here; ENIG stays an
 option if the cell contact ever proves flaky.
+
+## Module change: E73-2G4M08S1F / nRF54L15 (2026-10-09)
+
+- Why: the S1F is about 2 USD cheaper per board at JLC (5.66 vs 7.63), 12 × 17.2 mm instead of
+  13 × 18, and the nRF54L15 needs roughly half the radio current of the nRF52840 when its DC/DC
+  runs (TX 0 dBm 4.8 mA, RX 3.4 mA vs 10.6 / 9.9 mA on the LDO). Nothing was ordered yet, so
+  the change costs no extra test boards. USB, the reason for the nRF52840, was never used.
+- Rejected: E73-2G4M08S1CX (same footprint, IPEX instead of an antenna), nRF52832/52810
+  modules (28.7 mm long, or out of stock), a bare nRF54L15 (own RF design).
+- Pins: the button must be on P0/P1, since P2 has no SENSE and cannot wake from System OFF.
+  P1.04 on the left column; P1.02/P1.03 (NFC), P1.08 (CLK16M/EXTREF) and P1.11/P1.12 avoided.
+  The outputs sit on P2 (P2.00, P2.04, P2.05), which faces the parts. Total GPIO current
+  with both PhotoMOS and the LED on is about 14 mA, under the 15 mA the PS recommends.
+- Layout: module at (7.0, 11.2), rot 0, antenna at the top edge. Its left column faces the
+  board edge, so `VDD` (pad 9) and the button (pad 7) run down two tracks between the module and
+  the edge. SWD comes off pads 11/12 in the order SWCLK, SWDIO, so `J2` pins 3/4 swapped to
+  SWCLK/SWDIO; the other order crosses. Antenna keepout 15 × 5.3 mm. `SW1`, `D1`, `J1` and the
+  case are unchanged; `J2` stays in place.
+- DC/DC: the inductor goes on DCC, which the module does not bring out, and Ebyte does not say
+  whether it is inside. The firmware reads `VREGMAIN.INDUCTORDET` at boot and enables DC/DC
+  only when it is there.
+- Crystals are in the module (the S1C had none): LFXO replaces the RC oscillator. Load
+  capacitance unknown, DK values used. Check the 32 MHz frequency on the first board.
+- Flashing: pyOCD ≥ 0.37 has the `nrf54l` target built in and erases a locked chip itself.
+  The Pico debugprobe stays.
+- Errata: 114 (SENSE + bouncing button, `latch-detect`), 30 (cold, HFINT calibration).
+  Chip revision on Ebyte's parts unknown.
+- No nRESET RC as in Ebyte's reference circuit: a reset pulse during power-on prolongs
+  anomalies 100/103, and the internal pull-up holds it.
+- Risk: new module (datasheet 2025-11), 144 in stock at JLC on 2026-10-08. No 3D model from LCSC or Ebyte;
+  `kicad/tools/module_3d.py` draws a box from the manual's dimensions instead.

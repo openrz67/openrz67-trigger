@@ -1,14 +1,10 @@
-ERC report (2026-10-08T21:27:28, Encoding UTF8)
+ERC report (2026-10-09T22:08:01, Encoding UTF8)
 Report includes: Errors, Warnings, Exclusions
 
 ***** Sheet /
 [endpoint_off_grid]: Symbol pin or wire end off connection grid
     ; warning
-    @(30.79 mm, 77.30 mm): Symbol U1 Pin 1 [P1.11, Bidirectional, Line]
-[pin_to_pin]: Pins of type Bidirectional and Power output are connected
-    ; warning
-    @(90.48 mm, 106.51 mm): Symbol U1 Pin 27 [VBS, Bidirectional, Line]
-    @(175.00 mm, 20.00 mm): Symbol #FLG2 Pin 1 [Power output, Line]
+    @(46.03 mm, 65.87 mm): Symbol U1 Pin 1 [P1.09, Bidirectional, Line]
 [endpoint_off_grid]: Symbol pin or wire end off connection grid
     ; warning
     @(139.84 mm, 80.00 mm): Symbol SW1 Pin 1 [1, Passive, Line]
@@ -58,7 +54,7 @@ Report includes: Errors, Warnings, Exclusions
     ; warning
     @(226.19 mm, 131.19 mm): Symbol J1 Pin 1 [1, Passive, Line]
 
- ** ERC messages: 18  Errors 0  Warnings 18
+ ** ERC messages: 17  Errors 0  Warnings 17
 
  ** Ignored checks:
     - Global label only appears once in the schematic

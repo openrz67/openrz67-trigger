@@ -5,6 +5,7 @@ fp-info-cache
 _autosave-*
 *.kicad_prl
 openrz67-nrf.3dshapes/*.step
+!openrz67-nrf.3dshapes/WIRELM-SMD_E73-2G4M08S1F.step
 out/openrz67-nrf.step
 out/openrz67-nrf.glb
 .venv-tools/

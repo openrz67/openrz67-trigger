@@ -1,6 +1,6 @@
 # nRF52 coin-cell trigger
 
-Second board design for the RZ67 trigger: an nRF52840 module on a CR2032, no regulator,
+Second board design for the RZ67 trigger: an nRF54L15 module on a CR2032, no regulator,
 charger or power switch. Concept stage, nothing ordered or printed.
 
 | Directory | What |

@@ -58,7 +58,7 @@ sw_c, sw_h = (6.0, 27.6), 1.6         # B3U-1000P centre and height
 led_c = (18.2, 27.6)                  # D1
 conn_c, conn_w, conn_h, conn_mouth = (23.6, 24.7), 6.0, 2.9, 2.47   # SM04B-SRSS-TB (J1): centre, body, height, body past the centre toward the mouth
 swd_c = (12.3, 24.7)                  # J2, same connector, same mouth direction, no opening (flashing is a lid-off job)
-module = (0.5, 0.0, 15.5, 19.0, 3.1)  # E73 incl. pads: x0, y0, x1, y1, height (3.0 ±0.1 per the manual)
+module = (1.0, 0.0, 13.0, 17.2, 2.5)  # E73-2G4M08S1F: x0, y0, x1, y1, height (2.4 per the manual)
 max_part_h = 2.9                      # tallest part above the board (the connector)
 
 # --- Enclosure ---------------------------------------------------------------------------
@@ -422,7 +422,7 @@ for cx, cy, d in bosses:
 _free -= cyl(lx, ly, pcb_top_z - 1, collar_d + 0.2, max_part_h + 2)
 _clear(lid, _free, "parts under the lid")
 # Bosses press on bare board: clear of every top-side part (KiCad footprint bboxes, board coords)
-top_parts = {"U1": (0.5, 0.17, 15.5, 19.31), "U2": (16.68, 5.67, 21.0, 14.32), "U3": (21.07, 5.67, 25.4, 14.32),
+top_parts = {"U1": (0.78, 0.17, 13.22, 17.32), "U2": (16.68, 5.67, 21.0, 14.32), "U3": (21.07, 5.67, 25.4, 14.32),
              "R1": (18.85, 3.43, 20.89, 4.57), "R2": (22.82, 3.43, 24.86, 4.57), "R3": (16.83, 24.38, 17.97, 26.42),
              "C1": (25.33, 14.37, 27.67, 19.64), "C2": (8.03, 19.73, 10.51, 20.87), "D1": (16.73, 26.78, 19.76, 28.43),
              "J1": (20.2, 21.98, 27.0, 27.54), "J2": (8.9, 21.98, 15.7, 27.54), "SW1": (3.38, 26.22, 8.62, 28.98),
