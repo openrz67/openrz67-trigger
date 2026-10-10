@@ -1,0 +1,122 @@
+/dts-v1/;
+#include <nordic/nrf54l15_cpuapp.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <zephyr/dt-bindings/adc/adc.h>
+#include <zephyr/dt-bindings/adc/nrf-saadc.h>
+#include <zephyr/dt-bindings/gpio/nordic-nrf-gpio.h>
+
+/ {
+	model = "OpenRZ67 nRF trigger";
+	compatible = "openrz67,openrz67-nrf";
+
+	chosen {
+		zephyr,sram = &cpuapp_sram;
+		zephyr,flash = &cpuapp_rram;
+		zephyr,flash-controller = &rram_controller;
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	/* E73-2G4M08S1F pads -> nRF54L15 GPIO, see ../../../../kicad/README.md */
+	outputs {
+		compatible = "gpio-leds";
+		status_led: led_0 {
+			gpios = <&gpio2 0 GPIO_ACTIVE_HIGH>;	/* D1 through R3, pad 18 */
+			label = "status LED";
+		};
+		s1_drv: s1 {
+			gpios = <&gpio2 4 (GPIO_ACTIVE_HIGH | NRF_GPIO_DRIVE_S0H1)>;	/* U2 PhotoMOS LED through R1, pad 27; high drive, 5 mA */
+			label = "camera S1";
+		};
+		s2_drv: s2 {
+			gpios = <&gpio2 5 (GPIO_ACTIVE_HIGH | NRF_GPIO_DRIVE_S0H1)>;	/* U3 PhotoMOS LED through R2, pad 28; high drive, 5 mA */
+			label = "camera S2";
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+		user_button: button_0 {
+			gpios = <&gpio1 4 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;	/* SW1 to GND, pad 7 */
+			label = "wake / user button";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	zephyr,user {
+		io-channels = <&adc 0>;	/* VDD, i.e. the cell voltage */
+	};
+
+	aliases {
+		led0 = &status_led;
+		sw0 = &user_button;
+		watchdog0 = &wdt31;
+	};
+};
+
+&cpuapp_sram {
+	status = "okay";
+};
+
+/* Crystals inside the module; Ebyte does not give their load capacitance, these are the DK values */
+&lfxo {
+	load-capacitors = "internal";
+	load-capacitance-femtofarad = <17000>;
+};
+
+&hfxo {
+	load-capacitors = "internal";
+	load-capacitance-femtofarad = <15000>;
+};
+
+&regulators {
+	status = "okay";
+};
+
+&grtc {
+	owned-channels = <0 1 2 3 4 5 6 7 8 9 10 11>;
+	child-owned-channels = <3 4 7 8 9 10 11>;
+	status = "okay";
+};
+
+&clock {
+	status = "okay";
+};
+
+&radio {
+	status = "okay";
+};
+
+&adc {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	channel@0 {
+		reg = <0>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40)>;
+		zephyr,input-positive = <NRF_SAADC_VDD>;
+		zephyr,resolution = <12>;
+		zephyr,oversampling = <4>;
+	};
+};
+
+&gpio1 {
+	status = "okay";
+	sense-edge-mask = <(1 << 4)>;	/* button via SENSE, not a GPIOTE channel */
+	latch-detect;	/* anomaly 114: a bouncing SENSE pin can leave ~300 uA on in idle */
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+&wdt31 {
+	status = "okay";
+};
+
+&gpiote20 {
+	status = "okay";
+};
+
+#include <vendor/nordic/nrf54l15_cpuapp_partition.dtsi>

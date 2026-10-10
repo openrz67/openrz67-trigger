@@ -1,0 +1,6 @@
+board:
+  name: openrz67_nrf
+  full_name: OpenRZ67 nRF trigger
+  vendor: openrz67
+  socs:
+    - name: nrf54l15

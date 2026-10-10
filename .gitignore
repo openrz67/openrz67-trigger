@@ -18,8 +18,10 @@ piolibdeps/
 # Build artifacts
 build/
 cmake-build-*/
+.cache/
 CMakeListsPrivate.txt
 CMakeLists.txt
+!nrf52/firmware/CMakeLists.txt
 
 # Genererte STL-filer fra case/export.sh
 case/stl/
@@ -57,3 +59,9 @@ projectFilesBackup/
 .mcp.json
 .claude/settings.local.json
 __pycache__/
+
+# KiCad per-user view settings
+*.kicad_prl
+*-backups/
+# Generert slicer-prosjekt fra nrf52/case/export.sh (bygges fra qidi-template.3mf)
+nrf52/case/openrz67-nrf-case.3mf

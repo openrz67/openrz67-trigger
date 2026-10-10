@@ -1,0 +1,12 @@
+identifier: openrz67_nrf/nrf54l15/cpuapp
+name: OpenRZ67 nRF trigger
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+ram: 256
+flash: 1428
+supported:
+  - adc
+  - gpio
+  - ble

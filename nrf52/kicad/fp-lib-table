@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "openrz67-nrf") (type "KiCad") (uri "${KIPRJMOD}/openrz67-nrf.pretty") (options "") (descr "Project footprints (EasyEDA/LCSC imports + own)"))
+)
