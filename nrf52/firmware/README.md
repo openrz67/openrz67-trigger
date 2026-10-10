@@ -81,7 +81,7 @@ MCUboot only boots images signed with the key it was built with. Make the key on
 the repository, and keep a backup: without it, updates need the probe again.
 
 ```sh
-python ~/ncs/bootloader/mcuboot/scripts/imgtool.py keygen -t ed25519 -k ~/.openrz67/mcuboot-ed25519.pem
+mkdir -p ~/.openrz67 && ~/ncs/.venv/bin/python ~/ncs/bootloader/mcuboot/scripts/imgtool.py keygen -t ed25519 -k ~/.openrz67/mcuboot-ed25519.pem
 ```
 
 Without `SB_CONFIG_BOOT_SIGNATURE_KEY_FILE` the build uses MCUboot's public test key (with a
