@@ -362,3 +362,17 @@ option if the cell contact ever proves flaky.
   anomalies 100/103, and the internal pull-up holds it.
 - Risk: new module (datasheet 2025-11), 144 in stock at JLC on 2026-10-08. No 3D model from LCSC or Ebyte;
   `kicad/tools/module_3d.py` draws a box from the manual's dimensions instead.
+
+## Relay drive and module decoupling (2026-10-10)
+
+From `kicad/notes/review-2026-10-10.md`.
+
+- R1/R2 330 Ω -> 220 Ω (C25091, basic). The third review kept 330 Ω on typical figures; with
+  the datasheet limits (VOH = VDD − 0.4 V, VF 1.4 V) 330 Ω drops below the TLP172AM's 3 mA
+  IFT at about 2.8 V, well before a CR2032 is empty. 220 Ω gives 4.1 mA at 2.7 V and 3.2 mA
+  at 2.5 V. The extra cell current only runs while the shutter is held, 3–4 s in normal use.
+- R3 330 Ω -> 1 kΩ (C11702, basic): the LED shares Nordic's 15 mA recommended GPIO total with
+  both relays. A fresh cell gives about 14 mA for all three. Costs one BOM line back.
+- C3 100 nF at module pad 9, GND straight to pad 10, below the module's bottom-left corner.
+  C2 sat 8.7 mm away at Q1 with about 20 mm of VDD track to pad 9; it stays for J2 and Q1.
+- Open: bulb test at 4 s and 60 s with a used and a cold cell on the first boards.

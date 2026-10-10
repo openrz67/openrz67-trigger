@@ -39,17 +39,20 @@ clip, source on `VDD` and gate on GND. The right way round the body diode conduc
 channel turns on (under 85 mΩ at V<sub>GS</sub> = −2.5 V, about 1 mV at 15 mA). A cell put in upside
 down leaves it off, so `VDD` never goes negative. The module has one supply pad (9, 1.8–3.6 V
 per Ebyte; the nRF54L15 itself starts at 1.75 V) and both crystals inside. 100 µF sits at the clip terminal, ahead of `Q1` (a ceramic, a reversed cell does not harm it),
-100 nF at the module. Each PhotoMOS LED
-is driven from a GPIO through 330 Ω (about 5 mA at 3.0 V; the TLP172AM needs up to 3 mA).
+100 nF right at module pad 9 (`C3`, ground straight to pad 10) and 100 nF at `Q1`/SWD (`C2`).
+Each PhotoMOS LED is driven from a GPIO through 220 Ω: about 4 mA at 2.7 V with the worst-case
+LED forward voltage, the TLP172AM needs up to 3 mA. The status LED has 1 kΩ (about 1 mA).
+With a fresh cell both relays and the LED draw about 14 mA, inside Nordic's recommended 15 mA
+sustained total for all GPIOs.
 The PhotoMOS outputs go to the camera connector; camera ground (`CAM_GND`)
 is a separate net from the cell's `GND`.
 
 | nRF54L15 | Module pad | Function |
 |---|---|---|
 | P1.04 | 7 | button to GND, internal pull-up, wake from System OFF |
-| P2.00 | 18 | status LED through 330 Ω |
-| P2.04 | 27 | S1 PhotoMOS LED through 330 Ω |
-| P2.05 | 28 | S2 PhotoMOS LED through 330 Ω |
+| P2.00 | 18 | status LED through 1 kΩ |
+| P2.04 | 27 | S1 PhotoMOS LED through 220 Ω |
+| P2.05 | 28 | S2 PhotoMOS LED through 220 Ω |
 | SWCLK / SWDIO | 11 / 12 | `J2` pins 3 / 4 |
 | nRESET | 19 | not brought out; reset over SWD |
 
