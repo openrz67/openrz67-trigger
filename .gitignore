@@ -18,6 +18,7 @@ piolibdeps/
 # Build artifacts
 build/
 cmake-build-*/
+.cache/
 CMakeListsPrivate.txt
 CMakeLists.txt
 !nrf52/firmware/CMakeLists.txt
