@@ -376,3 +376,19 @@ From `kicad/notes/review-2026-10-10.md`.
 - C3 100 nF at module pad 9, GND straight to pad 10, below the module's bottom-left corner.
   C2 sat 8.7 mm away at Q1 with about 20 mm of VDD track to pad 9; it stays for J2 and Q1.
 - Open: bulb test at 4 s and 60 s with a used and a cold cell on the first boards.
+
+## Updates over Bluetooth (2026-10-10)
+
+- Why: flashing needs the lid off and the Pico on `J2`. MCUboot + SMP over Bluetooth makes
+  the probe a one-time tool; later updates come from nRF Connect Device Manager on a phone.
+- Rejected: USB-C. The nRF54L15 has no USB, so it needs a bridge chip, a 5 V to 3 V path that
+  can never charge the CR2032, edge space on a 29.5 mm board and a case opening. Going back to
+  the nRF52840 for its USB gives up the 2 USD and the half radio current that motivated the
+  module change.
+- Swap using move (NCS default on the nRF54L15), so a new image that never confirms falls
+  back. MCUboot feeds the watchdog during a swap: NCS turns that off for the nRF54L15, but the
+  app's 5 s watchdog may still run after the reset into the bootloader.
+- Signing key outside the repository, passed at build time. The build falls back to MCUboot's
+  public test key with a warning.
+- Cost: 39 kB MCUboot, app 127 to 147 kB, RAM 26 to 45 kB. Each wake from System OFF goes
+  through MCUboot, which checks the app's signature first; measure that on the first board.

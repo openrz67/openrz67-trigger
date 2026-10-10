@@ -4,12 +4,13 @@ Zephyr application for the coin-cell trigger in [`../kicad/`](../kicad/). Same B
 services and command bytes as the ESP32-C3 firmware in the repository root, so the
 [Android](https://github.com/openrz67/openrz67-android) and
 [iOS](https://github.com/openrz67/openrz67-ios) apps work unchanged. Builds with nRF Connect
-SDK v3.4.1 (127 kB flash, 26 kB RAM); not yet flashed on hardware.
+SDK v3.4.1 (MCUboot 39 kB, app 147 kB flash, 45 kB RAM); not yet flashed on hardware.
 
 | File | What |
 |---|---|
 | `src/main.c` | the application: GATT, advertising, shutter, countdown, LED, battery, sleep |
-| `prj.conf` | Kconfig: Bluetooth peripheral, BAS, DIS, ADC, GPIO, HFINT calibration, no serial |
+| `prj.conf` | Kconfig: Bluetooth peripheral, BAS, DIS, SMP (updates), ADC, GPIO, HFINT calibration, no serial |
+| `sysbuild.conf`, `sysbuild/mcuboot.conf` | MCUboot as the bootloader, fed watchdog during a swap |
 | `debug.conf` | add-on: logging over Segger RTT |
 | `boards/openrz67/openrz67_nrf/` | the board: pin map (devicetree), SoC, flash runners |
 
@@ -65,17 +66,44 @@ uv pip install -p .venv -r zephyr/scripts/requirements.txt -r nrf/scripts/requir
 # Zephyr SDK 1.0.1 (zephyr/SDK_VERSION): minimal bundle + the arm toolchain into gnu/, then setup.sh -h -c
 ```
 
-Build (the board lives in this directory, so pass it as `BOARD_ROOT`; no sysbuild, there is
-no bootloader):
+Build (the board lives in this directory, so pass it as `BOARD_ROOT`). Sysbuild builds
+MCUboot and the app and signs the app:
 
 ```sh
 cd ~/ncs && source .venv/bin/activate && export ZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-1.0.1
 FW=/path/to/openrz67-trigger/nrf52/firmware
-west build --no-sysbuild -b openrz67_nrf/nrf54l15/cpuapp -s $FW -d $FW/build -- -DBOARD_ROOT=$FW
-west build --no-sysbuild -b openrz67_nrf/nrf54l15/cpuapp -s $FW -d $FW/build -- -DBOARD_ROOT=$FW -DEXTRA_CONF_FILE=debug.conf   # RTT logging
+KEY=~/.openrz67/mcuboot-ed25519.pem
+west build -b openrz67_nrf/nrf54l15/cpuapp -s $FW -d $FW/build -- -DBOARD_ROOT=$FW -DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"$KEY\"
+west build -b openrz67_nrf/nrf54l15/cpuapp -s $FW -d $FW/build -- -DBOARD_ROOT=$FW -DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"$KEY\" -DEXTRA_CONF_FILE=debug.conf   # RTT logging
 ```
 
-The image is `build/zephyr/zephyr.hex`.
+MCUboot only boots images signed with the key it was built with. Make the key once, outside
+the repository, and keep a backup: without it, updates need the probe again.
+
+```sh
+python ~/ncs/bootloader/mcuboot/scripts/imgtool.py keygen -t ed25519 -k ~/.openrz67/mcuboot-ed25519.pem
+```
+
+Without `SB_CONFIG_BOOT_SIGNATURE_KEY_FILE` the build uses MCUboot's public test key (with a
+warning), and anyone could sign an image the board accepts.
+
+Outputs: `build/merged.hex` (MCUboot + app, for the probe) and `build/dfu_application.zip`
+(app only, for an update over Bluetooth).
+
+### Update over Bluetooth
+
+Once MCUboot is on the board, the app updates from a phone. Close the OpenRZ67 app first, the
+board takes one connection.
+
+1. Copy `build/dfu_application.zip` to the phone.
+2. Wake the board (button) so it advertises.
+3. In nRF Connect Device Manager (Nordic, iOS and Android): pick `OpenRZ67`, Image, Firmware
+   Upgrade, select the zip, mode "Test and Confirm", Start.
+
+The board restarts into the new image. If that image does not come back on Bluetooth, MCUboot
+falls back to the old one on the next reset.
+
+### First flash with the probe
 
 Flashing is over SWD through `J2`, a JST SH 1.0 mm connector: a Qwiic / STEMMA QT cable with
 female Dupont ends goes straight onto a Raspberry Pi Pico 2 WH (pre-soldered headers) running
